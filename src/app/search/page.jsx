@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import {
   useRouter,
   useSearchParams,
@@ -20,12 +20,13 @@ import FilterSheet from '@/components/search/FilterSheet'
 import EditSearchSheet from '@/components/search/EditSearchSheet'
 import SortControls from '@/components/search/SortControls'
 
-export default function Page() {
+function SearchContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
   const destinationId =
-    searchParams.get('destination') ?? 'yogyakarta'
+    searchParams.get('destination') ??
+    'yogyakarta'
 
   const initialDestination =
     destinations.find(
@@ -86,6 +87,10 @@ export default function Page() {
   }
 
   const applySearch = () => {
+    if (!draftSearch.destination) {
+      return
+    }
+
     setSearch(draftSearch)
 
     const params = new URLSearchParams({
@@ -93,8 +98,12 @@ export default function Page() {
         draftSearch.destination.id,
       checkIn: draftSearch.checkIn,
       checkOut: draftSearch.checkOut,
-      guests: String(draftSearch.guests),
-      rooms: String(draftSearch.rooms),
+      guests: String(
+        draftSearch.guests
+      ),
+      rooms: String(
+        draftSearch.rooms
+      ),
     })
 
     router.replace(
@@ -132,7 +141,8 @@ export default function Page() {
 
       const matchesRating =
         filters.minRating === null ||
-        hotel.rating >= filters.minRating
+        hotel.rating >=
+          filters.minRating
 
       return (
         matchesPrice &&
@@ -144,7 +154,10 @@ export default function Page() {
   const sortedHotels = [
     ...filteredHotels,
   ].sort((a, b) => {
-    if (activeSort === 'Lowest price') {
+    if (
+      activeSort ===
+      'Lowest price'
+    ) {
       const aPrice =
         a.pricing.base +
         a.pricing.taxes
@@ -156,7 +169,10 @@ export default function Page() {
       return aPrice - bPrice
     }
 
-    if (activeSort === 'Top rated') {
+    if (
+      activeSort ===
+      'Top rated'
+    ) {
       return b.rating - a.rating
     }
 
@@ -165,16 +181,19 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-background pb-28 text-foreground md:mx-auto md:max-w-md md:border-x md:border-border">
-
+      {/* HEADER */}
       <AppHeader
         showBack
         backHref="/"
       />
 
+      {/* SEARCH SUMMARY */}
       <div className="sticky top-[73px] z-40 bg-background/95 backdrop-blur">
         <SearchSummary
           search={search}
-          filterCount={activeFilterCount}
+          filterCount={
+            activeFilterCount
+          }
           onEdit={openEditSearch}
           onOpenFilters={() => {
             setFilterOpen(true)
@@ -182,46 +201,53 @@ export default function Page() {
         />
       </div>
 
-          {/* HOTEL RESULTS HEADER */}
+      {/* HOTEL RESULTS HEADER */}
       <section className="px-5">
-
-
         <div className="mt-2 flex items-end justify-between gap-4">
           <div>
-
             <p className="mt-2 text-sm text-muted-foreground">
               Ranked around your trip preferences.
             </p>
           </div>
 
           <span className="shrink-0 text-xs text-muted-foreground">
-            {compared.length} selected
+            {compared.length}{' '}
+            selected
           </span>
         </div>
 
+        {/* SORT */}
         <SortControls
           value={activeSort}
-          onChange={setActiveSort}
+          onChange={
+            setActiveSort
+          }
         />
       </section>
 
+      {/* HOTEL LIST */}
       <section
         className="mt-4 flex flex-col gap-3 px-5"
         aria-label="Hotel results"
       >
-        {sortedHotels.length > 0 ? (
-          sortedHotels.map((hotel) => (
-            <HotelCard
-              key={hotel.id}
-              hotel={hotel}
-              compared={compared.includes(
-                hotel.id
-              )}
-              onCompare={() =>
-                toggleCompare(hotel.id)
-              }
-            />
-          ))
+        {sortedHotels.length >
+        0 ? (
+          sortedHotels.map(
+            (hotel) => (
+              <HotelCard
+                key={hotel.id}
+                hotel={hotel}
+                compared={compared.includes(
+                  hotel.id
+                )}
+                onCompare={() =>
+                  toggleCompare(
+                    hotel.id
+                  )
+                }
+              />
+            )
+          )
         ) : (
           <div className="rounded-2xl border border-border bg-surface p-5 text-center">
             <p className="font-bold">
@@ -249,11 +275,15 @@ export default function Page() {
         )}
       </section>
 
+      {/* SPACE FOR FIXED UI */}
       <div className="h-8" />
 
+      {/* COMPARE BAR */}
       <div className="[&>div]:!bottom-[5px]">
         <CompareBar
-          count={compared.length}
+          count={
+            compared.length
+          }
           onCompare={() => {
             console.log(
               'Open comparison'
@@ -262,6 +292,7 @@ export default function Page() {
         />
       </div>
 
+      {/* FILTER SHEET */}
       <FilterSheet
         open={filterOpen}
         filters={filters}
@@ -280,13 +311,40 @@ export default function Page() {
         }}
       />
 
+      {/* EDIT SEARCH SHEET */}
       <EditSearchSheet
         open={editSearchOpen}
         value={draftSearch}
-        onChange={setDraftSearch}
+        onChange={
+          setDraftSearch
+        }
         onApply={applySearch}
         onClose={closeEditSearch}
       />
     </main>
+  )
+}
+
+function SearchFallback() {
+  return (
+    <main className="min-h-screen bg-background text-foreground md:mx-auto md:max-w-md md:border-x md:border-border">
+      <div className="px-5 py-8">
+        <p className="text-sm text-muted-foreground">
+          Loading stays...
+        </p>
+      </div>
+    </main>
+  )
+}
+
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <SearchFallback />
+      }
+    >
+      <SearchContent />
+    </Suspense>
   )
 }
