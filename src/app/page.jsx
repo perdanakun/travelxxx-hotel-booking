@@ -11,6 +11,19 @@ import {
 } from 'lucide-react'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+
+import { Button } from '@/components/ui/button'
+
+import { hotels } from '@/data/hotels'
+import { trips } from '@/data/trips'
+import AppHeader from '@/components/AppHeader'
+import BottomNav from '@/components/BottomNav'
+import HotelCard from '@/components/HotelCard'
+import CompareBar from '@/components/CompareBar'
+import SearchForm from '@/components/search/SearchForm'
+import FeaturedTripCard from '@/components/FeaturedTripCard'
+
 
 const feelings = [
   {
@@ -55,86 +68,29 @@ const feelings = [
   },
 ]
 
-const trips = [
-  [
-    'Scooter route',
-    'Lisbon, Portugal',
-    'https://images.unsplash.com/photo-1539650116574-75c0c6d73f6e?auto=format&fit=crop&w=160&q=80',
-  ],
-  [
-    'Yoga retreat',
-    'Ubud, Bali',
-    'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=160&q=80',
-  ],
-  [
-    'Oktoberfest',
-    'Munich, Germany',
-    'https://images.unsplash.com/photo-1508170754725-6e9a5cf3e8c1?auto=format&fit=crop&w=160&q=80',
-  ],
-]
-
-const hotels = [
-  {
-    title: 'Saffron Boutique Hotel',
-    city: 'Prawirotaman, Yogyakarta',
-    rating: '4.3',
-    description:
-      'A boutique stay close to cafés and neighborhood life.',
-    base: 75,
-    taxes: 12,
-    image:
-      'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=500&q=85',
-  },
-  {
-    title: 'Lotus City Inn',
-    city: 'Malioboro, Yogyakarta',
-    rating: '3.9',
-    description:
-      'Simple rooms, great breakfast options nearby.',
-    base: 60,
-    taxes: 10,
-    image:
-      'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=500&q=85',
-  },
-  {
-    title: 'Heritage Stay',
-    city: 'Kotagede, Yogyakarta',
-    rating: '4.6',
-    description:
-      'Comfort-forward rooms with quiet courtyards.',
-    base: 110,
-    taxes: 18,
-    image:
-      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=500&q=85',
-  },
-]
-
 function Chip({ children, active, onClick }) {
   return (
-    <button
+    <Button
       type="button"
+      size="sm"
+      variant={active ? 'secondary' : 'outline'}
       onClick={onClick}
       className={`
         shrink-0
         rounded-full
-        border
         px-3
         py-1.5
-        text-xs
         font-medium
-        transition-all
-        touch-manipulation
-        active:scale-[0.98]
 
         ${
           active
-            ? 'border-secondary bg-secondary text-secondary-foreground'
-            : 'border-border bg-background text-muted-foreground hover:bg-surface'
+            ? ''
+            : 'text-muted-foreground'
         }
       `}
     >
       {children}
-    </button>
+    </Button>
   )
 }
 
@@ -157,32 +113,33 @@ function FeelingCard({ item }) {
           </span>
         )}
 
-        <button
-          type="button"
-          aria-label={`Save ${item.title}`}
-          onClick={() => setSaved(!saved)}
-          className="
-            absolute
-            right-3
-            top-3
-            flex
-            size-9
-            items-center
-            justify-center
-            rounded-full
-            bg-background/90
-            shadow-sm
-            backdrop-blur
-            transition-transform
-            active:scale-[0.94]
-          "
-        >
-          <Heart
-            className={`size-4 ${
-              saved ? 'fill-primary text-primary' : ''
-            }`}
-          />
-        </button>
+<Button
+  type="button"
+  size="icon-sm"
+  variant="ghost"
+  aria-label={`Save ${item.title}`}
+  onClick={() => setSaved(!saved)}
+  className="
+    absolute
+    right-3
+    top-3
+    size-9
+    rounded-full
+    bg-background/90
+    shadow-sm
+    backdrop-blur
+    hover:bg-background
+    active:scale-[0.94]
+  "
+>
+  <Heart
+    className={`size-4 ${
+      saved
+        ? 'fill-primary text-primary'
+        : ''
+    }`}
+  />
+</Button>
 
         <span className="absolute bottom-3 left-3 rounded-full bg-background/90 px-2.5 py-1 text-[10px]">
           See original
@@ -217,310 +174,132 @@ function FeelingCard({ item }) {
   )
 }
 
-function HotelCard({ hotel, onCompare }) {
-  const [compared, setCompared] = useState(false)
-
-  const handleCompare = () => {
-    if (!compared) {
-      onCompare()
-    }
-
-    setCompared(!compared)
-  }
-
-  return (
-    <article className="rounded-2xl border border-border bg-background p-3 shadow-sm">
-      <div className="flex gap-3">
-        <img
-          src={hotel.image}
-          alt={hotel.title}
-          className="size-24 shrink-0 rounded-xl object-cover"
-        />
-
-        <div className="min-w-0 flex-1">
-          <div className="flex justify-between gap-2">
-            <h3 className="font-bold leading-tight">
-              {hotel.title}
-            </h3>
-
-            <span className="shrink-0 text-sm">
-              {hotel.rating} ★
-            </span>
-          </div>
-
-          <p className="mt-1 text-xs font-medium text-secondary">
-            {hotel.city}
-          </p>
-
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            {hotel.description}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-3 flex flex-wrap items-baseline gap-2 text-xs text-muted-foreground">
-        <span>Base ${hotel.base}</span>
-        <span>+ Taxes ${hotel.taxes}</span>
-
-        <strong className="text-sm text-foreground">
-          Final ${hotel.base + hotel.taxes}
-        </strong>
-      </div>
-
-      <div className="mt-3 flex gap-2">
-        <button
-          type="button"
-          onClick={handleCompare}
-          className={`
-            min-h-11
-            flex-1
-            rounded-xl
-            border
-            px-3
-            py-2
-            text-sm
-            font-medium
-            transition-all
-            touch-manipulation
-            active:scale-[0.98]
-
-            ${
-              compared
-                ? 'border-secondary bg-secondary-muted text-secondary'
-                : 'border-border bg-background hover:bg-surface'
-            }
-          `}
-        >
-          {compared
-            ? 'Added to compare'
-            : 'Add to compare'}
-        </button>
-
-        <button
-          type="button"
-          className="
-            min-h-11
-            rounded-full
-            bg-primary
-            px-5
-            py-2
-            text-sm
-            font-semibold
-            text-primary-foreground
-            shadow-sm
-            transition-transform
-            touch-manipulation
-            active:scale-[0.98]
-          "
-        >
-          Book now
-        </button>
-      </div>
-    </article>
-  )
-}
 
 export default function Page() {
+
+  const router = useRouter()
+
+  const [search, setSearch] = useState({
+    destination: {
+      id: 'yogyakarta',
+      city: 'Yogyakarta',
+      country: 'Indonesia',
+      label: 'Yogyakarta, Indonesia',
+    },
+    checkIn: '2026-09-22',
+    checkOut: '2026-09-26',
+    guests: 2,
+    rooms: 1,
+  })
+
   const [activeTag, setActiveTag] = useState(
     'For your profile'
   )
 
-  const [compared, setCompared] = useState(0)
+  const [compared, setCompared] = useState([])
 
+  const toggleCompare = (id) => {
+  setCompared((current) => {
+    if (current.includes(id)) {
+      return current.filter(
+        (item) => item !== id
+      )
+    }
+
+    if (current.length >= 3) {
+      return current
+    }
+
+    return [...current, id]
+  })
+}
   return (
     <main className="min-h-screen bg-background pb-24 text-foreground md:mx-auto md:max-w-md md:border-x md:border-border">
 
       {/* HEADER */}
-<header
-  className="
-    sticky
-    top-0
-    z-50
-    flex
-    items-center
-    justify-between
-    border-b
-    border-border
-    bg-background/95
-    px-5
-    py-4
-    backdrop-blur
-  "
->
-        <div className="flex items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Compass className="size-5" />
-          </span>
+      
+<AppHeader action="filter" />
 
-          <div>
-            <p className="font-bold tracking-tight">
-              TravelXXX
+{/* HERO + SEARCH */}
+<section className="relative">
+ {/* HERO */}
+<div className="relative h-[200px] overflow-hidden">
+  <img
+    src="https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    alt="Travel destination"
+    className="w-full h-full object-cover object-bottom"
+  />
+
+  {/* Contrast overlay */}
+  <div className="absolute inset-0 bg-black/0" />
+
+  {/* Fade into page background */}
+  <div className="absolute inset-x-0 bottom-0 h-[110px] bg-gradient-to-t from-background via-background/80 to-transparent" />
+</div>
+
+  {/* SEARCH */}
+  <div className="relative z-10 mx-5 -mt-24">
+    <section className="rounded-2xl border border-border bg-background p-4 shadow-md">
+
+            <div>
+            <p className="text-xs font-semibold text-secondary">
+              Where will you stay next?
             </p>
 
-            <p className="text-xs text-muted-foreground">
-              Find your kind of stay
-            </p>
+            <h2 className="mt-1 text-2xl font-bold mb-4">
+              Find your perfect stay
+            </h2>
           </div>
-        </div>
+          
+      <SearchForm
+        value={search}
+        onChange={setSearch}
+        onSubmit={() => {
+          const params = new URLSearchParams({
+            destination: search.destination.id,
+            checkIn: search.checkIn,
+            checkOut: search.checkOut,
+            guests: String(search.guests),
+            rooms: String(search.rooms),
+          })
 
-        <button
-          type="button"
-          className="
-            flex
-            min-h-11
-            min-w-11
-            items-center
-            justify-center
-            rounded-full
-            border
-            border-border
-            bg-background
-            text-foreground
-            transition-all
-            touch-manipulation
-            hover:bg-surface
-            active:scale-[0.96]
-          "
-          aria-label="Open filters"
-        >
-          ☷
-        </button>
-      </header>
-
-      {/* HERO */}
-      <section className="px-5 pb-0 pt-0">
-
-<Link
-  href="/onboarding-survey"
-  className="
-    mt-5
-    flex
-    min-h-16
-    w-full
-    items-center
-    gap-3
-    rounded-2xl
-    bg-secondary
-    px-4
-    py-3.5
-    text-left
-    text-secondary-foreground
-    shadow-sm
-    transition-transform
-    touch-manipulation
-    active:scale-[0.99]
-  "
->
-  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-background/10 text-xl">
-    ✦
-  </span>
-
-  <span className="flex-1">
-    <strong className="block text-sm">
-      Magic trip match planner
-    </strong>
-  </span>
-
-  <ArrowRight className="size-4" />
-</Link>
-      </section>
-
-      {/* SEARCH */}
-      <section className="mx-5 mt-7 rounded-2xl border border-border bg-background p-4 shadow-sm">
-        <h2 className="text-lg font-bold">
-          Search stays
-        </h2>
-
-        <p className="text-sm text-muted-foreground">
-          Compare the full price before you book.
-        </p>
-
-        <div className="mt-4 flex flex-col gap-2">
-          <select className="min-h-12 rounded-xl border border-border bg-background px-3 py-3 text-sm outline-none transition focus:border-primary">
-            <option>
-              Where do you want to go?
-            </option>
-
-            <option>
-              Yogyakarta, Indonesia
-            </option>
-
-            <option>
-              Bali, Indonesia
-            </option>
-
-            <option>
-              Lisbon, Portugal
-            </option>
-          </select>
-
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              type="date"
-              defaultValue="2026-09-22"
-              className="min-h-12 rounded-xl border border-border bg-background px-3 py-3 text-sm outline-none transition focus:border-primary"
-            />
-
-            <input
-              type="date"
-              defaultValue="2026-09-26"
-              className="min-h-12 rounded-xl border border-border bg-background px-3 py-3 text-sm outline-none transition focus:border-primary"
-            />
-          </div>
-
-          <div className="flex min-h-12 items-center justify-between rounded-xl border border-border px-3 py-2.5 text-sm">
-            <span>2 guests, 1 room</span>
-
-            <span className="text-muted-foreground">
-              − &nbsp; +
-            </span>
-          </div>
-
-          <button
-            type="button"
-            className="
-              mt-1
-              flex
-              min-h-14
-              w-full
-              items-center
-              justify-center
-              rounded-full
-              bg-primary
-              px-5
-              text-sm
-              font-bold
-              text-primary-foreground
-              shadow-sm
-              transition-transform
-              touch-manipulation
-              active:scale-[0.98]
-            "
-          >
-            Search hotels
-          </button>
-        </div>
-      </section>
+          router.push(
+            `/search?${params.toString()}`
+          )
+        }}
+      />
+    </section>
+  </div>
+</section>
 
       {/* ACTIVE PROFILE */}
       <section className="mt-8 px-5">
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
-              Your active trip profile
+              Discover your journey.
             </p>
 
             <h2 className="mt-1 text-2xl font-bold">
-              Explore places with a point of view
+              Where will you go next?
             </h2>
           </div>
 
-          <button
-            type="button"
-            className="shrink-0 text-sm font-medium underline underline-offset-4"
-          >
-            Edit profile
-          </button>
+<Button
+  type="button"
+  variant="link"
+  className="
+    h-auto
+    min-h-0
+    shrink-0
+    p-0
+    text-sm
+    font-medium
+    text-foreground
+  "
+>
+  Edit profile
+</Button>
         </div>
 
         <div className="mt-4 rounded-2xl border border-border bg-background p-4 shadow-sm">
@@ -538,7 +317,75 @@ export default function Page() {
           </p>
         </div>
 
-        <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+     {/* MAGIC TRIP RECOMENDATION  */}      
+      <Link
+        href="/onboarding-survey"
+        className="
+          mt-5
+          flex
+          min-h-16
+          w-full
+          items-center
+          gap-3
+          rounded-2xl
+          bg-secondary
+          px-4
+          py-3.5
+          text-left
+          text-secondary-foreground
+          shadow-sm
+          transition-transform
+          touch-manipulation
+          active:scale-[0.99]
+        "
+      >
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-background/10 text-xl">
+          ✦
+        </span>
+
+        <span className="flex-1">
+          <strong className="block text-sm">
+            Help me decide where to go!
+          </strong>
+        </span>
+
+        <ArrowRight className="size-4" />
+      </Link>
+      </section>
+
+      {/* EXPLORE BY FEELING */}
+      <section className="mt-9">
+        <div className="flex items-end justify-between px-5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
+              Curated for you
+            </p>
+
+            <h2 className="mt-1 text-2xl font-bold">
+              Explore by feeling
+            </h2>
+          </div>
+
+          <Button
+            type="button"
+            variant="link"
+            className="
+              h-auto
+              min-h-0
+              p-0
+              text-sm
+              font-medium
+              text-secondary
+              no-underline
+            "
+          >
+            See all
+          </Button>
+        </div>
+
+        
+        <div className="mt-4 flex snap-x gap-3 overflow-x-auto px-5 pb-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+
           {[
             'For your profile',
             'Walkable',
@@ -555,30 +402,9 @@ export default function Page() {
             </Chip>
           ))}
         </div>
-      </section>
-
-      {/* EXPLORE BY FEELING */}
-      <section className="mt-9">
-        <div className="flex items-end justify-between px-5">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
-              Curated for you
-            </p>
-
-            <h2 className="mt-1 text-2xl font-bold">
-              Explore by feeling
-            </h2>
-          </div>
-
-          <button
-            type="button"
-            className="text-sm font-medium text-secondary"
-          >
-            See all
-          </button>
-        </div>
 
         <div className="mt-4 flex snap-x gap-3 overflow-x-auto px-5 pb-2">
+          
           {feelings.map((item) => (
             <FeelingCard
               key={item.title}
@@ -602,7 +428,7 @@ export default function Page() {
           </div>
 
           <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-xs text-secondary-foreground">
-            {compared} selected
+            {compared.length} selected
           </span>
         </div>
 
@@ -610,30 +436,6 @@ export default function Page() {
           Keep your favorite prices together before
           deciding.
         </p>
-
-        <button
-          type="button"
-          className="
-            mt-4
-            min-h-12
-            w-full
-            rounded-full
-            border
-            border-secondary
-            bg-background
-            px-4
-            py-2.5
-            text-sm
-            font-semibold
-            text-secondary
-            transition-all
-            touch-manipulation
-            hover:bg-secondary-muted
-            active:scale-[0.98]
-          "
-        >
-          View comparison
-        </button>
       </section>
 
       {/* HOTELS */}
@@ -648,22 +450,54 @@ export default function Page() {
           </h2>
 
           <span className="shrink-0 text-xs text-muted-foreground">
-            {compared} selected
+            {compared.length} selected
           </span>
         </div>
 
         <div className="mt-4 flex flex-col gap-3">
-          {hotels.map((hotel) => (
+          {hotels.slice(0, 5).map((hotel) => (
             <HotelCard
-              key={hotel.title}
+              key={hotel.id}
               hotel={hotel}
+              compared={compared.includes(hotel.id)}
               onCompare={() =>
-                setCompared((value) => value + 1)
+                toggleCompare(hotel.id)
               }
             />
           ))}
         </div>
+
+        <div className="mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => {
+              const params = new URLSearchParams({
+                destination: search.destination.id,
+                checkIn: search.checkIn,
+                checkOut: search.checkOut,
+                guests: String(search.guests),
+                rooms: String(search.rooms),
+              })
+
+              router.push(
+                `/search?${params.toString()}`
+              )
+            }}
+          >
+            See all stays
+          </Button>
+        </div>
       </section>
+
+      {/* COMPARE BAR */}   
+      <CompareBar
+        count={compared.length}
+        onCompare={() => {
+          console.log('Open comparison')
+        }}
+      />
 
       {/* FEATURED TRIPS */}
       <section className="mt-10 px-5">
@@ -672,80 +506,36 @@ export default function Page() {
             Featured trips
           </h2>
 
-          <button
-            type="button"
-            className="text-sm font-medium text-secondary"
-          >
-            See all
-          </button>
+      <Button
+        type="button"
+        variant="link"
+        className="
+          h-auto
+          min-h-0
+          p-0
+          text-sm
+          font-medium
+          text-secondary
+          no-underline
+        "
+      >
+        See all
+      </Button>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3">
-          {trips.map(([title, location, image]) => (
-            <article
-              key={title}
-              className="
-                flex
-                items-center
-                gap-3
-                rounded-2xl
-                border
-                border-border
-                bg-background
-                p-2
-                shadow-sm
-                transition-transform
-                active:scale-[0.99]
-              "
-            >
-              <img
-                src={image}
-                alt=""
-                className="size-16 rounded-xl object-cover"
-              />
-
-              <div className="flex-1">
-                <h3 className="font-bold">
-                  {title}
-                </h3>
-
-                <p className="text-xs text-muted-foreground">
-                  {location}
-                </p>
-              </div>
-
-              <ArrowRight className="mr-2 size-4 text-secondary" />
-            </article>
-          ))}
-        </div>
+    {/* FEATURED TRIP */}
+    <div className="mt-4 flex flex-col gap-3">
+      {trips.slice(0, 4).map((trip) => (
+        <FeaturedTripCard
+          key={trip.id}
+          trip={trip}
+        />
+      ))}
+    </div>
       </section>
 
       {/* BOTTOM NAV */}
-      <nav className="fixed inset-x-0 bottom-0 mx-auto flex max-w-md justify-around border-t border-border bg-background/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
-        <span className="text-center text-xs font-semibold text-secondary">
-          ⌕
-          <br />
-          Explore
-        </span>
-
-        <span className="text-center text-xs text-muted-foreground">
-          ♡
-          <br />
-          Saved
-        </span>
-
-        <span className="text-center text-xs text-muted-foreground">
-          ⌖
-          <br />
-          Trips
-        </span>
-
-        <span className="text-center text-xs text-muted-foreground">
-          ♙
-          <br />
-          Profile
-        </span>
-      </nav>
+<BottomNav active="explore" />
     </main>
   )
 }

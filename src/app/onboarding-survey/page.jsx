@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import {
-  ArrowLeft,
   ArrowRight,
   Check,
   Compass,
   Sparkles,
 } from 'lucide-react'
 
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+
+import { Button } from '@/components/ui/button'
+
+import AppHeader from '@/components/AppHeader'
 
 const sections = [
   {
@@ -79,33 +82,27 @@ const sections = [
 
 function Choice({ label, selected, onClick }) {
   return (
-    <button
+    <Button
       type="button"
       aria-pressed={selected}
       onClick={onClick}
-      className={`
-        flex
+      variant={selected ? 'secondary' : 'outline'}
+      className="
         min-h-16
         w-full
-        items-center
         justify-between
         rounded-2xl
-        border
         px-4
         text-left
         text-base
-        transition-all
-        touch-manipulation
+        font-medium
+        whitespace-normal
         active:scale-[0.99]
-
-        ${
-          selected
-            ? 'border-secondary bg-secondary text-secondary-foreground shadow-sm'
-            : 'border-border bg-background text-foreground hover:bg-surface'
-        }
-      `}
+      "
     >
-      <span>{label}</span>
+      <span className="flex-1 text-left">
+        {label}
+      </span>
 
       {selected ? (
         <Check
@@ -118,102 +115,20 @@ function Choice({ label, selected, onClick }) {
           className="size-5 shrink-0 rounded-full border border-border"
         />
       )}
-    </button>
+    </Button>
   )
 }
 
-function OnboardingHeader({
-  showBack = true,
-  onBack,
-  stepLabel,
-}) {
-  return (
-    <header className="shrink-0 flex items-center justify-between border-b border-border bg-background px-5 py-4">
-      <div className="flex min-w-0 items-center gap-3">
-        {showBack && (
-          onBack ? (
-            <button
-              type="button"
-              onClick={onBack}
-              aria-label="Go back"
-              className="
-                flex
-                min-h-11
-                min-w-11
-                shrink-0
-                items-center
-                justify-center
-                rounded-full
-                border
-                border-border
-                bg-background
-                text-foreground
-                transition-all
-                touch-manipulation
-                hover:bg-surface
-                active:scale-[0.96]
-              "
-            >
-              <ArrowLeft className="size-5" />
-            </button>
-          ) : (
-            <Link
-              href="/"
-              aria-label="Back to homepage"
-              className="
-                flex
-                min-h-11
-                min-w-11
-                shrink-0
-                items-center
-                justify-center
-                rounded-full
-                border
-                border-border
-                bg-background
-                text-foreground
-                transition-all
-                touch-manipulation
-                hover:bg-surface
-                active:scale-[0.96]
-              "
-            >
-              <ArrowLeft className="size-5" />
-            </Link>
-          )
-        )}
-
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Compass className="size-5" />
-          </span>
-
-          <div className="min-w-0">
-            <p className="truncate font-bold tracking-tight">
-              TravelXXX
-            </p>
-
-            <p className="truncate text-xs text-muted-foreground">
-              Find your kind of stay
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {stepLabel && (
-        <span className="ml-3 shrink-0 text-xs font-medium text-muted-foreground">
-          {stepLabel}
-        </span>
-      )}
-    </header>
-  )
-}
 
 function Intro({ onStart }) {
   return (
     <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-background text-foreground md:mx-auto md:max-w-md">
 
-<OnboardingHeader />
+<AppHeader
+  showBack
+  backHref="/"
+  sticky={false}
+/>
 
       <section className="flex flex-1 flex-col justify-center px-5 pb-32 pt-12">
         <div className="mb-10 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
@@ -243,21 +158,24 @@ function Intro({ onStart }) {
       </section>
 
       <footer className="shrink-0 bg-background px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4">
-        <button
-          type="button"
-          onClick={onStart}
-          className="flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 text-base font-bold text-primary-foreground shadow-sm transition-transform active:scale-[0.98]"
-        >
-          Let&apos;s go
+<Button
+  type="button"
+  size="lg"
+  onClick={onStart}
+  className="w-full font-bold"
+>
+  Let&apos;s go
 
-          <ArrowRight className="size-5" />
-        </button>
+  <ArrowRight className="size-5" />
+</Button>
       </footer>
     </div>
   )
 }
 
 function Matching() {
+  const router = useRouter()
+
   const [message, setMessage] = useState(
     'Reading your travel style...'
   )
@@ -271,20 +189,29 @@ function Matching() {
 
     let index = 0
 
-    const timer = setInterval(() => {
+    const messageTimer = setInterval(() => {
       index = (index + 1) % messages.length
       setMessage(messages[index])
     }, 900)
 
-    return () => clearInterval(timer)
-  }, [])
+    const redirectTimer = setTimeout(() => {
+      router.push('/search-personalize')
+    }, 2800)
+
+    return () => {
+      clearInterval(messageTimer)
+      clearTimeout(redirectTimer)
+    }
+  }, [router])
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background px-5 text-center text-foreground md:mx-auto md:max-w-md">
       <div className="relative mb-8 flex size-28 items-center justify-center rounded-[2.5rem] bg-secondary text-secondary-foreground animate-pulse">
         <Sparkles
           className="size-12 animate-spin"
-          style={{ animationDuration: '3s' }}
+          style={{
+            animationDuration: '3s',
+          }}
         />
 
         <span className="absolute -right-2 -top-2 size-4 rounded-full bg-primary animate-bounce" />
@@ -368,9 +295,12 @@ export default function Page() {
     <main className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-background text-foreground md:mx-auto md:max-w-md">
       {/* HEADER */}
       
-<OnboardingHeader
+<AppHeader
+  showBack
   onBack={step > 0 ? back : undefined}
-  stepLabel={`${step + 1} / ${sections.length}`}
+  backHref="/"
+  trailing={`${step + 1} / ${sections.length}`}
+  sticky={false}
 />
 
       {/* QUESTION */}
@@ -426,49 +356,43 @@ export default function Page() {
 
       {/* FOOTER */}
       <footer className="shrink-0 border-t border-border bg-background px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4">
-        <button
-          type="button"
-          onClick={next}
-          disabled={selected.length === 0}
-          className="
-            flex
-            min-h-14
-            w-full
-            items-center
-            justify-center
-            gap-2
-            rounded-full
-            bg-primary
-            px-5
-            text-base
-            font-bold
-            text-primary-foreground
-            shadow-sm
-            transition-opacity
-            disabled:cursor-not-allowed
-            disabled:opacity-40
-          "
-        >
-          {step === sections.length - 1 ? (
-            <>
-              <Sparkles className="size-5" />
-              Find my matches
-            </>
-          ) : (
-            <>
-              Continue
-              <ArrowRight className="size-5" />
-            </>
-          )}
-        </button>
+      <Button
+        type="button"
+        size="lg"
+        onClick={next}
+        disabled={selected.length === 0}
+        className="w-full font-bold"
+      >
+        {step === sections.length - 1 ? (
+          <>
+            <Sparkles className="size-5" />
+            Find my matches
+          </>
+        ) : (
+          <>
+            Continue
+            <ArrowRight className="size-5" />
+          </>
+        )}
+      </Button>
 
-        <button
-          type="button"
-          onClick={() => setScreen('matching')}
-          className="mt-2 min-h-11 w-full text-sm text-muted-foreground underline underline-offset-4"
-        >
-          Skip for now
-        </button>
+      <Button
+        type="button"
+        variant="link"
+        onClick={() => setScreen('matching')}
+        className="
+          mt-2
+          h-auto
+          min-h-11
+          w-full
+          p-0
+          text-sm
+          font-normal
+          text-muted-foreground
+        "
+      >
+        Skip for now
+      </Button>
       </footer>
     </main>
   )
