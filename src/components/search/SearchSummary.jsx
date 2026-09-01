@@ -46,11 +46,14 @@ export default function SearchSummary({
   filterCount = 0,
   onEdit,
   onOpenFilters,
+  variant = 'search',
 }) {
   const dateLabel = formatSearchDates(
     search.checkIn,
     search.checkOut
   )
+
+  const isHotel = variant === 'hotel'
 
   return (
     <section className="border-t border-border px-5 pb-0 pt-4">
@@ -66,7 +69,11 @@ export default function SearchSummary({
               text-left
               active:opacity-70
             "
-            aria-label="Edit search"
+            aria-label={
+              isHotel
+                ? 'Change stay details'
+                : 'Edit search'
+            }
           >
             <p className="truncate text-xs font-medium text-muted-foreground">
               {search.destination?.label}
@@ -84,25 +91,37 @@ export default function SearchSummary({
             </p>
           </button>
 
-          <Button
-            type="button"
-            variant={
-              filterCount > 0
-                ? 'secondary'
-                : 'outline'
-            }
-            size="sm"
-            onClick={onOpenFilters}
-            className="shrink-0 rounded-full"
-          >
-            <Filter className="size-3.5" />
+          {isHotel ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onEdit}
+              className="shrink-0 rounded-full"
+            >
+              Change
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant={
+                filterCount > 0
+                  ? 'secondary'
+                  : 'outline'
+              }
+              size="sm"
+              onClick={onOpenFilters}
+              className="shrink-0 rounded-full"
+            >
+              <Filter className="size-3.5" />
 
-            Filter
+              Filter
 
-            {filterCount > 0 && (
-              <span>{filterCount}</span>
-            )}
-          </Button>
+              {filterCount > 0 && (
+                <span>{filterCount}</span>
+              )}
+            </Button>
+          )}
 
         </div>
       </div>

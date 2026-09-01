@@ -6,6 +6,10 @@ import {
   useSearchParams,
 } from 'next/navigation'
 
+import {
+  getDefaultStayDates,
+} from '@/lib/defaultStayDates'
+
 import { Button } from '@/components/ui/button'
 
 import { hotels } from '@/data/hotels'
@@ -20,9 +24,16 @@ import FilterSheet from '@/components/search/FilterSheet'
 import EditSearchSheet from '@/components/search/EditSearchSheet'
 import SortControls from '@/components/search/SortControls'
 
+function formatDateInput(date) {
+  return date.toISOString().split('T')[0]
+}
+
+
 function SearchContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+
+  const defaultStayDates = getDefaultStayDates()
 
   const destinationId =
     searchParams.get('destination') ??
@@ -34,21 +45,21 @@ function SearchContent() {
         destination.id === destinationId
     ) ?? destinations[0]
 
-  const [search, setSearch] = useState({
-    destination: initialDestination,
-    checkIn:
-      searchParams.get('checkIn') ??
-      '2026-09-22',
-    checkOut:
-      searchParams.get('checkOut') ??
-      '2026-09-26',
-    guests: Number(
-      searchParams.get('guests') ?? 2
-    ),
-    rooms: Number(
-      searchParams.get('rooms') ?? 1
-    ),
-  })
+    const [search, setSearch] = useState({
+      destination: initialDestination,
+      checkIn:
+        searchParams.get('checkIn') ??
+        defaultStayDates.checkIn,
+      checkOut:
+        searchParams.get('checkOut') ??
+        defaultStayDates.checkOut,
+      guests: Number(
+        searchParams.get('guests') ?? 2
+      ),
+      rooms: Number(
+        searchParams.get('rooms') ?? 1
+      ),
+    })
 
   const [draftSearch, setDraftSearch] =
     useState(search)
@@ -69,6 +80,10 @@ function SearchContent() {
 
   const [compared, setCompared] =
     useState([])
+
+  const [currency, setCurrency] = useState(
+    searchParams.get('currency') ?? 'USD'
+  )
 
   const activeFilterCount = [
     filters.maxPrice,
@@ -104,6 +119,7 @@ function SearchContent() {
       rooms: String(
         draftSearch.rooms
       ),
+      currency,
     })
 
     router.replace(
@@ -112,6 +128,23 @@ function SearchContent() {
 
     setEditSearchOpen(false)
   }
+
+  const changeCurrency = (nextCurrency) => {
+  setCurrency(nextCurrency)
+
+  const params = new URLSearchParams({
+    destination: search.destination.id,
+    checkIn: search.checkIn,
+    checkOut: search.checkOut,
+    guests: String(search.guests),
+    rooms: String(search.rooms),
+    currency: nextCurrency,
+  })
+
+  router.replace(
+    `/search?${params.toString()}`
+  )
+}
 
   const toggleCompare = (id) => {
     setCompared((current) => {
@@ -179,16 +212,32 @@ function SearchContent() {
     return 0
   })
 
+
+  const getHotelHref = (hotelId) => {
+  const params = new URLSearchParams({
+    destination: search.destination.id,
+    checkIn: search.checkIn,
+    checkOut: search.checkOut,
+    guests: String(search.guests),
+    rooms: String(search.rooms),
+    currency,
+  })
+
+  return `/hotel/${hotelId}?${params.toString()}`
+}
+
   return (
     <main className="min-h-screen bg-background pb-28 text-foreground md:mx-auto md:max-w-md md:border-x md:border-border">
       {/* HEADER */}
       <AppHeader
         showBack
         backHref="/"
+        currency={currency}
+        onCurrencyChange={changeCurrency}
       />
 
       {/* SEARCH SUMMARY */}
-      <div className="sticky top-[73px] z-40 bg-background/95 backdrop-blur">
+      <div className="sticky top-16 z-40 bg-background/95 backdrop-blur">
         <SearchSummary
           search={search}
           filterCount={
@@ -206,7 +255,7 @@ function SearchContent() {
         <div className="mt-2 flex items-end justify-between gap-4">
           <div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Ranked around your trip preferences.
+              Stays available for your search.
             </p>
           </div>
 
@@ -225,55 +274,71 @@ function SearchContent() {
         />
       </section>
 
-      {/* HOTEL LIST */}
-      <section
-        className="mt-4 flex flex-col gap-3 px-5"
-        aria-label="Hotel results"
+ {/* HOTEL LIST */}
+<section
+  className="mt-4 flex flex-col gap-3 px-5"
+  aria-label="Hotel results"
+>
+  {sortedHotels.length > 0 ? (
+    sortedHotels.map((hotel) => {
+      const finalPrice =
+        hotel.pricing.base +
+        hotel.pricing.taxes
+
+      let badge = null
+
+      if (hotel.rating >= 4.7) {
+        badge = 'Top rated'
+      } else if (
+        finalPrice <= 60
+      ) {
+        badge = 'Great value'
+      }
+
+      return (
+    <HotelCard
+      key={hotel.id}
+      hotel={hotel}
+      badge={badge}
+      currency={currency}
+      href={getHotelHref(hotel.id)}
+      compared={compared.includes(
+        hotel.id
+      )}
+      onCompare={() =>
+        toggleCompare(
+          hotel.id
+        )
+      }
+    />
+      )
+    })
+  ) : (
+    <div className="rounded-2xl border border-border bg-surface p-5 text-center">
+      <p className="font-bold">
+        No stays match these filters.
+      </p>
+
+      <p className="mt-1 text-sm text-muted-foreground">
+        Try adjusting your price or rating filters.
+      </p>
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() =>
+          setFilters({
+            maxPrice: null,
+            minRating: null,
+          })
+        }
+        className="mt-4"
       >
-        {sortedHotels.length >
-        0 ? (
-          sortedHotels.map(
-            (hotel) => (
-              <HotelCard
-                key={hotel.id}
-                hotel={hotel}
-                compared={compared.includes(
-                  hotel.id
-                )}
-                onCompare={() =>
-                  toggleCompare(
-                    hotel.id
-                  )
-                }
-              />
-            )
-          )
-        ) : (
-          <div className="rounded-2xl border border-border bg-surface p-5 text-center">
-            <p className="font-bold">
-              No stays match these filters.
-            </p>
-
-            <p className="mt-1 text-sm text-muted-foreground">
-              Try adjusting your price or rating filters.
-            </p>
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                setFilters({
-                  maxPrice: null,
-                  minRating: null,
-                })
-              }
-              className="mt-4"
-            >
-              Clear filters
-            </Button>
-          </div>
-        )}
-      </section>
+        Clear filters
+      </Button>
+    </div>
+  )}
+</section>
 
       {/* SPACE FOR FIXED UI */}
       <div className="h-8" />

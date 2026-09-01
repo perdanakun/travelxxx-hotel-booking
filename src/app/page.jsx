@@ -10,6 +10,10 @@ import {
   Share2,
 } from 'lucide-react'
 
+import {
+  getDefaultStayDates,
+} from '@/lib/defaultStayDates'
+
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -179,6 +183,9 @@ export default function Page() {
 
   const router = useRouter()
 
+  const defaultStayDates =
+  getDefaultStayDates()
+
   const [search, setSearch] = useState({
     destination: {
       id: 'yogyakarta',
@@ -186,8 +193,10 @@ export default function Page() {
       country: 'Indonesia',
       label: 'Yogyakarta, Indonesia',
     },
-    checkIn: '2026-09-22',
-    checkOut: '2026-09-26',
+    checkIn:
+      defaultStayDates.checkIn,
+    checkOut:
+      defaultStayDates.checkOut,
     guests: 2,
     rooms: 1,
   })

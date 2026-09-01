@@ -4,22 +4,23 @@ import Link from 'next/link'
 import {
   ArrowLeft,
   Compass,
-  SlidersHorizontal,
 } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
 
 export default function AppHeader({
   showBack = false,
   backHref = '/',
   onBack,
-  action,
-  onAction,
   trailing,
   sticky = true,
+
+  currency,
+  onCurrencyChange,
 }) {
   const backButtonClasses = `
     flex
-    min-h-11
-    min-w-11
+    size-10
     shrink-0
     items-center
     justify-center
@@ -34,28 +35,34 @@ export default function AppHeader({
     active:scale-[0.96]
   `
 
+  const showCurrencySwitcher =
+    currency &&
+    onCurrencyChange
+
   return (
-    <header
-      className={`
-        ${
-          sticky
-            ? 'sticky top-0 z-50'
-            : 'shrink-0'
-        }
-        flex
-        items-center
-        justify-between
-        border-b
-        border-border
-        bg-background/95
-        px-5
-        py-4
-        backdrop-blur
-      `}
-    >
+<header
+  className={`
+    ${
+      sticky
+        ? 'sticky top-0 z-50'
+        : 'shrink-0'
+    }
+    flex
+    h-16
+    items-center
+    justify-between
+    gap-3
+    border-b
+    border-border
+    bg-background/95
+    px-5
+    backdrop-blur
+  `}
+>
+      {/* LEFT */}
       <div className="flex min-w-0 items-center gap-3">
-        {showBack && (
-          onBack ? (
+        {showBack &&
+          (onBack ? (
             <button
               type="button"
               onClick={onBack}
@@ -72,8 +79,7 @@ export default function AppHeader({
             >
               <ArrowLeft className="size-5" />
             </Link>
-          )
-        )}
+          ))}
 
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
@@ -92,6 +98,28 @@ export default function AppHeader({
         </div>
       </div>
 
+      {/* RIGHT */}
+      <div className="flex shrink-0 items-center gap-2">
+        {showCurrencySwitcher && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() =>
+              onCurrencyChange(
+                currency === 'USD'
+                  ? 'IDR'
+                  : 'USD'
+              )
+            }
+            aria-label={`Change currency from ${currency}`}
+            className="h-9 min-w-[58px] rounded-xl px-3 text-xs font-semibold"
+          >
+            {currency}
+          </Button>
+        )}
+
+        {trailing}
+      </div>
     </header>
   )
 }

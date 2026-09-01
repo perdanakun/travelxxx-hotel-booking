@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowRight, GitCompare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default function CompareBar({
@@ -11,31 +12,36 @@ export default function CompareBar({
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-[67px] z-40 mx-auto max-w-md px-5">
-      <Button
-        type="button"
-        variant="secondary"
-        onClick={onCompare}
-        className="
-          min-h-12
-          w-full
-          justify-between
-          px-5
-          text-sm
-          font-semibold
-          shadow-lg
-        "
-      >
-        <span>
-          {count}{' '}
-          {count === 1
-            ? 'stay'
-            : 'stays'}{' '}
-          selected
-        </span>
+<div className="fixed bottom-[67px] left-1/2 z-40 -translate-x-1/2">
+  <Button
+    type="button"
+    variant="secondary"
+    onClick={onCompare}
+    className="
+      flex
+      h-11
+      w-auto
+      items-center
+      gap-2
+      rounded-full
+      px-4
+      text-sm
+      font-semibold
+      shadow-lg
+    "
+  >
+    <span className="relative flex items-center justify-center">
+      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+        {count}
+      </span>
+    </span>
 
-        <span>Compare now →</span>
-      </Button>
-    </div>
+    <span className="flex items-center gap-1.5">
+      Compare now
+      <ArrowRight className="h-4 w-4" />
+    </span>
+  </Button>
+</div>
+
   )
 }

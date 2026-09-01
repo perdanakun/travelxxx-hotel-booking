@@ -40,6 +40,8 @@ const areaMatch = {
   ],
 }
 
+
+
 function SearchPersonalizeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -269,35 +271,38 @@ function SearchPersonalizeContent() {
         className="mt-4 flex flex-col gap-3 px-5"
         aria-label="Recommended hotels"
       >
-        {sortedHotels.length >
-        0 ? (
-          sortedHotels.map(
-            (hotel) => (
+        {sortedHotels.length > 0 ? (
+          sortedHotels.map((hotel, index) => {
+            let badge = null
+
+            if (index === 0) {
+              badge = 'Best match'
+            } else if (index <= 2) {
+              badge = 'Recommended'
+            }
+
+            return (
               <HotelCard
                 key={hotel.id}
                 hotel={hotel}
+                badge={badge}
                 compared={compared.includes(
                   hotel.id
                 )}
                 onCompare={() =>
-                  toggleCompare(
-                    hotel.id
-                  )
+                  toggleCompare(hotel.id)
                 }
               />
             )
-          )
+          })
         ) : (
           <div className="rounded-2xl border border-border bg-surface p-5 text-center">
             <p className="font-bold">
-              No stays match
-              these filters.
+              No stays match these filters.
             </p>
 
             <p className="mt-1 text-sm text-muted-foreground">
-              Try adjusting your
-              price or rating
-              filters.
+              Try adjusting your price or rating filters.
             </p>
 
             <Button
