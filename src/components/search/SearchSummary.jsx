@@ -56,7 +56,7 @@ export default function SearchSummary({
   const isHotel = variant === 'hotel'
 
   return (
-    <section className="border-t border-border px-5 pb-0 pt-4">
+    <section className="border-border px-5 pb-0 pt-4">
       <div className="rounded-2xl border border-border bg-background p-4 shadow-sm">
         <div className="flex items-center justify-between gap-4">
 

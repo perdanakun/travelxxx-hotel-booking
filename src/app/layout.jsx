@@ -3,23 +3,12 @@ import './globals.css'
 
 export const metadata = {
   title: 'TravelXXX — Find stays that fit your trip',
-  description: 'Discover trustworthy stays, transparent prices, and places matched to how you travel.',
-  generator: 'v0.app',
+
+  description:
+    'Discover trustworthy stays, transparent prices, and places matched to how you travel.',
+
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
+    icon: '/favicon.ico',
     apple: '/apple-icon.png',
   },
 }

@@ -65,6 +65,7 @@ export default function AppHeader({
           (onBack ? (
             <button
               type="button"
+              variant="ghost"
               onClick={onBack}
               aria-label="Go back"
               className={backButtonClasses}
@@ -103,7 +104,7 @@ export default function AppHeader({
         {showCurrencySwitcher && (
           <Button
             type="button"
-            variant="outline"
+            variant="outline-none"
             onClick={() =>
               onCurrencyChange(
                 currency === 'USD'

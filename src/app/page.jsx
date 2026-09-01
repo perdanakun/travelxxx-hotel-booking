@@ -544,7 +544,7 @@ export default function Page() {
       </section>
 
       {/* BOTTOM NAV */}
-<BottomNav active="explore" />
+<BottomNav active="home" />
     </main>
   )
 }

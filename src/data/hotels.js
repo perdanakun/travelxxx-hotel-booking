@@ -59,9 +59,38 @@ export const hotels = [
     ],
 
     amenities: [
-      'Wi-Fi',
-      'Breakfast',
-      'Air conditioning',
+      {
+        id: 'wifi',
+        label: 'Free Wi-Fi',
+      },
+      {
+        id: 'breakfast',
+        label: 'Breakfast',
+      },
+      {
+        id: 'air-conditioning',
+        label: 'Air conditioning',
+      },
+      {
+        id: 'pool',
+        label: 'Swimming pool',
+      },
+      {
+        id: 'restaurant',
+        label: 'Restaurant',
+      },
+      {
+        id: 'garden',
+        label: 'Garden',
+      },
+      {
+        id: 'bicycle-rental',
+        label: 'Bicycle rental',
+      },
+      {
+        id: 'front-desk',
+        label: '24-hour front desk',
+      },
     ],
 
     profileFit: {
@@ -144,9 +173,38 @@ export const hotels = [
     ],
 
     amenities: [
-      'Wi-Fi',
-      'Breakfast',
-      '24-hour front desk',
+      {
+        id: 'wifi',
+        label: 'Free Wi-Fi',
+      },
+      {
+        id: 'breakfast',
+        label: 'Breakfast',
+      },
+      {
+        id: 'front-desk',
+        label: '24-hour front desk',
+      },
+      {
+        id: 'air-conditioning',
+        label: 'Air conditioning',
+      },
+      {
+        id: 'restaurant',
+        label: 'Restaurant',
+      },
+      {
+        id: 'airport-transfer',
+        label: 'Airport transfer',
+      },
+      {
+        id: 'laundry',
+        label: 'Laundry service',
+      },
+      {
+        id: 'parking',
+        label: 'Free parking',
+      },
     ],
 
     profileFit: {
@@ -230,9 +288,38 @@ export const hotels = [
     ],
 
     amenities: [
-      'Wi-Fi',
-      'Pool',
-      'Breakfast',
+      {
+        id: 'wifi',
+        label: 'Free Wi-Fi',
+      },
+      {
+        id: 'pool',
+        label: 'Swimming pool',
+      },
+      {
+        id: 'breakfast',
+        label: 'Breakfast',
+      },
+      {
+        id: 'air-conditioning',
+        label: 'Air conditioning',
+      },
+      {
+        id: 'garden',
+        label: 'Garden',
+      },
+      {
+        id: 'restaurant',
+        label: 'Restaurant',
+      },
+      {
+        id: 'bicycle-rental',
+        label: 'Bicycle rental',
+      },
+      {
+        id: 'front-desk',
+        label: '24-hour front desk',
+      },
     ],
 
     profileFit: {
@@ -315,10 +402,38 @@ export const hotels = [
     ],
 
     amenities: [
-      'Wi-Fi',
-      'Pool',
-      'Breakfast',
-      'Garden',
+      {
+        id: 'wifi',
+        label: 'Free Wi-Fi',
+      },
+      {
+        id: 'pool',
+        label: 'Swimming pool',
+      },
+      {
+        id: 'breakfast',
+        label: 'Breakfast',
+      },
+      {
+        id: 'garden',
+        label: 'Garden',
+      },
+      {
+        id: 'restaurant',
+        label: 'Restaurant',
+      },
+      {
+        id: 'parking',
+        label: 'Free parking',
+      },
+      {
+        id: 'front-desk',
+        label: '24-hour front desk',
+      },
+      {
+        id: 'air-conditioning',
+        label: 'Air conditioning',
+      },
     ],
 
     profileFit: {
@@ -401,10 +516,38 @@ export const hotels = [
     ],
 
     amenities: [
-      'Wi-Fi',
-      'Pool',
-      'Breakfast',
-      'Restaurant',
+      {
+        id: 'wifi',
+        label: 'Free Wi-Fi',
+      },
+      {
+        id: 'pool',
+        label: 'Swimming pool',
+      },
+      {
+        id: 'breakfast',
+        label: 'Breakfast',
+      },
+      {
+        id: 'restaurant',
+        label: 'Restaurant',
+      },
+      {
+        id: 'garden',
+        label: 'Garden',
+      },
+      {
+        id: 'parking',
+        label: 'Free parking',
+      },
+      {
+        id: 'airport-transfer',
+        label: 'Airport transfer',
+      },
+      {
+        id: 'air-conditioning',
+        label: 'Air conditioning',
+      },
     ],
 
     profileFit: {
@@ -487,10 +630,38 @@ export const hotels = [
     ],
 
     amenities: [
-      'Wi-Fi',
-      'Breakfast',
-      'Garden',
-      'Bicycle rental',
+      {
+        id: 'wifi',
+        label: 'Free Wi-Fi',
+      },
+      {
+        id: 'breakfast',
+        label: 'Breakfast',
+      },
+      {
+        id: 'garden',
+        label: 'Garden',
+      },
+      {
+        id: 'bicycle-rental',
+        label: 'Bicycle rental',
+      },
+      {
+        id: 'air-conditioning',
+        label: 'Air conditioning',
+      },
+      {
+        id: 'restaurant',
+        label: 'Restaurant',
+      },
+      {
+        id: 'parking',
+        label: 'Free parking',
+      },
+      {
+        id: 'front-desk',
+        label: '24-hour front desk',
+      },
     ],
 
     profileFit: {
@@ -573,10 +744,38 @@ export const hotels = [
     ],
 
     amenities: [
-      'Wi-Fi',
-      'Breakfast',
-      'Gym',
-      'Air conditioning',
+      {
+        id: 'wifi',
+        label: 'Free Wi-Fi',
+      },
+      {
+        id: 'breakfast',
+        label: 'Breakfast',
+      },
+      {
+        id: 'gym',
+        label: 'Gym',
+      },
+      {
+        id: 'air-conditioning',
+        label: 'Air conditioning',
+      },
+      {
+        id: 'front-desk',
+        label: '24-hour front desk',
+      },
+      {
+        id: 'parking',
+        label: 'Free parking',
+      },
+      {
+        id: 'restaurant',
+        label: 'Restaurant',
+      },
+      {
+        id: 'laundry',
+        label: 'Laundry service',
+      },
     ],
 
     profileFit: {
@@ -657,11 +856,46 @@ export const hotels = [
     ],
 
     amenities: [
-      'Wi-Fi',
-      'Pool',
-      'Breakfast',
-      'Spa',
-      'Restaurant',
+      {
+        id: 'wifi',
+        label: 'Free Wi-Fi',
+      },
+      {
+        id: 'pool',
+        label: 'Swimming pool',
+      },
+      {
+        id: 'breakfast',
+        label: 'Breakfast',
+      },
+      {
+        id: 'spa',
+        label: 'Spa',
+      },
+      {
+        id: 'restaurant',
+        label: 'Restaurant',
+      },
+      {
+        id: 'gym',
+        label: 'Gym',
+      },
+      {
+        id: 'airport-transfer',
+        label: 'Airport transfer',
+      },
+      {
+        id: 'front-desk',
+        label: '24-hour front desk',
+      },
+      {
+        id: 'air-conditioning',
+        label: 'Air conditioning',
+      },
+      {
+        id: 'parking',
+        label: 'Free parking',
+      },
     ],
 
     profileFit: {
@@ -744,12 +978,46 @@ export const hotels = [
     ],
 
     amenities: [
-      'Wi-Fi',
-      'Pool',
-      'Breakfast',
-      'Spa',
-      'Restaurant',
-      'Gym',
+      {
+        id: 'wifi',
+        label: 'Free Wi-Fi',
+      },
+      {
+        id: 'pool',
+        label: 'Swimming pool',
+      },
+      {
+        id: 'breakfast',
+        label: 'Breakfast',
+      },
+      {
+        id: 'spa',
+        label: 'Spa',
+      },
+      {
+        id: 'restaurant',
+        label: 'Restaurant',
+      },
+      {
+        id: 'gym',
+        label: 'Gym',
+      },
+      {
+        id: 'garden',
+        label: 'Garden',
+      },
+      {
+        id: 'airport-transfer',
+        label: 'Airport transfer',
+      },
+      {
+        id: 'parking',
+        label: 'Free parking',
+      },
+      {
+        id: 'air-conditioning',
+        label: 'Air conditioning',
+      },
     ],
 
     profileFit: {

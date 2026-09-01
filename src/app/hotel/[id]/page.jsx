@@ -27,6 +27,7 @@ import {
   Wifi,
   Waves,
   Wind,
+  X,
 } from 'lucide-react'
 
 import { hotels } from '@/data/hotels'
@@ -43,6 +44,8 @@ import { Button } from '@/components/ui/button'
 import SearchSummary from '@/components/search/SearchSummary'
 import EditSearchSheet from '@/components/search/EditSearchSheet'
 
+import Facilities from '@/components/hotel/Facilities'
+
 function SectionTitle({
   eyebrow,
   title,
@@ -58,7 +61,7 @@ function SectionTitle({
           </p>
         )}
 
-        <h2 className="text-2xl font-bold leading-tight">
+        <h2 className="text-s font-bold leading-tight">
           {title}
         </h2>
       </div>
@@ -131,13 +134,11 @@ const [editSearchOpen, setEditSearchOpen] =
   const [favorite, setFavorite] =
     useState(false)
 
-  const [expanded, setExpanded] =
-    useState(false)
-
   const [selectedRoom, setSelectedRoom] =
     useState(0)
 
-    
+  const [facilitiesOpen, setFacilitiesOpen] =
+  useState(false)
 
   if (!hotel) {
     return (
@@ -162,8 +163,6 @@ const [editSearchOpen, setEditSearchOpen] =
       </main>
     )
   }
-
-  
 
   const gallery =
     hotel.gallery?.length > 0
@@ -518,7 +517,7 @@ const applySearch = () => {
 
         <div className="h-2 bg-surface" />
 
-        {/* YOUR STAY */}
+        {/* HOTEL DATE */}
         <div className="sticky top-16 z-40 bg-background/95 backdrop-blur">
         <SearchSummary
             search={search}
@@ -527,147 +526,33 @@ const applySearch = () => {
         />
         </div>
 
-        {/* PRICING */}
-        <section className="border-t border-border px-5 py-7">
-          <SectionTitle
-            eyebrow="Upfront pricing"
-            title="Know what you’ll pay"
-          />
 
-          <div className="mt-5 space-y-3 text-sm">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-muted-foreground">
-                Room for {nights} nights
-              </span>
 
-<strong>
-  {formatPrice(
-    roomSubtotal,
-    {
-      fromCurrency:
-        hotel.pricing.currency,
-      currency,
-    }
-  )}
-</strong>
-            </div>
+{/* FACILITIES */}
+<section className="px-5 py-7">
+  <SectionTitle
+    title="Everything you need"
+  />
 
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-muted-foreground">
-                Taxes & fees
-              </span>
-
-<strong>
-  {formatPrice(
-    taxes,
-    {
-      fromCurrency:
-        hotel.pricing.currency,
-      currency,
-    }
-  )}
-</strong>
-            </div>
-
-<div className="flex items-end justify-between gap-4 border-t border-border pt-4">
-  <span className="font-semibold">
-    Total
-  </span>
-
-  <strong className="text-2xl">
-    {formatPrice(
-      total,
-      {
-        fromCurrency:
-          hotel.pricing.currency,
-        currency,
-      }
-    )}
-  </strong>
-</div>
-          </div>
-
-          <p className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <CircleHelp className="size-3.5 shrink-0" />
-
-            No surprise fees · Pay at the
-            property
-          </p>
-        </section>
-
-        <div className="h-2 bg-surface" />
-
-        {/* FACILITIES */}
-        <section className="px-5 py-7">
-          <SectionTitle
-            title="Everything you need"
-          />
-
-          <div className="mt-5 grid grid-cols-2 gap-3">
-            <div className="flex min-h-14 items-center gap-2.5 rounded-xl bg-muted p-3 text-sm">
-              <Wifi className="size-5 shrink-0 text-secondary" />
-              Free Wi-Fi
-            </div>
-
-            <div className="flex min-h-14 items-center gap-2.5 rounded-xl bg-muted p-3 text-sm">
-              <Waves className="size-5 shrink-0 text-secondary" />
-              Swimming pool
-            </div>
-
-            <div className="flex min-h-14 items-center gap-2.5 rounded-xl bg-muted p-3 text-sm">
-              <Utensils className="size-5 shrink-0 text-secondary" />
-              Breakfast
-            </div>
-
-            <div className="flex min-h-14 items-center gap-2.5 rounded-xl bg-muted p-3 text-sm">
-              <Wind className="size-5 shrink-0 text-secondary" />
-              Air conditioning
-            </div>
-
-            {expanded && (
-              <>
-                <div className="flex min-h-14 items-center gap-2.5 rounded-xl bg-muted p-3 text-sm">
-                  <ShieldCheck className="size-5 shrink-0 text-secondary" />
-                  24-hour front desk
-                </div>
-
-                <div className="flex min-h-14 items-center gap-2.5 rounded-xl bg-muted p-3 text-sm">
-                  <MapPin className="size-5 shrink-0 text-secondary" />
-                  Airport transfer
-                </div>
-              </>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={() =>
-              setExpanded(
-                (current) => !current
-              )
-            }
-            className="mt-4 flex items-center gap-1.5 text-sm font-medium text-secondary"
-          >
-            {expanded ? (
-              <ChevronUp className="size-4" />
-            ) : (
-              <ChevronDown className="size-4" />
-            )}
-
-            {expanded
-              ? 'Show fewer facilities'
-              : 'Show all 18 facilities'}
-          </button>
-        </section>
+  <div className="mt-5">
+<Facilities
+  amenities={hotel.amenities}
+  variant="carousel"
+  initialLimit={3}
+  onSeeAll={() =>
+    setFacilitiesOpen(true)
+  }
+/>
+  </div>
+</section>
 
         <div className="h-2 bg-surface" />
 
         {/* REVIEWS */}
         <section className="px-5 py-7">
           <SectionTitle
-            eyebrow="Guest feedback"
-            title="Loved by relaxed explorers"
-            action="Read all reviews"
+            title="Guest Reviews"
+            action="Read all"
           />
 
           <div className="mt-5 flex items-center gap-4">
@@ -852,53 +737,6 @@ const applySearch = () => {
         </section>
       </div>
 
-      {/* COMPARE */}
-      <button
-        type="button"
-        onClick={() =>
-          setCompared(
-            (current) =>
-              !current
-          )
-        }
-        className={`
-          fixed
-          bottom-[82px]
-          left-1/2
-          z-40
-          flex
-          -translate-x-1/2
-          items-center
-          gap-2
-          whitespace-nowrap
-          rounded-full
-          border
-          px-4
-          py-2.5
-          text-xs
-          font-semibold
-          shadow-md
-          backdrop-blur
-
-          ${
-            compared
-              ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border bg-background/95 text-foreground'
-          }
-        `}
-      >
-        {compared ? (
-          <>
-            <Check className="size-4" />
-            Added to compare
-          </>
-        ) : (
-          <>
-            <span className="size-2 rounded-full bg-primary" />
-            Add to compare
-          </>
-        )}
-      </button>
 
       {/* STICKY BOOKING */}
       <div
@@ -948,27 +786,44 @@ const applySearch = () => {
 </strong>
         </button>
 
-          <button
-            type="button"
-            className="
-              flex
-              min-h-11
-              items-center
-              justify-center
-              gap-2
-              rounded-full
-              bg-primary
-              px-6
-              text-sm
-              font-semibold
-              text-primary-foreground
-              transition-transform
-              active:scale-[0.98]
-            "
-          >
-            Book now
-            <ArrowRight className="size-4" />
-          </button>
+<button
+  type="button"
+  onClick={() => {
+    const query = new URLSearchParams({
+      hotel: hotel.id,
+      roomName: room.name,
+      roomDetail: room.detail,
+      roomPrice: String(room.price),
+      checkIn: search.checkIn,
+      checkOut: search.checkOut,
+      guests: String(search.guests),
+      rooms: String(search.rooms),
+      currency,
+    })
+
+    router.push(
+      `/checkout?${query.toString()}`
+    )
+  }}
+  className="
+    flex
+    min-h-11
+    items-center
+    justify-center
+    gap-2
+    rounded-full
+    bg-primary
+    px-6
+    text-sm
+    font-semibold
+    text-primary-foreground
+    transition-transform
+    active:scale-[0.98]
+  "
+>
+  Book now
+  <ArrowRight className="size-4" />
+</button>
         </div>
       </div>
 
@@ -980,6 +835,78 @@ const applySearch = () => {
   onApply={applySearch}
   onClose={closeEditSearch}
 /> 
+
+{/* FACILITIES */}{facilitiesOpen && (
+  <div className="fixed inset-0 z-[70]">
+    {/* BACKDROP */}
+    <button
+      type="button"
+      aria-label="Close facilities"
+      onClick={() =>
+        setFacilitiesOpen(false)
+      }
+      className="absolute inset-0 bg-foreground/30 backdrop-blur-[1px]"
+    />
+
+    {/* SHEET */}
+    <div
+      className="
+        absolute
+        inset-x-0
+        bottom-0
+        mx-auto
+        max-h-[88vh]
+        max-w-md
+        overflow-y-auto
+        rounded-t-3xl
+        border-x
+        border-t
+        border-border
+        bg-background
+        shadow-2xl
+      "
+    >
+      {/* HANDLE */}
+      <div className="flex justify-center pt-2.5">
+        <div className="h-1 w-10 rounded-full bg-border" />
+      </div>
+
+      {/* HEADER */}
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background px-5 py-4">
+        <div>
+          <h2 className="text-lg font-bold">
+            All facilities
+          </h2>
+
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {hotel.amenities.length} facilities available
+          </p>
+        </div>
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Close facilities"
+          onClick={() =>
+            setFacilitiesOpen(false)
+          }
+        >
+          <X className="size-4" />
+        </Button>
+      </div>
+
+      {/* CONTENT */}
+      <div className="px-5 py-5">
+        <Facilities
+          amenities={hotel.amenities}
+          variant="grid"
+        />
+      </div>
+    </div>
+  </div>
+)}
+
     </main>
   )
 }
