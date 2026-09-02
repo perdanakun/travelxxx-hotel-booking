@@ -15,18 +15,12 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  ChevronDown,
-  ChevronUp,
-  CircleHelp,
-  Heart,
   MapPin,
   Share2,
   ShieldCheck,
   Star,
-  Utensils,
   Wifi,
   Waves,
-  Wind,
   X,
 } from 'lucide-react'
 
@@ -678,12 +672,7 @@ const applySearch = () => {
                           }
                         </h3>
 
-                        {isSelected && (
-                          <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold text-primary-foreground">
-                            <Check className="size-3" />
-                            Selected
-                          </span>
-                        )}
+
                       </div>
 
                       <p className="mt-1.5 text-xs text-muted-foreground">

@@ -10,6 +10,8 @@ import {
   getDefaultStayDates,
 } from '@/lib/defaultStayDates'
 
+import { useCompare } from '@/context/CompareContext'
+
 import { Button } from '@/components/ui/button'
 
 import { hotels } from '@/data/hotels'
@@ -24,9 +26,6 @@ import FilterSheet from '@/components/search/FilterSheet'
 import EditSearchSheet from '@/components/search/EditSearchSheet'
 import SortControls from '@/components/search/SortControls'
 
-function formatDateInput(date) {
-  return date.toISOString().split('T')[0]
-}
 
 
 function SearchContent() {
@@ -34,6 +33,12 @@ function SearchContent() {
   const searchParams = useSearchParams()
 
   const defaultStayDates = getDefaultStayDates()
+
+  const {
+  comparedIds,
+  toggleCompare,
+  isCompared,
+} = useCompare()
 
   const destinationId =
     searchParams.get('destination') ??
@@ -78,11 +83,9 @@ function SearchContent() {
   const [activeSort, setActiveSort] =
     useState('Best match')
 
-  const [compared, setCompared] =
-    useState([])
 
   const [currency, setCurrency] = useState(
-    searchParams.get('currency') ?? 'USD'
+    searchParams.get('currency') ?? 'IDR'
   )
 
   const activeFilterCount = [
@@ -146,21 +149,6 @@ function SearchContent() {
   )
 }
 
-  const toggleCompare = (id) => {
-    setCompared((current) => {
-      if (current.includes(id)) {
-        return current.filter(
-          (item) => item !== id
-        )
-      }
-
-      if (current.length >= 3) {
-        return current
-      }
-
-      return [...current, id]
-    })
-  }
 
   const filteredHotels = hotels.filter(
     (hotel) => {
@@ -260,7 +248,7 @@ function SearchContent() {
           </div>
 
           <span className="shrink-0 text-xs text-muted-foreground">
-            {compared.length}{' '}
+            {comparedIds.length}{' '}
             selected
           </span>
         </div>
@@ -302,14 +290,8 @@ function SearchContent() {
       badge={badge}
       currency={currency}
       href={getHotelHref(hotel.id)}
-      compared={compared.includes(
-        hotel.id
-      )}
-      onCompare={() =>
-        toggleCompare(
-          hotel.id
-        )
-      }
+      compared={isCompared(hotel.id)}
+      onCompare={() => toggleCompare(hotel.id)}
     />
       )
     })
@@ -345,16 +327,9 @@ function SearchContent() {
 
       {/* COMPARE BAR */}
       <div className="[&>div]:!bottom-[5px]">
-        <CompareBar
-          count={
-            compared.length
-          }
-          onCompare={() => {
-            console.log(
-              'Open comparison'
-            )
-          }}
-        />
+      <CompareBar
+        count={comparedIds.length}
+      />
       </div>
 
       {/* FILTER SHEET */}

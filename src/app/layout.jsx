@@ -1,6 +1,8 @@
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
+import { CompareProvider } from '@/context/CompareContext'
+
 export const metadata = {
   title: 'TravelXXX — Find stays that fit your trip',
 
@@ -23,7 +25,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className="light">
       <body className="antialiased">
+        <CompareProvider>
         {children}
+      </CompareProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

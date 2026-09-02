@@ -333,7 +333,7 @@ export default function HotelCard({
 
             <div className="mt-0.5 flex items-baseline gap-1">
               <strong
-                className={`font-bold ${priceTextSize}`}
+                className={`font-bold ${priceTextSize} text-primary`}
               >
                 {formatPrice(
                   finalPrice,
