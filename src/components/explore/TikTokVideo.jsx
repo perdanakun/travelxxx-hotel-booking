@@ -1,39 +1,88 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
+
 import { Play } from 'lucide-react'
 
 export default function TikTokVideo({
   videoId,
   poster,
   title,
+  active = false,
+  muted = true,
 }) {
-  const containerRef = useRef(null)
-  const [isActive, setIsActive] = useState(false)
+  const iframeRef = useRef(null)
+
+  const [playerReady, setPlayerReady] =
+    useState(false)
+
+  const sendMessage = (type, value) => {
+    const player = iframeRef.current
+
+    if (!player?.contentWindow) return
+
+    player.contentWindow.postMessage(
+      {
+        type,
+        value,
+        'x-tiktok-player': true,
+      },
+      '*'
+    )
+  }
 
   useEffect(() => {
-    const element = containerRef.current
+    const handleMessage = (event) => {
+      const data = event.data
 
-    if (!element) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsActive(
-          entry.isIntersecting &&
-            entry.intersectionRatio >= 0.6
-        )
-      },
-      {
-        threshold: [0, 0.25, 0.6, 0.8, 1],
+      if (
+        !data ||
+        data['x-tiktok-player'] !== true
+      ) {
+        return
       }
+
+      if (data.type === 'onPlayerReady') {
+        setPlayerReady(true)
+      }
+    }
+
+    window.addEventListener(
+      'message',
+      handleMessage
     )
 
-    observer.observe(element)
-
     return () => {
-      observer.disconnect()
+      window.removeEventListener(
+        'message',
+        handleMessage
+      )
     }
   }, [])
+
+  useEffect(() => {
+    if (!playerReady) return
+
+    if (active) {
+      sendMessage('play')
+
+      if (muted) {
+        sendMessage('mute')
+      } else {
+        sendMessage('unMute')
+      }
+    } else {
+      sendMessage('pause')
+    }
+  }, [
+    active,
+    muted,
+    playerReady,
+  ])
 
   const playerUrl =
     `https://www.tiktok.com/player/v1/${videoId}` +
@@ -47,13 +96,22 @@ export default function TikTokVideo({
     `&music_info=0` +
     `&description=0`
 
-  return (
-    <div
-      ref={containerRef}
-      className="absolute inset-0 overflow-hidden bg-muted"
-    >
-      {isActive ? (
+return (
+  <div className="absolute inset-0 overflow-hidden bg-black">
+    {active ? (
+      <div
+        className="
+          absolute
+          left-0
+          top-0
+          w-full
+          aspect-[9/16]
+          overflow-hidden
+          bg-black
+        "
+      >
         <iframe
+          ref={iframeRef}
           key={videoId}
           src={playerUrl}
           title={title}
@@ -61,33 +119,38 @@ export default function TikTokVideo({
           loading="eager"
           className="
             absolute
-            left-1/2
-            top-1/2
+            inset-0
             h-full
             w-full
-            -translate-x-1/2
-            -translate-y-1/2
             border-0
           "
         />
-      ) : (
-        <>
-          <img
-            src={poster}
-            alt=""
-            className="absolute inset-0 size-full object-cover"
-          />
+      </div>
+    ) : (
+      <>
+        <img
+          src={poster}
+          alt=""
+          className="
+            absolute
+            left-0
+            top-0
+            w-full
+            aspect-[9/16]
+            object-cover
+          "
+        />
 
-          <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-            <span className="flex size-12 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm">
-              <Play
-                className="ml-0.5 size-5"
-                fill="currentColor"
-              />
-            </span>
-          </div>
-        </>
-      )}
-    </div>
-  )
+        <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+          <span className="flex size-12 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm">
+            <Play
+              className="ml-0.5 size-5"
+              fill="currentColor"
+            />
+          </span>
+        </div>
+      </>
+    )}
+  </div>
+)
 }

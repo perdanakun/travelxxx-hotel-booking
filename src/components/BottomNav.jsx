@@ -3,19 +3,16 @@
 import Link from 'next/link'
 import {
   Compass,
-  GitCompareArrows,
+  CopyPlus,
   Heart,
   House,
   User,
+  Sparkles,
+  BedDouble,
+  ShoppingBag
 } from 'lucide-react'
 
 const navItems = [
-  {
-    name: 'home',
-    label: 'Home',
-    href: '/',
-    icon: House,
-  },
   {
     name: 'explore',
     label: 'Explore',
@@ -23,10 +20,16 @@ const navItems = [
     icon: Compass,
   },
   {
+    name: 'hotels',
+    label: 'Hotels',
+    href: '/hotels',
+    icon: BedDouble,
+  },
+  {
     name: 'compare',
     label: 'Compare',
     href: '/compare',
-    icon: GitCompareArrows,
+    icon: CopyPlus,
   },
   {
     name: 'favorite',

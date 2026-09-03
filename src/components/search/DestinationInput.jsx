@@ -43,12 +43,6 @@ export default function DestinationInput({
 
   return (
     <div className="relative">
-      <label
-        htmlFor="search-destination"
-        className="mb-2 block text-xs font-semibold text-muted-foreground"
-      >
-        Destination
-      </label>
 
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

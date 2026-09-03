@@ -20,6 +20,7 @@ import { destinations } from '@/data/destinations'
 import AppHeader from '@/components/AppHeader'
 import HotelCard from '@/components/HotelCard'
 import CompareBar from '@/components/CompareBar'
+import BottomNav from '@/components/BottomNav'
 
 import SearchSummary from '@/components/search/SearchSummary'
 import FilterSheet from '@/components/search/FilterSheet'
@@ -219,7 +220,7 @@ function SearchContent() {
       {/* HEADER */}
       <AppHeader
         showBack
-        backHref="/"
+        backHref="/hotels"
         currency={currency}
         onCurrencyChange={changeCurrency}
       />
@@ -331,6 +332,9 @@ function SearchContent() {
         count={comparedIds.length}
       />
       </div>
+
+      {/* BOTTOM NAV */}
+      <BottomNav active="hotels" />
 
       {/* FILTER SHEET */}
       <FilterSheet
