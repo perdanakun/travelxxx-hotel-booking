@@ -6,10 +6,15 @@ import {
   useState,
 } from 'react'
 
-import { MapPin } from 'lucide-react'
+import {
+  useRouter,
+} from 'next/navigation'
+
+import {
+  MapPin,
+} from 'lucide-react'
 
 import DestinationVideoCarousel from '@/components/explore/DestinationVideoCarousel'
-import HotelRecommendationOverlay from '@/components/explore/HotelRecommendationOverlay'
 
 export default function DestinationSection({
   place,
@@ -18,15 +23,16 @@ export default function DestinationSection({
   index,
   onActiveChange,
   feedRef,
-  showHotelRecommendation = false,
-  recommendedHotels = [],
 }) {
+  const router =
+    useRouter()
+
   const sectionRef =
     useRef(null)
 
   const [
-    hotelRecommendationOpen,
-    setHotelRecommendationOpen,
+    detailsVisible,
+    setDetailsVisible,
   ] = useState(true)
 
   useEffect(() => {
@@ -55,6 +61,7 @@ export default function DestinationSection({
         },
         {
           root: feed,
+
           threshold: [
             0.5,
             0.7,
@@ -76,11 +83,40 @@ export default function DestinationSection({
     onActiveChange,
   ])
 
+  const toggleDetails =
+    () => {
+      setDetailsVisible(
+        (current) =>
+          !current
+      )
+    }
+
+  const openDestinationHotels = (
+    event
+  ) => {
+    event.stopPropagation()
+
+    const params =
+      new URLSearchParams({
+        destination:
+          place.destination,
+
+        area:
+          place.place,
+      })
+
+    router.push(
+      `/search?${params.toString()}`
+    )
+  }
+
   return (
     <section
       ref={sectionRef}
       data-explore-item
-      data-index={index}
+      data-index={
+        index
+      }
       className="
         relative
         h-full
@@ -89,16 +125,25 @@ export default function DestinationSection({
         snap-always
         overflow-hidden
         bg-black
+        text-white
       "
     >
-      {/* VIDEO */}
       <DestinationVideoCarousel
-        videos={place.videos}
+        videos={
+          place.videos
+        }
         destinationName={
           place.place
         }
-        active={active}
-        muted={muted}
+        hotelIds={
+          place.hotelIds
+        }
+        active={
+          active
+        }
+        muted={
+          muted
+        }
       />
 
       {/* VIDEO GRADIENT */}
@@ -115,116 +160,133 @@ export default function DestinationSection({
         "
       />
 
-      {/* DESTINATION CONTENT */}
+      {/* DESTINATION INFO */}
       <div
+        onClick={
+          toggleDetails
+        }
         className="
-          pointer-events-none
           absolute
           inset-x-0
           bottom-[68px]
           z-20
+          cursor-pointer
           p-5
           pr-20
-          pb-7
+          pb-3
         "
       >
-        <div
+        {/* DESTINATION LINK */}
+        <button
+          type="button"
+          onClick={
+            openDestinationHotels
+          }
           className="
-            flex
-            items-center
-            gap-1.5
+            block
+            max-w-full
+            text-left
+            transition-opacity
+            active:opacity-70
           "
         >
-          <MapPin
+          <div
             className="
-              size-4
-              shrink-0
-            "
-          />
-
-          <h2
-            className="
-              text-lg
-              font-bold
+              flex
+              items-center
+              gap-1.5
             "
           >
-            {place.place}
-          </h2>
-        </div>
+            <MapPin
+              className="
+                size-4
+                shrink-0
+              "
+            />
 
-        <p
-          className="
-            mt-1
-            text-xs
-            text-white/70
-          "
-        >
-          {place.destination}
-        </p>
+            <h2
+              className="
+                text-lg
+                font-bold
+              "
+            >
+              {
+                place.place
+              }
+            </h2>
 
-        <div
-          className="
-            mt-3
-            flex
-            flex-wrap
-            gap-1.5
-          "
-        >
-          {place.tags.map(
-            (tag) => (
-              <span
-                key={tag}
-                className="
-                  rounded-full
-                  bg-white/15
-                  px-2.5
-                  py-1
-                  text-[11px]
-                  font-medium
-                  backdrop-blur-sm
-                "
-              >
-                {tag}
-              </span>
-            )
-          )}
-        </div>
-
-        <p
-          className="
-            mt-3
-            line-clamp-3
-            max-w-[300px]
-            text-sm
-            leading-relaxed
-            text-white/90
-          "
-        >
-          {place.caption}
-        </p>
-      </div>
-
-      {/* HOTEL RECOMMENDATION */}
-      {active &&
-        showHotelRecommendation &&
-        hotelRecommendationOpen &&
-        recommendedHotels.length >
-          0 && (
-          <HotelRecommendationOverlay
-            destination={
-              place.place
+            <p
+            className="
+              mt-0
+              text-xs
+              text-white/70
+            "
+          >
+            {
+              place.destination
             }
-            hotels={
-              recommendedHotels
-            }
-            currency="IDR"
-            onClose={() =>
-              setHotelRecommendationOpen(
-                false
-              )
-            }
-          />
+          </p>
+          </div>
+
+
+        </button>
+
+        {/* EXPANDED DETAILS */}
+        {detailsVisible && (
+          <>
+            {/* TAGS */}
+            <div
+              className="
+                mt-1.5
+                flex
+                flex-wrap
+                gap-1.5
+              "
+            >
+              {place.tags.map(
+                (
+                  tag
+                ) => (
+                  <span
+                    key={
+                      tag
+                    }
+                    className="
+                      rounded-full
+                      bg-white/15
+                      px-2.5
+                      py-1
+                      text-[11px]
+                      font-medium
+                      backdrop-blur-sm
+                    "
+                  >
+                    {
+                      tag
+                    }
+                  </span>
+                )
+              )}
+            </div>
+
+            {/* CAPTION */}
+            <p
+              className="
+                mt-1
+                line-clamp-3
+                max-w-[300px]
+                text-sm
+                leading-relaxed
+                text-white/90
+              "
+            >
+              {
+                place.caption
+              }
+            </p>
+          </>
         )}
+      </div>
     </section>
   )
 }

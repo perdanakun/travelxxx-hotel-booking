@@ -11,11 +11,14 @@ import {
   ChevronRight,
 } from 'lucide-react'
 
+import { hotels } from '@/data/hotels'
 import TikTokVideo from '@/components/explore/TikTokVideo'
+import DraggableHotelRecommendation from '@/components/explore/DraggableHotelRecommendation'
 
 export default function DestinationVideoCarousel({
   videos = [],
   destinationName,
+  hotelIds = [],
   active,
   muted,
 }) {
@@ -24,6 +27,38 @@ export default function DestinationVideoCarousel({
 
   const [activeVideoIndex, setActiveVideoIndex] =
     useState(0)
+
+  const [
+  recommendationVideoIndex,
+] = useState(() => {
+  if (!videos.length) {
+    return null
+  }
+
+  return Math.floor(
+    Math.random() *
+      videos.length
+  )
+})
+
+const [
+  recommendationOpen,
+  setRecommendationOpen,
+] = useState(true)
+
+const recommendedHotels =
+  hotelIds
+    .map((hotelId) =>
+      hotels.find(
+        (hotel) =>
+          hotel.id ===
+          hotelId
+      )
+    )
+    .filter(Boolean)
+
+const recommendedHotel =
+  recommendedHotels[0]
 
   useEffect(() => {
     const carousel =
@@ -129,6 +164,46 @@ export default function DestinationVideoCarousel({
       <div className="absolute inset-0 bg-black" />
     )
   }
+
+  const [
+  recommendationVisible,
+  setRecommendationVisible,
+] = useState(false)
+
+
+  useEffect(() => {
+  const isRecommendationVideo =
+    active &&
+    activeVideoIndex ===
+      recommendationVideoIndex &&
+    recommendationOpen &&
+    recommendedHotel
+
+  if (!isRecommendationVideo) {
+    setRecommendationVisible(false)
+    return
+  }
+
+  // Random delay between 3–5 seconds
+  const delay =
+    3000 +
+    Math.random() * 2000
+
+  const timer = setTimeout(() => {
+    setRecommendationVisible(true)
+  }, delay)
+
+  return () => {
+    clearTimeout(timer)
+  }
+}, [
+  active,
+  activeVideoIndex,
+  recommendationVideoIndex,
+  recommendationOpen,
+  recommendedHotel,
+])
+
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-black">
@@ -251,40 +326,23 @@ export default function DestinationVideoCarousel({
           </button>
         )}
 
-      {/* PAGINATION DOTS */}
-      {videos.length > 1 && (
-        <div
-          className="
-            pointer-events-none
-            absolute
-            left-1/2
-            top-5
-            z-20
-            flex
-            -translate-x-1/2
-            gap-1.5
-          "
-        >
-          {videos.map(
-            (video, index) => (
-              <span
-                key={video.id}
-                className={`
-                  h-1.5
-                  rounded-full
-                  transition-all
-                  ${
-                    index ===
-                    activeVideoIndex
-                      ? 'w-5 bg-white'
-                      : 'w-1.5 bg-white/50'
-                  }
-                `}
-              />
-            )
-          )}
-        </div>
-      )}
+{/* HOTEL RECOMMENDATION */}
+{recommendationVisible &&
+  recommendedHotel && (
+    <DraggableHotelRecommendation
+      hotel={recommendedHotel}
+      currency="IDR"
+      onClose={() => {
+        setRecommendationOpen(
+          false
+        )
+
+        setRecommendationVisible(
+          false
+        )
+      }}
+    />
+  )}
     </div>
   )
 }

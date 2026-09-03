@@ -2,7 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Heart } from 'lucide-react'
+
+import {
+  Check,
+  Heart,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
@@ -16,16 +20,28 @@ export default function HotelCard({
   badge,
   currency = 'USD',
   href,
+
+  variant = 'default',
+
   compared = false,
   onCompare,
+
+  favorite = false,
+  onFavorite,
 }) {
   const router = useRouter()
 
   const openHotel = () => {
     router.push(
-      href ?? `/hotel/${hotel.id}`
+      href ??
+        `/hotel/${hotel.id}`
     )
   }
+
+  const hotelTitle =
+  hotel.title ??
+  hotel.name ??
+  'Untitled hotel'
 
   const badgeStyles = {
     'Best match':
@@ -46,14 +62,15 @@ export default function HotelCard({
       ? hotel.gallery
       : [hotel.image]
 
-  const [activeImage, setActiveImage] =
-    useState(0)
+  const [
+    activeImage,
+    setActiveImage,
+  ] = useState(0)
 
-  const [favorite, setFavorite] =
-    useState(false)
-
-  const [touchStart, setTouchStart] =
-    useState(null)
+  const [
+    touchStart,
+    setTouchStart,
+  ] = useState(null)
 
   const finalPrice =
     getFinalPrice(
@@ -70,34 +87,51 @@ export default function HotelCard({
       ? 'text-[10px]'
       : 'text-xs'
 
-  const showPreviousImage = () => {
-    setActiveImage((current) =>
-      current === 0
-        ? images.length - 1
-        : current - 1
-    )
-  }
+  const showPreviousImage =
+    () => {
+      setActiveImage(
+        (current) =>
+          current === 0
+            ? images.length -
+              1
+            : current - 1
+      )
+    }
 
   const showNextImage = () => {
-    setActiveImage((current) =>
-      current ===
-      images.length - 1
-        ? 0
-        : current + 1
+    setActiveImage(
+      (current) =>
+        current ===
+        images.length - 1
+          ? 0
+          : current + 1
     )
   }
 
   const handleTouchStart = (
     event
   ) => {
+    if (
+      variant === 'feed'
+    ) {
+      return
+    }
+
     setTouchStart(
-      event.touches[0].clientX
+      event.touches[0]
+        .clientX
     )
   }
 
   const handleTouchEnd = (
     event
   ) => {
+    if (
+      variant === 'feed'
+    ) {
+      return
+    }
+
     if (
       touchStart === null
     ) {
@@ -109,7 +143,8 @@ export default function HotelCard({
         .clientX
 
     const distance =
-      touchStart - touchEnd
+      touchStart -
+      touchEnd
 
     const minimumSwipe = 50
 
@@ -156,16 +191,179 @@ export default function HotelCard({
         )}`
       : null
 
+  /*
+   * ============================
+   * EXPLORE FEED VARIANT
+   * ============================
+   */
+if (variant === 'feed') {
+  return (
+    <article
+      className="
+        cursor-pointer
+        overflow-hidden
+        rounded-xl
+        bg-background
+        text-foreground
+        shadow-lg
+      "
+    >
+        {/* IMAGE */}
+        <div className="relative aspect-[16/8] overflow-hidden bg-muted">
+          <img
+            src={hotel.image}
+            alt={
+              hotelTitle
+            }
+            className="
+              size-full
+              object-cover
+            "
+          />
+        </div>
+
+        {/* CONTENT */}
+        <div className="p-2.5">
+          <div
+            className="
+              flex
+              items-start
+              justify-between
+              gap-3
+            "
+          >
+            <div
+              className="
+                min-w-0
+                flex-1
+              "
+            >
+<h3 className="truncate text-xs font-bold text-foreground">
+  {hotelTitle}
+</h3>
+
+<p className="mt-0.5 truncate text-[10px] font-medium text-secondary">
+  {hotel.area}, {hotel.destination}
+</p>
+            </div>
+<span className="shrink-0 text-[10px] font-semibold text-foreground">
+  {hotel.rating} ★
+</span>
+          </div>
+
+ <div className="mt-3 flex items-end justify-between gap-2">
+  {/* PRICE */}
+  <div className="min-w-0">
+    <p className="text-[10px] text-muted-foreground">
+      Final price
+    </p>
+
+    <div className="flex items-baseline">
+      <strong className="text-sm font-bold text-primary">
+        {formatPrice(
+          finalPrice,
+          {
+            fromCurrency:
+              hotel.pricing.currency,
+            currency,
+          }
+        )}
+      </strong>
+
+      <span className="text-[7px] text-muted-foreground">
+        / night
+      </span>
+    </div>
+  </div>
+
+  {/* ACTIONS */}
+  <div className="flex shrink-0 items-center gap-1.5">
+
+    <Button
+      type="button"
+      size="sm"
+      variant={
+        compared
+          ? 'selected'
+          : 'outline'
+      }
+      onClick={(event) => {
+        event.stopPropagation()
+        onCompare?.()
+      }}
+      aria-pressed={compared}
+      className="h-8 shrink-0 rounded-lg px-2 text-[11px]"
+    >
+      {compared && (
+        <Check className="size-3.5" />
+      )}
+
+      {compared
+        ? 'Added'
+        : 'Compare'}
+    </Button>
+
+    <Button
+      type="button"
+      variant="outline"
+      size="icon"
+      aria-label={
+        favorite
+          ? 'Remove from favorites'
+          : 'Add to favorites'
+      }
+      aria-pressed={favorite}
+      onClick={(event) => {
+        event.stopPropagation()
+        onFavorite?.()
+      }}
+      className="size-8 rounded-lg"
+    >
+      <Heart
+        className={`size-3.5 ${
+          favorite
+            ? 'fill-current text-primary'
+            : ''
+        }`}
+      />
+    </Button>
+
+  </div>
+</div>
+        </div>
+      </article>
+    )
+  }
+
+  /*
+   * ============================
+   * DEFAULT HOTEL CARD
+   * ============================
+   */
+
   return (
     <article
       onClick={
         openHotel
       }
-      className="cursor-pointer overflow-hidden rounded-2xl border border-border bg-background shadow-sm"
+      className="
+        cursor-pointer
+        overflow-hidden
+        rounded-2xl
+        border
+        border-border
+        bg-background
+        shadow-sm
+      "
     >
       {/* IMAGE */}
       <div
-        className="relative aspect-[16/10] overflow-hidden bg-muted"
+        className="
+          relative
+          aspect-[16/10]
+          overflow-hidden
+          bg-muted
+        "
         onTouchStart={
           handleTouchStart
         }
@@ -180,9 +378,12 @@ export default function HotelCard({
             ]
           }
           alt={
-            hotel.title
+            hotelTitle
           }
-          className="size-full object-cover"
+          className="
+            size-full
+            object-cover
+          "
         />
 
         {/* BADGE */}
@@ -217,12 +418,17 @@ export default function HotelCard({
           ) => {
             event.stopPropagation()
 
-            setFavorite(
-              (current) =>
-                !current
-            )
+            onFavorite?.()
           }}
-          className="absolute right-3 top-3 border-white/40 bg-background/90 shadow-sm backdrop-blur"
+          className="
+            absolute
+            right-3
+            top-3
+            border-white/40
+            bg-background/90
+            shadow-sm
+            backdrop-blur
+          "
         >
           <Heart
             className={`size-4 ${
@@ -237,10 +443,17 @@ export default function HotelCard({
         {images.length >
           1 && (
           <div
-            className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5"
+            className="
+              absolute
+              bottom-3
+              left-1/2
+              flex
+              -translate-x-1/2
+              items-center
+              gap-1.5
+            "
             aria-label={`Image ${
-              activeImage +
-              1
+              activeImage + 1
             } of ${
               images.length
             }`}
@@ -256,8 +469,7 @@ export default function HotelCard({
                   }
                   type="button"
                   aria-label={`Show image ${
-                    index +
-                    1
+                    index + 1
                   }`}
                   onClick={(
                     event
@@ -283,11 +495,18 @@ export default function HotelCard({
 
       {/* CONTENT */}
       <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
+        <div
+          className="
+            flex
+            items-start
+            justify-between
+            gap-3
+          "
+        >
           <div className="min-w-0 flex-1">
             <h3 className="text-lg font-bold leading-tight">
               {
-                hotel.title
+                hotelTitle
               }
             </h3>
 
@@ -401,7 +620,10 @@ export default function HotelCard({
             aria-pressed={
               compared
             }
-            className="shrink-0 rounded-xl"
+            className="
+              shrink-0
+              rounded-xl
+            "
           >
             {compared && (
               <Check className="size-4" />

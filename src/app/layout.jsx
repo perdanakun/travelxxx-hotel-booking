@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 import { CompareProvider } from '@/context/CompareContext'
+import { FavoriteProvider } from '@/context/FavoriteContext'
 
 export const metadata = {
   title: 'TravelXXX — Find stays that fit your trip',
@@ -26,9 +27,14 @@ export default function RootLayout({ children }) {
     <html lang="en" className="light">
       <body className="antialiased">
         <CompareProvider>
-        {children}
-      </CompareProvider>
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+          <FavoriteProvider>
+            {children}
+          </FavoriteProvider>
+        </CompareProvider>
+
+        {process.env.NODE_ENV === 'production' && (
+          <Analytics />
+        )}
       </body>
     </html>
   )

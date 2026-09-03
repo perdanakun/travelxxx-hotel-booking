@@ -41,15 +41,22 @@ function SearchContent() {
   isCompared,
 } = useCompare()
 
-  const destinationId =
-    searchParams.get('destination') ??
-    'yogyakarta'
+const destinationParam =
+  searchParams.get('destination') ??
+  'yogyakarta'
 
-  const initialDestination =
-    destinations.find(
-      (destination) =>
-        destination.id === destinationId
-    ) ?? destinations[0]
+const areaParam =
+  searchParams.get('area')
+
+const initialDestination =
+  destinations.find(
+    (destination) =>
+      destination.id ===
+        destinationParam ||
+      destination.name
+        ?.toLowerCase() ===
+        destinationParam.toLowerCase()
+  ) ?? destinations[0]
 
     const [search, setSearch] = useState({
       destination: initialDestination,
@@ -112,19 +119,23 @@ function SearchContent() {
 
     setSearch(draftSearch)
 
-    const params = new URLSearchParams({
-      destination:
-        draftSearch.destination.id,
-      checkIn: draftSearch.checkIn,
-      checkOut: draftSearch.checkOut,
-      guests: String(
-        draftSearch.guests
-      ),
-      rooms: String(
-        draftSearch.rooms
-      ),
-      currency,
-    })
+ const params =
+  new URLSearchParams({
+    destination:
+      draftSearch.destination.id,
+    checkIn:
+      draftSearch.checkIn,
+    checkOut:
+      draftSearch.checkOut,
+    guests: String(
+      draftSearch.guests
+    ),
+    rooms: String(
+      draftSearch.rooms
+    ),
+    currency,
+  })
+
 
     router.replace(
       `/search?${params.toString()}`
@@ -136,30 +147,58 @@ function SearchContent() {
   const changeCurrency = (nextCurrency) => {
   setCurrency(nextCurrency)
 
-  const params = new URLSearchParams({
-    destination: search.destination.id,
-    checkIn: search.checkIn,
-    checkOut: search.checkOut,
-    guests: String(search.guests),
-    rooms: String(search.rooms),
-    currency: nextCurrency,
+const params =
+  new URLSearchParams({
+    destination:
+      search.destination.id,
+    checkIn:
+      search.checkIn,
+    checkOut:
+      search.checkOut,
+    guests: String(
+      search.guests
+    ),
+    rooms: String(
+      search.rooms
+    ),
+    currency:
+      nextCurrency,
   })
+
+if (areaParam) {
+  params.set(
+    'area',
+    areaParam
+  )
+}
 
   router.replace(
     `/search?${params.toString()}`
   )
 }
-
-
-  const filteredHotels = hotels.filter(
+const filteredHotels =
+  hotels.filter(
     (hotel) => {
       const finalPrice =
         hotel.pricing.base +
         hotel.pricing.taxes
 
+      const matchesDestination =
+        hotel.destination
+          ?.toLowerCase() ===
+        search.destination.name
+          ?.toLowerCase()
+
+      const matchesArea =
+        !areaParam ||
+        hotel.area
+          ?.toLowerCase() ===
+          areaParam.toLowerCase()
+
       const matchesPrice =
         filters.maxPrice === null ||
-        finalPrice <= filters.maxPrice
+        finalPrice <=
+          filters.maxPrice
 
       const matchesRating =
         filters.minRating === null ||
@@ -167,6 +206,8 @@ function SearchContent() {
           filters.minRating
 
       return (
+        matchesDestination &&
+        matchesArea &&
         matchesPrice &&
         matchesRating
       )
@@ -202,15 +243,32 @@ function SearchContent() {
   })
 
 
-  const getHotelHref = (hotelId) => {
-  const params = new URLSearchParams({
-    destination: search.destination.id,
-    checkIn: search.checkIn,
-    checkOut: search.checkOut,
-    guests: String(search.guests),
-    rooms: String(search.rooms),
-    currency,
-  })
+const getHotelHref = (
+  hotelId
+) => {
+  const params =
+    new URLSearchParams({
+      destination:
+        search.destination.id,
+      checkIn:
+        search.checkIn,
+      checkOut:
+        search.checkOut,
+      guests: String(
+        search.guests
+      ),
+      rooms: String(
+        search.rooms
+      ),
+      currency,
+    })
+
+  if (areaParam) {
+    params.set(
+      'area',
+      areaParam
+    )
+  }
 
   return `/hotel/${hotelId}?${params.toString()}`
 }

@@ -6,111 +6,60 @@ import {
 } from 'react'
 
 import {
-  Bookmark,
-  Share2,
   Volume2,
   VolumeX,
 } from 'lucide-react'
+
+import {
+  useRouter,
+} from 'next/navigation'
 
 import BottomNav from '@/components/BottomNav'
 import DestinationSection from '@/components/explore/DestinationSection'
 import ExploreDiscoveryBar from '@/components/explore/ExploreDiscoveryBar'
 
-import { hotels } from '@/data/hotels'
-import { explorePlaces } from '@/data/explorePlaces'
+import {
+  explorePlaces,
+} from '@/data/explorePlaces'
 
 export default function ExplorePage() {
-  const feedRef = useRef(null)
+  const feedRef =
+    useRef(null)
 
-  const [activeIndex, setActiveIndex] =
-    useState(0)
+  const router = useRouter()
 
-  // Explore opens muted
-  // so autoplay has a better chance
-  // to work on mobile browsers.
-  const [muted, setMuted] =
-    useState(true)
+  const [
+    activeIndex,
+    setActiveIndex,
+  ] = useState(0)
 
-  const [savedPlaces, setSavedPlaces] =
-    useState([])
+  const [
+    muted,
+    setMuted,
+  ] = useState(true)
 
   const activePlace =
-    explorePlaces[activeIndex]
+    explorePlaces[
+      activeIndex
+    ]
 
-  const isActivePlaceSaved =
-    activePlace
-      ? savedPlaces.includes(
-          activePlace.id
-        )
-      : false
+const handleSearch = (
+  query
+) => {
+  const params =
+    new URLSearchParams({
+      q: query,
+    })
 
-  const getHotelsForPlace = (
-    place
-  ) => {
-    if (
-      !place?.hotelIds?.length
-    ) {
-      return []
-    }
+  router.push(
+    `/explore/search?${params.toString()}`
+  )
+}
 
-    return place.hotelIds
-      .map((hotelId) =>
-        hotels.find(
-          (hotel) =>
-            hotel.id === hotelId
-        )
-      )
-      .filter(Boolean)
-  }
-
-  const toggleSaved = () => {
-    if (!activePlace) return
-
-    setSavedPlaces((current) =>
-      current.includes(
-        activePlace.id
-      )
-        ? current.filter(
-            (id) =>
-              id !== activePlace.id
-          )
-        : [
-            ...current,
-            activePlace.id,
-          ]
-    )
-  }
-
-  const handleShare =
-    async () => {
-      if (!activePlace) return
-
-      const shareData = {
-        title: `${activePlace.place}, ${activePlace.destination}`,
-        text: activePlace.caption,
-        url: window.location.href,
-      }
-
-      try {
-        if (navigator.share) {
-          await navigator.share(
-            shareData
-          )
-        }
-      } catch {
-        // User cancelled share.
-      }
-    }
-
-  const handleSearch = () => {
-    console.log(
-      'Open Explore search'
-    )
-  }
-
-  const handlePersonalize = () => {
-    console.log(
-      'Open personalization'
+const handlePersonalize =
+  () => {
+    router.push(
+      '/onboarding-survey'
     )
   }
 
@@ -140,154 +89,94 @@ export default function ExplorePage() {
         "
       >
         {explorePlaces.map(
-          (place, index) => {
-            const recommendedHotels =
-              getHotelsForPlace(
+          (
+            place,
+            index
+          ) => (
+            <DestinationSection
+              key={
+                place.id
+              }
+              place={
                 place
-              )
-
-            return (
-              <DestinationSection
-                key={place.id}
-                place={place}
-                active={
-                  activeIndex ===
-                  index
-                }
-                muted={muted}
-                index={index}
-                onActiveChange={
-                  setActiveIndex
-                }
-                feedRef={
-                  feedRef
-                }
-                showHotelRecommendation={
-                  index === 1
-                }
-                recommendedHotels={
-                  recommendedHotels
-                }
-              />
-            )
-          }
+              }
+              active={
+                activeIndex ===
+                index
+              }
+              muted={
+                muted
+              }
+              index={
+                index
+              }
+              onActiveChange={
+                setActiveIndex
+              }
+              feedRef={
+                feedRef
+              }
+            />
+          )
         )}
       </div>
 
       {/* SEARCH + PERSONALIZE */}
       <ExploreDiscoveryBar
-        onSearch={handleSearch}
+        onSearch={
+          handleSearch
+        }
         onPersonalize={
           handlePersonalize
         }
         profileLabel="Personalize"
       />
 
-      {/* GLOBAL EXPLORE CONTROLS */}
+      {/* SOUND */}
       {activePlace && (
-        <div
+        <button
+          type="button"
+          onClick={() =>
+            setMuted(
+              (current) =>
+                !current
+            )
+          }
+          aria-label={
+            muted
+              ? 'Turn sound on'
+              : 'Mute video'
+          }
           className="
             absolute
-            bottom-40
-            right-4
+            right-3
+            top-[92px]
             z-50
             flex
-            flex-col
-            gap-3
+            size-9
+            items-center
+            justify-center
+            rounded-full
+            bg-black/40
+            text-white
+            backdrop-blur-md
+            transition
+            active:scale-[0.96]
           "
         >
-          {/* SOUND */}
-          <button
-            type="button"
-            onClick={() =>
-              setMuted(
-                (current) =>
-                  !current
-              )
-            }
-            aria-label={
-              muted
-                ? 'Turn sound on'
-                : 'Mute video'
-            }
-            className="
-              flex
-              size-11
-              items-center
-              justify-center
-              rounded-full
-              bg-black/40
-              text-white
-              backdrop-blur-sm
-              transition
-              active:scale-[0.96]
-            "
-          >
-            {muted ? (
-              <VolumeX className="size-5" />
-            ) : (
-              <Volume2 className="size-5" />
-            )}
-          </button>
-
-          {/* FAVORITE */}
-          <button
-            type="button"
-            onClick={toggleSaved}
-            aria-label={
-              isActivePlaceSaved
-                ? `Remove ${activePlace.place} from favorites`
-                : `Favorite ${activePlace.place}`
-            }
-            className="
-              flex
-              size-11
-              items-center
-              justify-center
-              rounded-full
-              bg-black/40
-              text-white
-              backdrop-blur-sm
-              transition
-              active:scale-[0.96]
-            "
-          >
-            <Bookmark
+          {muted ? (
+            <VolumeX
               className="size-5"
-              fill={
-                isActivePlaceSaved
-                  ? 'currentColor'
-                  : 'none'
-              }
             />
-          </button>
-
-          {/* SHARE */}
-          <button
-            type="button"
-            onClick={
-              handleShare
-            }
-            aria-label={`Share ${activePlace.place}`}
-            className="
-              flex
-              size-11
-              items-center
-              justify-center
-              rounded-full
-              bg-black/40
-              text-white
-              backdrop-blur-sm
-              transition
-              active:scale-[0.96]
-            "
-          >
-            <Share2 className="size-5" />
-          </button>
-        </div>
+          ) : (
+            <Volume2
+              className="size-5"
+            />
+          )}
+        </button>
       )}
 
-      {/* BOTTOM NAV OVERLAY */}
+      {/* BOTTOM NAV */}
       <div
         className="
           absolute
@@ -296,7 +185,9 @@ export default function ExplorePage() {
           z-50
         "
       >
-        <BottomNav active="explore" />
+        <BottomNav
+          active="explore"
+        />
       </div>
     </main>
   )
