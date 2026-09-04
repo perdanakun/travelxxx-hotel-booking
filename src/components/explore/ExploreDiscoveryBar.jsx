@@ -7,7 +7,6 @@ import {
 } from 'react'
 
 import {
-  ChevronDown,
   Search,
   Sparkles,
   X,
@@ -18,9 +17,6 @@ export default function ExploreDiscoveryBar({
   onPersonalize,
   profileLabel = 'Personalize',
 }) {
-  const [expanded, setExpanded] =
-    useState(false)
-
   const [searching, setSearching] =
     useState(false)
 
@@ -29,37 +25,6 @@ export default function ExploreDiscoveryBar({
 
   const inputRef = useRef(null)
 
-  /*
-   * Auto-collapse only while the
-   * normal discovery controls are open.
-   *
-   * Never collapse while the user
-   * is typing a search.
-   */
-  useEffect(() => {
-    if (
-      !expanded ||
-      searching
-    ) {
-      return
-    }
-
-    const timer = setTimeout(() => {
-      setExpanded(false)
-    }, 2500)
-
-    return () => {
-      clearTimeout(timer)
-    }
-  }, [
-    expanded,
-    searching,
-  ])
-
-  /*
-   * Focus input immediately after
-   * entering search mode.
-   */
   useEffect(() => {
     if (!searching) {
       return
@@ -67,10 +32,6 @@ export default function ExploreDiscoveryBar({
 
     inputRef.current?.focus()
   }, [searching])
-
-  const openControls = () => {
-    setExpanded(true)
-  }
 
   const openSearch = () => {
     setSearching(true)
@@ -103,242 +64,183 @@ export default function ExploreDiscoveryBar({
         inset-x-0
         top-0
         z-50
+        px-4
+        pt-4
       "
     >
-      {/* COLLAPSED */}
-      {!expanded && (
-        <div
+      {searching ? (
+        /* SEARCH INPUT MODE */
+        <form
+          onSubmit={
+            submitSearch
+          }
           className="
-            absolute
-            left-1/2
-            top-0
-            -translate-x-1/2
+            flex
+            items-center
+            gap-2
           "
         >
+          <div
+            className="
+              flex
+              min-w-0
+              flex-1
+              items-center
+              gap-2
+              rounded-full
+              bg-black/40
+              px-4
+              backdrop-blur-md
+            "
+          >
+            <Search
+              className="
+                size-4
+                shrink-0
+                text-white
+              "
+            />
+
+            <input
+              ref={inputRef}
+              type="search"
+              value={query}
+              onChange={(
+                event
+              ) =>
+                setQuery(
+                  event.target
+                    .value
+                )
+              }
+              placeholder="Search destination or area"
+              className="
+                min-w-0
+                flex-1
+                bg-transparent
+                py-3
+                text-sm
+                text-white
+                outline-none
+                placeholder:text-white/65
+              "
+            />
+          </div>
+
           <button
             type="button"
             onClick={
-              openControls
+              closeSearch
             }
-            aria-label="Open discovery controls"
+            aria-label="Cancel search"
             className="
               flex
-              h-7
-              min-w-12
+              size-11
+              shrink-0
               items-center
               justify-center
-              rounded-b-xl
+              rounded-full
               bg-black/40
-              px-3
               text-white
               backdrop-blur-md
               transition
               active:scale-[0.96]
             "
           >
-            <ChevronDown
+            <X
               className="size-4"
             />
           </button>
-        </div>
-      )}
-
-      {/* EXPANDED */}
-      <div
-        className={`
-          px-4
-          pt-4
-          transition-all
-          duration-300
-          ease-out
-
-          ${
-            expanded
-              ? `
-                translate-y-0
-                opacity-100
-              `
-              : `
-                pointer-events-none
-                -translate-y-full
-                opacity-0
-              `
-          }
-        `}
-      >
-        {searching ? (
-          /* SEARCH INPUT MODE */
-          <form
-            onSubmit={
-              submitSearch
+        </form>
+      ) : (
+        /* DEFAULT CONTROLS */
+        <div
+          className="
+            flex
+            items-center
+            gap-2
+          "
+        >
+          <button
+            type="button"
+            onClick={
+              openSearch
             }
             className="
               flex
+              min-w-0
+              flex-1
               items-center
               gap-2
+              rounded-full
+              bg-black/40
+              px-4
+              py-3
+              text-left
+              text-sm
+              text-white
+              backdrop-blur-md
+              transition
+              active:scale-[0.99]
             "
           >
-            <div
+            <Search
               className="
-                flex
-                min-w-0
-                flex-1
-                items-center
-                gap-2
-                rounded-full
-                bg-black/40
-                px-4
-                backdrop-blur-md
-              "
-            >
-              <Search
-                className="
-                  size-4
-                  shrink-0
-                  text-white
-                "
-              />
-
-              <input
-                ref={inputRef}
-                type="search"
-                value={query}
-                onChange={(
-                  event
-                ) =>
-                  setQuery(
-                    event.target
-                      .value
-                  )
-                }
-                placeholder="Search destination or area"
-                className="
-                  min-w-0
-                  flex-1
-                  bg-transparent
-                  py-3
-                  text-sm
-                  text-white
-                  outline-none
-                  placeholder:text-white/65
-                "
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={
-                closeSearch
-              }
-              aria-label="Cancel search"
-              className="
-                flex
-                size-11
+                size-4
                 shrink-0
-                items-center
-                justify-center
-                rounded-full
-                bg-black/40
-                text-white
-                backdrop-blur-md
-                transition
-                active:scale-[0.96]
+              "
+            />
+
+            <span
+              className="
+                truncate
+                text-white/85
               "
             >
-              <X
-                className="size-4"
-              />
-            </button>
-          </form>
-        ) : (
-          /* DISCOVERY CONTROLS */
-          <div
+              Search places
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={
+              onPersonalize
+            }
             className="
               flex
+              shrink-0
               items-center
               gap-2
+              rounded-full
+              bg-white
+              px-4
+              py-3
+              text-sm
+              font-medium
+              text-black
+              shadow-sm
+              transition
+              active:scale-[0.98]
             "
           >
-            <button
-              type="button"
-              onClick={
-                openSearch
-              }
+            <Sparkles
               className="
-                flex
-                min-w-0
-                flex-1
-                items-center
-                gap-2
-                rounded-full
-                bg-black/40
-                px-4
-                py-3
-                text-left
-                text-sm
-                text-white
-                backdrop-blur-md
-                transition
-                active:scale-[0.99]
-              "
-            >
-              <Search
-                className="
-                  size-4
-                  shrink-0
-                "
-              />
-
-              <span
-                className="
-                  truncate
-                  text-white/85
-                "
-              >
-                Search places
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={
-                onPersonalize
-              }
-              className="
-                flex
+                size-4
                 shrink-0
-                items-center
-                gap-2
-                rounded-full
-                bg-white
-                px-4
-                py-3
-                text-sm
-                font-medium
-                text-black
-                transition
-                active:scale-[0.98]
+              "
+            />
+
+            <span
+              className="
+                hidden
+                sm:inline
               "
             >
-              <Sparkles
-                className="
-                  size-4
-                  shrink-0
-                "
-              />
-
-              <span
-                className="
-                  hidden
-                  sm:inline
-                "
-              >
-                {profileLabel}
-              </span>
-            </button>
-          </div>
-        )}
-      </div>
+              {profileLabel}
+            </span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }

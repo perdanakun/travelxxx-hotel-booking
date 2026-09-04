@@ -149,8 +149,8 @@ const handlePersonalize =
           }
           className="
             absolute
-            right-3
-            top-[92px]
+            right-4
+            top-[70px]
             z-50
             flex
             size-9

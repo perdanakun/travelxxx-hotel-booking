@@ -33,7 +33,12 @@ export default function DestinationSection({
   const [
     detailsVisible,
     setDetailsVisible,
-  ] = useState(true)
+  ] = useState(false)
+
+  const [
+    activeVideoIndex,
+    setActiveVideoIndex,
+  ] = useState(0)
 
   useEffect(() => {
     const section =
@@ -42,7 +47,10 @@ export default function DestinationSection({
     const feed =
       feedRef.current
 
-    if (!section || !feed) {
+    if (
+      !section ||
+      !feed
+    ) {
       return
     }
 
@@ -83,13 +91,16 @@ export default function DestinationSection({
     onActiveChange,
   ])
 
-  const toggleDetails =
-    () => {
-      setDetailsVisible(
-        (current) =>
-          !current
-      )
-    }
+  const toggleDetails = (
+    event
+  ) => {
+    event.stopPropagation()
+
+    setDetailsVisible(
+      (current) =>
+        !current
+    )
+  }
 
   const openDestinationHotels = (
     event
@@ -112,7 +123,9 @@ export default function DestinationSection({
 
   return (
     <section
-      ref={sectionRef}
+      ref={
+        sectionRef
+      }
       data-explore-item
       data-index={
         index
@@ -144,6 +157,9 @@ export default function DestinationSection({
         muted={
           muted
         }
+        onVideoIndexChange={
+          setActiveVideoIndex
+        }
       />
 
       {/* VIDEO GRADIENT */}
@@ -162,20 +178,61 @@ export default function DestinationSection({
 
       {/* DESTINATION INFO */}
       <div
-        onClick={
-          toggleDetails
-        }
         className="
           absolute
           inset-x-0
           bottom-[68px]
           z-20
-          cursor-pointer
           p-5
-          pr-20
           pb-3
+          pr-20
         "
       >
+        {/* VIDEO SLIDER INDICATOR */}
+        {place.videos?.length >
+          1 && (
+          <div
+            className="
+              mb-2
+              flex
+              items-center
+              gap-1.5
+            "
+          >
+            {place.videos.map(
+              (
+                video,
+                videoIndex
+              ) => (
+                <span
+                  key={
+                    video.id
+                  }
+                  className={`
+                    h-1.5
+                    rounded-full
+                    transition-all
+                    duration-200
+
+                    ${
+                      videoIndex ===
+                      activeVideoIndex
+                        ? `
+                          w-5
+                          bg-white
+                        `
+                        : `
+                          w-1.5
+                          bg-white/40
+                        `
+                    }
+                  `}
+                />
+              )
+            )}
+          </div>
+        )}
+
         {/* DESTINATION LINK */}
         <button
           type="button"
@@ -216,75 +273,80 @@ export default function DestinationSection({
             </h2>
 
             <p
-            className="
-              mt-0
-              text-xs
-              text-white/70
-            "
-          >
-            {
-              place.destination
-            }
-          </p>
-          </div>
-
-
-        </button>
-
-        {/* EXPANDED DETAILS */}
-        {detailsVisible && (
-          <>
-            {/* TAGS */}
-            <div
               className="
-                mt-1.5
-                flex
-                flex-wrap
-                gap-1.5
-              "
-            >
-              {place.tags.map(
-                (
-                  tag
-                ) => (
-                  <span
-                    key={
-                      tag
-                    }
-                    className="
-                      rounded-full
-                      bg-white/15
-                      px-2.5
-                      py-1
-                      text-[11px]
-                      font-medium
-                      backdrop-blur-sm
-                    "
-                  >
-                    {
-                      tag
-                    }
-                  </span>
-                )
-              )}
-            </div>
-
-            {/* CAPTION */}
-            <p
-              className="
-                mt-1
-                line-clamp-3
-                max-w-[300px]
-                text-sm
-                leading-relaxed
-                text-white/90
+                text-xs
+                text-white/70
               "
             >
               {
-                place.caption
+                place.destination
               }
             </p>
-          </>
+          </div>
+        </button>
+
+ {/* CAPTION */}
+<button
+  type="button"
+  onClick={toggleDetails}
+  className="
+    mt-1
+    block
+    max-w-[300px]
+    text-left
+    text-sm
+    leading-relaxed
+    text-white/90
+    transition-opacity
+    active:opacity-70
+  "
+>
+  <span
+    className={
+      detailsVisible
+        ? 'block'
+        : 'block truncate'
+    }
+  >
+    {place.caption}
+  </span>
+</button>
+
+        {/* EXPANDED DETAILS */}
+        {detailsVisible && (
+          <div
+            className="
+              mt-2
+              flex
+              flex-wrap
+              gap-1.5
+            "
+          >
+            {place.tags.map(
+              (
+                tag
+              ) => (
+                <span
+                  key={
+                    tag
+                  }
+                  className="
+                    rounded-full
+                    bg-white/15
+                    px-2.5
+                    py-1
+                    text-[11px]
+                    font-medium
+                    backdrop-blur-sm
+                  "
+                >
+                  {
+                    tag
+                  }
+                </span>
+              )
+            )}
+          </div>
         )}
       </div>
     </section>
