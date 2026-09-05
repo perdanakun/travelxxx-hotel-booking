@@ -18,22 +18,18 @@ export default function AppHeader({
   currency,
   onCurrencyChange,
 }) {
-  const backButtonClasses = `
-    flex
-    size-10
-    shrink-0
-    items-center
-    justify-center
-    rounded-full
-    border
-    border-border
-    bg-background
-    text-foreground
-    transition-all
-    touch-manipulation
-    hover:bg-surface
-    active:scale-[0.96]
-  `
+const backButtonClasses = `
+  flex
+  size-8
+  shrink-0
+  items-center
+  justify-center
+  text-foreground
+  transition
+  touch-manipulation
+  hover:opacity-70
+  active:scale-[0.92]
+`
 
   const showCurrencySwitcher =
     currency &&
@@ -65,7 +61,6 @@ export default function AppHeader({
           (onBack ? (
             <button
               type="button"
-              variant="ghost"
               onClick={onBack}
               aria-label="Go back"
               className={backButtonClasses}
