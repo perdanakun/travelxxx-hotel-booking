@@ -11,8 +11,6 @@ import {
   Check,
   Compass,
   Heart,
-  MapPin,
-  Search,
   Sparkles,
   X,
 } from 'lucide-react'
@@ -32,8 +30,11 @@ import DestinationInput from '@/components/search/DestinationInput'
 import DestinationMapCard from '@/components/search/DestinationMapCard'
 
 import {
+  useTravelerProfile,
+} from '@/context/TravelerProfileContext'
+
+import {
   getTravelerProfile,
-  saveTravelerProfile,
 } from '@/lib/travelerProfile'
 
 import {
@@ -1848,6 +1849,10 @@ export default function Page() {
   const searchParams =
     useSearchParams()
 
+  const {
+  setProfile,
+} = useTravelerProfile()
+
   const editPreferences =
     searchParams.get(
       'mode'
@@ -2034,13 +2039,13 @@ destination: {
           now,
       }
 
-      saveTravelerProfile(
-        profile
-      )
+setProfile(
+  profile
+)
 
-      setScreen(
-        'matching'
-      )
+setScreen(
+  'matching'
+)
     }
 
   if (

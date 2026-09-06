@@ -32,6 +32,10 @@ import {
   useCompare,
 } from '@/context/CompareContext'
 
+import {
+  useTravelerProfile,
+} from '@/context/TravelerProfileContext'
+
 
 export default function ExplorePage() {
   const feedRef =
@@ -39,6 +43,21 @@ export default function ExplorePage() {
 
   const router =
     useRouter()
+
+
+  /* -------------------------------------------------
+     TRAVELER PROFILE
+  -------------------------------------------------- */
+
+  const {
+    profile: travelerProfile,
+    ready: travelerProfileReady,
+  } = useTravelerProfile()
+
+
+  /* -------------------------------------------------
+     FEED STATE
+  -------------------------------------------------- */
 
   const [
     activeIndex,
@@ -50,9 +69,11 @@ export default function ExplorePage() {
     setMuted,
   ] = useState(true)
 
-  /*
-   * SEARCH LOADING
-   */
+
+  /* -------------------------------------------------
+     SEARCH LOADING
+  -------------------------------------------------- */
+
   const [
     searchLoading,
     setSearchLoading,
@@ -63,11 +84,74 @@ export default function ExplorePage() {
     setSearchQuery,
   ] = useState('')
 
+
+  /* -------------------------------------------------
+     GLOBAL FAVORITE
+  -------------------------------------------------- */
+
+  const {
+    isDestinationFavorite,
+    toggleDestinationFavorite,
+    isHotelFavorite,
+    toggleHotelFavorite,
+  } = useFavorite()
+
+
+  /* -------------------------------------------------
+     GLOBAL COMPARE
+  -------------------------------------------------- */
+
+  const {
+    comparedIds,
+    count: compareCount,
+    toggleCompare,
+    maxCompare,
+  } = useCompare()
+
+
+  /* -------------------------------------------------
+     PROFILE DERIVED DATA
+  -------------------------------------------------- */
+
+  const travelerName =
+    travelerProfile?.name ??
+    'Traveler'
+
+  const profileLabel =
+    travelerProfile
+      ?.profileLabel ??
+    'Curious traveler'
+
+  const destinationName =
+    travelerProfile
+      ?.destination
+      ?.name ??
+    'your destination'
+
+  const preferences =
+    travelerProfile
+      ?.preferences ??
+    []
+
+  const preferenceLabels =
+    travelerProfile
+      ?.preferenceLabels ??
+    []
+
+
+  /* -------------------------------------------------
+     ACTIVE PLACE
+  -------------------------------------------------- */
+
   const activePlace =
     explorePlaces[
       activeIndex
     ]
 
+
+  /* -------------------------------------------------
+     SEARCH
+  -------------------------------------------------- */
 
   const handleSearch = (
     query
@@ -79,10 +163,6 @@ export default function ExplorePage() {
       return
     }
 
-    /*
-     * Store query so LoadingScreen
-     * can show what is being searched.
-     */
     setSearchQuery(
       trimmedQuery
     )
@@ -111,36 +191,44 @@ export default function ExplorePage() {
   }
 
 
+  /* -------------------------------------------------
+     PERSONALIZE / EDIT PROFILE
+  -------------------------------------------------- */
+
   const handlePersonalize =
     () => {
+      if (travelerProfile) {
+        router.push(
+          '/onboarding-survey?mode=preferences'
+        )
+
+        return
+      }
+
       router.push(
         '/onboarding-survey'
       )
     }
 
 
-  const {
-  isDestinationFavorite,
-  toggleDestinationFavorite,
-  isHotelFavorite,
-  toggleHotelFavorite,
-} = useFavorite()
+  /* -------------------------------------------------
+     PROFILE LOADING
+  -------------------------------------------------- */
 
-const {
-  comparedIds,
-  count: compareCount,
-  toggleCompare,
-  maxCompare,
-} = useCompare()
+  if (!travelerProfileReady) {
+    return (
+      <LoadingScreen
+        title="Preparing Explore..."
+        message="Loading your traveler profile."
+      />
+    )
+  }
 
-  /*
-   * SEARCH TRANSITION
-   *
-   * Because this return happens
-   * before the Explore UI below,
-   * the whole screen is replaced
-   * by our shared LoadingScreen.
-   */
+
+  /* -------------------------------------------------
+     SEARCH TRANSITION
+  -------------------------------------------------- */
+
   if (searchLoading) {
     return (
       <LoadingScreen
@@ -156,6 +244,10 @@ const {
   }
 
 
+  /* -------------------------------------------------
+     PAGE
+  -------------------------------------------------- */
+
   return (
     <main
       className="
@@ -164,11 +256,15 @@ const {
         overflow-hidden
         bg-black
         text-white
+
         md:mx-auto
         md:max-w-md
       "
     >
-      {/* DESTINATION FEED */}
+      {/* -------------------------------------------------
+          DESTINATION FEED
+      -------------------------------------------------- */}
+
       <div
         ref={feedRef}
         className="
@@ -177,6 +273,7 @@ const {
           snap-mandatory
           overflow-y-auto
           overscroll-y-contain
+
           [scrollbar-width:none]
           [&::-webkit-scrollbar]:hidden
         "
@@ -186,95 +283,131 @@ const {
             place,
             index
           ) => (
-<DestinationSection
-  key={place.id}
-  place={place}
-  active={
-    activeIndex === index
-  }
-  muted={muted}
-  index={index}
-  onActiveChange={
-    setActiveIndex
-  }
-  feedRef={feedRef}
+            <DestinationSection
+              key={place.id}
 
-  favorite={
-    isDestinationFavorite(
-      place.id
-    )
-  }
-  onFavorite={() =>
-    toggleDestinationFavorite(
-      place.id
-    )
-  }
+              place={place}
 
-  comparedIds={
-    comparedIds
-  }
-  compareCount={
-    compareCount
-  }
-  maxCompare={
-    maxCompare
-  }
-  onToggleCompare={
-    toggleCompare
-  }
+              active={
+                activeIndex ===
+                index
+              }
 
-  isHotelFavorite={
-    isHotelFavorite
-  }
-  onToggleHotelFavorite={
-    toggleHotelFavorite
-  }
-/>
+              muted={muted}
+
+              index={index}
+
+              onActiveChange={
+                setActiveIndex
+              }
+
+              feedRef={
+                feedRef
+              }
+
+              favorite={
+                isDestinationFavorite(
+                  place.id
+                )
+              }
+
+              onFavorite={() =>
+                toggleDestinationFavorite(
+                  place.id
+                )
+              }
+
+              comparedIds={
+                comparedIds
+              }
+
+              compareCount={
+                compareCount
+              }
+
+              maxCompare={
+                maxCompare
+              }
+
+              onToggleCompare={
+                toggleCompare
+              }
+
+              isHotelFavorite={
+                isHotelFavorite
+              }
+
+              onToggleHotelFavorite={
+                toggleHotelFavorite
+              }
+
+              travelerProfile={
+                travelerProfile
+              }
+            />
           )
         )}
       </div>
 
 
-      {/* SEARCH + PERSONALIZE */}
+      {/* -------------------------------------------------
+          SEARCH + PERSONALIZATION
+      -------------------------------------------------- */}
+
       <ExploreDiscoveryBar
         onSearch={
           handleSearch
         }
+
         onPersonalize={
           handlePersonalize
         }
-        profileLabel="Personalize"
+
+        profileLabel={
+          travelerProfile
+            ? profileLabel
+            : 'Personalize'
+        }
       />
 
 
-      {/* SOUND */}
+      {/* -------------------------------------------------
+          SOUND
+      -------------------------------------------------- */}
+
       {activePlace && (
         <button
           type="button"
+
           onClick={() =>
             setMuted(
               (current) =>
                 !current
             )
           }
+
           aria-label={
             muted
               ? 'Turn sound on'
               : 'Mute video'
           }
+
           className="
             absolute
             right-4
             top-[70px]
             z-50
+
             flex
             size-9
             items-center
             justify-center
+
             rounded-full
             bg-black/40
             text-white
             backdrop-blur-md
+
             transition
             active:scale-[0.96]
           "
@@ -292,7 +425,10 @@ const {
       )}
 
 
-      {/* BOTTOM NAV */}
+      {/* -------------------------------------------------
+          BOTTOM NAV
+      -------------------------------------------------- */}
+
       <div
         className="
           absolute

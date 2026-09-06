@@ -2,7 +2,6 @@
 
 import {
   useEffect,
-  useState,
 } from 'react'
 
 import {
@@ -12,69 +11,62 @@ import {
 import LoadingScreen from '@/components/LoadingScreen'
 
 import {
-  getTravelerProfile,
-  hasCompletedOnboarding,
-} from '@/lib/travelerProfile'
+  useTravelerProfile,
+} from '@/context/TravelerProfileContext'
 
 
 export default function HomePage() {
   const router =
     useRouter()
 
-  const [
+  const {
     profile,
-    setProfile,
-  ] = useState(null)
+    ready,
+  } = useTravelerProfile()
 
-  const [
-    checked,
-    setChecked,
-  ] = useState(false)
 
-  useEffect(() => {
-    const travelerProfile =
-      getTravelerProfile()
-
-    const completed =
-      hasCompletedOnboarding()
-
-    const validProfile =
-      Boolean(
-        completed &&
-        travelerProfile?.name
-      )
-
-    setProfile(
-      validProfile
-        ? travelerProfile
-        : null
-    )
-
-    setChecked(true)
-  }, [])
-
+  /* -------------------------------------------------
+     ROUTING
+  -------------------------------------------------- */
 
   useEffect(() => {
-    if (!checked) {
+    /*
+     * Wait until TravelerProfileContext
+     * has finished reading localStorage.
+     */
+    if (!ready) {
       return
     }
 
+
     /*
-     * Returning user gets slightly
-     * longer branded preparation.
+     * A valid saved profile means
+     * onboarding has already been
+     * completed.
+     */
+    const hasProfile =
+      Boolean(
+        profile?.name
+      )
+
+
+    /*
+     * Returning users get a slightly
+     * longer branded transition.
      *
-     * First visit only needs a short
+     * First visit only gets a short
      * opening transition.
      */
     const duration =
-      profile
+      hasProfile
         ? 1000
         : 700
+
 
     const timer =
       window.setTimeout(
         () => {
-          if (profile) {
+          if (hasProfile) {
             router.replace(
               '/explore'
             )
@@ -89,24 +81,24 @@ export default function HomePage() {
         duration
       )
 
+
     return () => {
       window.clearTimeout(
         timer
       )
     }
   }, [
-    checked,
+    ready,
     profile,
     router,
   ])
 
 
-  /*
-   * While localStorage is being
-   * checked, use the same loading
-   * visual too.
-   */
-  if (!checked) {
+  /* -------------------------------------------------
+     CONTEXT HYDRATION
+  -------------------------------------------------- */
+
+  if (!ready) {
     return (
       <LoadingScreen
         title="Opening TravelXXX"
@@ -118,10 +110,11 @@ export default function HomePage() {
   }
 
 
-  /*
-   * RETURNING USER
-   */
-  if (profile) {
+  /* -------------------------------------------------
+     RETURNING USER
+  -------------------------------------------------- */
+
+  if (profile?.name) {
     return (
       <LoadingScreen
         title={`Welcome back, ${profile.name}.`}
@@ -133,9 +126,10 @@ export default function HomePage() {
   }
 
 
-  /*
-   * FIRST VISIT
-   */
+  /* -------------------------------------------------
+     FIRST VISIT
+  -------------------------------------------------- */
+
   return (
     <LoadingScreen
       title="Welcome to TravelXXX"

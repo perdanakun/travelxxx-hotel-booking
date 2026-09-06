@@ -35,6 +35,10 @@ import FeaturedTripCard from '@/components/FeaturedTripCard'
 import DestinationCard from '@/components/explore/DestinationCard'
 
 import {
+  useTravelerProfile,
+} from '@/context/TravelerProfileContext'
+
+import {
   hotels,
 } from '@/data/hotels'
 
@@ -50,9 +54,7 @@ import {
   getDefaultStayDates,
 } from '@/lib/defaultStayDates'
 
-import {
-  getTravelerProfile,
-} from '@/lib/travelerProfile'
+
 
 import {
   useCompare,
@@ -97,24 +99,14 @@ export default function Page() {
   const router =
     useRouter()
 
+  const {
+  profile: travelerProfile,
+  ready: travelerProfileReady,
+} = useTravelerProfile()
+
   const defaultStayDates =
     getDefaultStayDates()
 
-
-  /* -------------------------------------------------
-     TRAVELER PROFILE
-  -------------------------------------------------- */
-
-  const [
-    travelerProfile,
-    setTravelerProfile,
-  ] = useState(null)
-
-  useEffect(() => {
-    setTravelerProfile(
-      getTravelerProfile()
-    )
-  }, [])
 
 
   /* -------------------------------------------------
@@ -147,6 +139,41 @@ export default function Page() {
   })
 
 
+  useEffect(() => {
+  if (
+    !travelerProfileReady ||
+    !travelerProfile?.destination
+  ) {
+    return
+  }
+
+  const destination =
+    travelerProfile.destination
+
+  setSearch(
+    (current) => ({
+      ...current,
+
+      destination: {
+        id:
+          destination.id,
+
+        city:
+          destination.name,
+
+        country:
+          destination.country,
+
+        label:
+          destination.label,
+      },
+    })
+  )
+}, [
+  travelerProfileReady,
+  travelerProfile?.destination,
+])
+
   /* -------------------------------------------------
      SEARCH LOADING
   -------------------------------------------------- */
@@ -156,12 +183,12 @@ export default function Page() {
     setSearchLoading,
   ] = useState(false)
 
-  const [
-    loadingDestination,
-    setLoadingDestination,
-  ] = useState(
-    'Yogyakarta'
-  )
+const [
+  loadingDestination,
+  setLoadingDestination,
+] = useState(
+  'your destination'
+)
 
   /* -------------------------------------------------
      GLOBAL COMPARE and FAVORITE CART
@@ -198,7 +225,7 @@ const {
     travelerProfile
       ?.destination
       ?.name ??
-    'Yogyakarta'
+    'your destination'
 
   const profileBudget =
     travelerProfile
@@ -362,6 +389,15 @@ const {
      SEARCH LOADING SCREEN
   -------------------------------------------------- */
 
+if (!travelerProfileReady) {
+  return (
+    <LoadingScreen
+      title="Loading your trip..."
+      message="Preparing your personalized stay recommendations."
+    />
+  )
+}
+
   if (searchLoading) {
     return (
       <LoadingScreen
@@ -462,10 +498,12 @@ const {
           >
             <div>
               <p
-                className="
-                  text-xs
-                  font-semibold
-                  text-secondary
+           className="
+            text-xs
+            font-semibold
+            uppercase
+            tracking-[0.1em]
+            text-secondary
                 "
               >
                 Hello, {travelerName}!
@@ -520,16 +558,6 @@ const {
         >
           About you
         </p>
-
-        <h2
-          className="
-            mt-1
-            text-1xl
-            font-bold
-          "
-        >
-          Traveling profile
-        </h2>
 
 
         {/* PROFILE CARD */}
@@ -659,6 +687,7 @@ const {
 <div
   className="
     mt-4
+    ml-5
     flex
     snap-x
     snap-mandatory
@@ -666,6 +695,7 @@ const {
     overflow-x-auto
     px-5
     pb-2
+
 
     [scrollbar-width:none]
     [&::-webkit-scrollbar]:hidden

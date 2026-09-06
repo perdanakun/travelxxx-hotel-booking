@@ -3,6 +3,9 @@ import './globals.css'
 
 import { CompareProvider } from '@/context/CompareContext'
 import { FavoriteProvider } from '@/context/FavoriteContext'
+import {
+  TravelerProfileProvider,
+} from '@/context/TravelerProfileContext'
 
 export const metadata = {
   title: 'TravelXXX — Find stays that fit your trip',
@@ -26,11 +29,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className="light">
       <body className="antialiased">
-        <CompareProvider>
-          <FavoriteProvider>
-            {children}
-          </FavoriteProvider>
-        </CompareProvider>
+        <TravelerProfileProvider>
+          <CompareProvider>
+            <FavoriteProvider>
+              {children}
+            </FavoriteProvider>
+          </CompareProvider>
+        </TravelerProfileProvider>
 
         {process.env.NODE_ENV === 'production' && (
           <Analytics />
