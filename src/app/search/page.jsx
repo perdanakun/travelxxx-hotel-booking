@@ -12,6 +12,8 @@ import {
 
 import { useCompare } from '@/context/CompareContext'
 
+import { useFavorite } from '@/context/FavoriteContext'
+
 import { Button } from '@/components/ui/button'
 
 import { hotels } from '@/data/hotels'
@@ -35,11 +37,21 @@ function SearchContent() {
 
   const defaultStayDates = getDefaultStayDates()
 
+    /* -------------------------------------------------
+     GLOBAL COMPARE and FAVORITE CART
+  -------------------------------------------------- */
+
   const {
-  comparedIds,
-  toggleCompare,
-  isCompared,
-} = useCompare()
+    comparedIds,
+    count: compareCount,
+    toggleCompare,
+    maxCompare,
+  } = useCompare()
+
+const {
+  isHotelFavorite,
+  toggleHotelFavorite,
+} = useFavorite()
 
 const destinationParam =
   searchParams.get('destination') ??
@@ -343,15 +355,42 @@ const getHotelHref = (
       }
 
       return (
-    <HotelCard
-      key={hotel.id}
-      hotel={hotel}
-      badge={badge}
-      currency={currency}
-      href={getHotelHref(hotel.id)}
-      compared={isCompared(hotel.id)}
-      onCompare={() => toggleCompare(hotel.id)}
-    />
+ <HotelCard
+  key={hotel.id}
+  hotel={hotel}
+  currency="IDR"
+
+  compared={
+    comparedIds.includes(
+      hotel.id
+    )
+  }
+
+  onCompare={() =>
+    toggleCompare(
+      hotel.id
+    )
+  }
+
+  compareDisabled={
+    compareCount >= maxCompare &&
+    !comparedIds.includes(
+      hotel.id
+    )
+  }
+
+  favorite={
+    isHotelFavorite(
+      hotel.id
+    )
+  }
+
+  onFavorite={() =>
+    toggleHotelFavorite(
+      hotel.id
+    )
+  }
+/>
       )
     })
   ) : (
@@ -381,15 +420,7 @@ const getHotelHref = (
   )}
 </section>
 
-      {/* SPACE FOR FIXED UI */}
-      <div className="h-8" />
 
-      {/* COMPARE BAR */}
-      <div className="[&>div]:!bottom-[5px]">
-      <CompareBar
-        count={comparedIds.length}
-      />
-      </div>
 
       {/* BOTTOM NAV */}
       <BottomNav active="hotels" />

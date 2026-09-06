@@ -1,16 +1,18 @@
 'use client'
 
 import Link from 'next/link'
+
 import {
+  BedDouble,
   Compass,
   CopyPlus,
   Heart,
-  House,
   User,
-  Sparkles,
-  BedDouble,
-  ShoppingBag
 } from 'lucide-react'
+
+import {
+  useCompare,
+} from '@/context/CompareContext'
 
 const navItems = [
   {
@@ -48,6 +50,10 @@ const navItems = [
 export default function BottomNav({
   active = 'home',
 }) {
+  const {
+    count: compareCount,
+  } = useCompare()
+
   const itemClass = (name) =>
     `
       flex
@@ -89,6 +95,10 @@ export default function BottomNav({
       {navItems.map((item) => {
         const Icon = item.icon
 
+        const showCompareBadge =
+          item.name === 'compare' &&
+          compareCount > 0
+
         return (
           <Link
             key={item.name}
@@ -100,7 +110,40 @@ export default function BottomNav({
                 : undefined
             }
           >
-            <Icon className="size-4" />
+            <span
+              className="
+                relative
+                inline-flex
+              "
+            >
+              <Icon className="size-4" />
+
+              {showCompareBadge && (
+                <span
+                  aria-label={`${compareCount} hotels selected for comparison`}
+                  className="
+                    absolute
+                    -right-2.5
+                    -top-2
+                    flex
+                    min-w-4
+                    h-4
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-primary
+                    px-1
+                    text-[9px]
+                    font-bold
+                    leading-none
+                    text-primary-foreground
+                    shadow-sm
+                  "
+                >
+                  {compareCount}
+                </span>
+              )}
+            </span>
 
             <span>
               {item.label}

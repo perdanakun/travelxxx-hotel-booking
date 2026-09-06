@@ -1,63 +1,155 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { MapPin, Search } from 'lucide-react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
-import { destinations } from '@/data/destinations'
+import {
+  MapPin,
+  Search,
+} from 'lucide-react'
+
+import {
+  destinations,
+} from '@/data/destinations'
 
 export default function DestinationInput({
   value,
   onChange,
+  id = 'destination',
+  placeholder = 'Where do you want to go?',
 }) {
-  const [query, setQuery] = useState(
+  const containerRef =
+    useRef(null)
+
+  const [
+    query,
+    setQuery,
+  ] = useState(
     value?.label ?? ''
   )
 
-  const [open, setOpen] = useState(false)
+  const [
+    open,
+    setOpen,
+  ] = useState(false)
 
   useEffect(() => {
-    setQuery(value?.label ?? '')
+    setQuery(
+      value?.label ?? ''
+    )
   }, [value])
 
-  const suggestions = useMemo(() => {
-    const normalizedQuery = query
-      .trim()
-      .toLowerCase()
-
-    if (!normalizedQuery) {
-      return destinations.slice(0, 5)
+  /*
+   * Close dropdown when clicking
+   * outside the component.
+   */
+  useEffect(() => {
+    const handlePointerDown = (
+      event
+    ) => {
+      if (
+        !containerRef.current?.contains(
+          event.target
+        )
+      ) {
+        setOpen(false)
+      }
     }
 
-    return destinations.filter((destination) =>
-      destination.label
-        .toLowerCase()
-        .includes(normalizedQuery)
+    document.addEventListener(
+      'pointerdown',
+      handlePointerDown
     )
-  }, [query])
 
-  const selectDestination = (destination) => {
-    setQuery(destination.label)
-    onChange(destination)
+    return () => {
+      document.removeEventListener(
+        'pointerdown',
+        handlePointerDown
+      )
+    }
+  }, [])
+
+  const suggestions =
+    useMemo(() => {
+      const normalizedQuery =
+        query
+          .trim()
+          .toLowerCase()
+
+      if (!normalizedQuery) {
+        return destinations.slice(
+          0,
+          5
+        )
+      }
+
+      return destinations.filter(
+        (destination) =>
+          destination.label
+            .toLowerCase()
+            .includes(
+              normalizedQuery
+            )
+      )
+    }, [query])
+
+  const selectDestination = (
+    destination
+  ) => {
+    setQuery(
+      destination.label
+    )
+
+    onChange(
+      destination
+    )
+
     setOpen(false)
   }
 
   return (
-    <div className="relative">
-
+    <div
+      ref={containerRef}
+      className="relative"
+    >
+      {/* INPUT */}
       <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Search
+          className="
+            pointer-events-none
+            absolute
+            left-3
+            top-1/2
+            size-4
+            -translate-y-1/2
+            text-muted-foreground
+          "
+        />
 
         <input
-          id="search-destination"
+          id={id}
           type="text"
           value={query}
-          placeholder="Where do you want to go?"
+          placeholder={
+            placeholder
+          }
           autoComplete="off"
-          onFocus={() => setOpen(true)}
+          onFocus={() =>
+            setOpen(true)
+          }
           onChange={(event) => {
-            setQuery(event.target.value)
+            setQuery(
+              event.target.value
+            )
 
-            // Typed text is not yet a valid selected destination.
+            /*
+             * Typed text is not
+             * a selected destination.
+             */
             onChange(null)
 
             setOpen(true)
@@ -80,10 +172,38 @@ export default function DestinationInput({
         />
       </div>
 
+      {/* SUGGESTIONS */}
       {open && (
-        <div className="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-border bg-background shadow-lg">
-          <div className="border-b border-border px-3 py-2">
-            <p className="text-xs font-medium text-muted-foreground">
+        <div
+          className="
+            absolute
+            inset-x-0
+            top-full
+            z-50
+            mt-2
+            overflow-hidden
+            rounded-2xl
+            border
+            border-border
+            bg-background
+            shadow-lg
+          "
+        >
+          <div
+            className="
+              border-b
+              border-border
+              px-3
+              py-2
+            "
+          >
+            <p
+              className="
+                text-xs
+                font-medium
+                text-muted-foreground
+              "
+            >
               {query
                 ? 'Matching destinations'
                 : 'Popular destinations'}
@@ -91,52 +211,89 @@ export default function DestinationInput({
           </div>
 
           <div className="p-1.5">
-            {suggestions.length > 0 ? (
-              suggestions.map((destination) => (
-                <button
-                  key={destination.id}
-                  type="button"
-                  onClick={() =>
-                    selectDestination(destination)
-                  }
-                  className="
-                    flex
-                    min-h-12
-                    w-full
-                    items-center
-                    gap-3
-                    rounded-xl
-                    px-3
-                    py-2
-                    text-left
-                    transition
-                    hover:bg-surface
-                    active:bg-surface
-                  "
-                >
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface">
-                    <MapPin className="size-4 text-secondary" />
-                  </span>
-
-                  <span>
-                    <span className="block text-sm font-semibold">
-                      {destination.city}
+            {suggestions.length >
+            0 ? (
+              suggestions.map(
+                (destination) => (
+                  <button
+                    key={
+                      destination.id
+                    }
+                    type="button"
+                    onClick={() =>
+                      selectDestination(
+                        destination
+                      )
+                    }
+                    className="
+                      flex
+                      min-h-12
+                      w-full
+                      items-center
+                      gap-3
+                      rounded-xl
+                      px-3
+                      py-2
+                      text-left
+                      transition
+                      hover:bg-surface
+                      active:bg-surface
+                    "
+                  >
+                    <span
+                      className="
+                        flex
+                        size-9
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-xl
+                        bg-surface
+                      "
+                    >
+                      <MapPin
+                        className="
+                          size-4
+                          text-secondary
+                        "
+                      />
                     </span>
 
-                    <span className="block text-xs text-muted-foreground">
-                      {destination.country}
-                    </span>
-                  </span>
-                </button>
-              ))
+ <span className="min-w-0">
+  <span
+    className="
+      block
+      truncate
+      text-sm
+      font-semibold
+    "
+  >
+    {destination.label}
+  </span>
+</span>
+                  </button>
+                )
+              )
             ) : (
-              <div className="px-3 py-4">
+              <div
+                className="
+                  px-3
+                  py-4
+                "
+              >
                 <p className="text-sm font-medium">
                   No destination found
                 </p>
 
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Try another city or destination.
+                <p
+                  className="
+                    mt-1
+                    text-xs
+                    text-muted-foreground
+                  "
+                >
+                  Try another city or
+                  destination.
                 </p>
               </div>
             )}

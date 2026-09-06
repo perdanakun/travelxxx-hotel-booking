@@ -21,6 +21,14 @@ import {
 export default function DraggableHotelRecommendation({
   hotel,
   currency = 'IDR',
+
+  compared = false,
+  onCompare,
+  compareDisabled = false,
+
+  favorite = false,
+  onFavorite,
+
   onClose,
 }) {
   const router = useRouter()
@@ -58,13 +66,6 @@ const [
     return null
   }
 
-  const compared =
-    isCompared(hotel.id)
-
-  const favorite =
-    isFavoriteHotel(
-      hotel.id
-    )
 
   const compareFull =
     comparedIds.length >=
@@ -303,35 +304,28 @@ const handlePointerDown = (
         <X className="size-3.5" />
       </button>
 
-      <HotelCard
-        hotel={hotel}
-        variant="feed"
-        currency={
-          currency
-        }
-        compared={
-          compared
-        }
-        onCompare={() => {
-          if (
-            compareFull
-          ) {
-            return
-          }
+<HotelCard
+  hotel={hotel}
+  currency={currency}
+  variant="feed"
 
-          toggleCompare(
-            hotel.id
-          )
-        }}
-        favorite={
-          favorite
-        }
-        onFavorite={() =>
-          toggleFavoriteHotel(
-            hotel.id
-          )
-        }
-      />
+  compared={
+    compared
+  }
+  onCompare={
+    onCompare
+  }
+  compareDisabled={
+    compareDisabled
+  }
+
+  favorite={
+    favorite
+  }
+  onFavorite={
+    onFavorite
+  }
+/>
     </div>
   )
 }

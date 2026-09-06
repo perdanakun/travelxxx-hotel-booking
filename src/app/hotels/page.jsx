@@ -1,392 +1,649 @@
 'use client'
 
-import { redirect } from 'next/navigation'
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
+import Image from 'next/image'
 
-
-import { useState } from 'react'
 import {
   ArrowRight,
   Heart,
   MapPin,
-  Compass,
-  Play,
-  Share2,
 } from 'lucide-react'
+
+import {
+  useRouter,
+} from 'next/navigation'
+
+
+
+import heroHotels from '@/assets/images/hero-hotels.jpg'
+
+import {
+  Button,
+} from '@/components/ui/button'
+
+import BottomNav from '@/components/BottomNav'
+import CompareBar from '@/components/CompareBar'
+import HotelCard from '@/components/HotelCard'
+import LoadingScreen from '@/components/LoadingScreen'
+import SearchForm from '@/components/search/SearchForm'
+import FeaturedTripCard from '@/components/FeaturedTripCard'
+import DestinationCard from '@/components/explore/DestinationCard'
+
+import {
+  hotels,
+} from '@/data/hotels'
+
+import {
+  trips,
+} from '@/data/trips'
+
+import {
+  explorePlaces,
+} from '@/data/explorePlaces'
 
 import {
   getDefaultStayDates,
 } from '@/lib/defaultStayDates'
 
-import Link from 'next/link'
-import Image from 'next/image'
+import {
+  getTravelerProfile,
+} from '@/lib/travelerProfile'
 
-import heroHotels from '@/assets/images/hero-hotels.jpg'
+import {
+  useCompare,
+} from '@/context/CompareContext'
 
-import { useRouter } from 'next/navigation'
-
-import { Button } from '@/components/ui/button'
-
-import { hotels } from '@/data/hotels'
-import { trips } from '@/data/trips'
-import AppHeader from '@/components/AppHeader'
-import BottomNav from '@/components/BottomNav'
-import HotelCard from '@/components/HotelCard'
-import CompareBar from '@/components/CompareBar'
-import SearchForm from '@/components/search/SearchForm'
-import FeaturedTripCard from '@/components/FeaturedTripCard'
+import {
+  useFavorite,
+} from '@/context/FavoriteContext'
 
 
+/* -------------------------------------------------
+   PREFERENCE COPY
+-------------------------------------------------- */
 
+const preferenceCopy = {
+  'food-cafes':
+    'local food and cafés',
 
-const feelings = [
-  {
-    title: 'Prawirotaman',
-    location: 'Yogyakarta, Indonesia',
-    activity: 'Street food, slow walks, local cafés',
-    creator: '@rani.travels',
-    image:
-      'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=700&q=85',
-    video: true,
-    ratio: 'aspect-[4/5]',
-  },
-  {
-    title: 'Ubud',
-    location: 'Bali, Indonesia',
-    activity: 'Yoga mornings, rice fields, soft adventures',
-    creator: '@slowstays',
-    image:
-      'https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?auto=format&fit=crop&w=700&q=85',
-    video: false,
-    ratio: 'aspect-[9/16]',
-  },
-  {
-    title: 'Kaliurang',
-    location: 'Yogyakarta, Indonesia',
-    activity: 'Cool air, forest trails, quiet views',
-    creator: '@weekendroamer',
-    image:
-      'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=700&q=85',
-    video: false,
-    ratio: 'aspect-[4/5]',
-  },
-  {
-    title: 'Jalan Kaliurang',
-    location: 'Yogyakarta, Indonesia',
-    activity: 'Trendy cafés and local evening crowds',
-    creator: '@citywalks',
-    image:
-      'https://images.unsplash.com/photo-1519671282429-b44660ead0a7?auto=format&fit=crop&w=700&q=85',
-    video: true,
-    ratio: 'aspect-[9/16]',
-  },
-]
+  walkable:
+    'walkable neighborhoods',
 
-function Chip({ children, active, onClick }) {
-  return (
-    <Button
-      type="button"
-      size="sm"
-      variant={active ? 'secondary' : 'outline'}
-      onClick={onClick}
-      className={`
-        shrink-0
-        rounded-full
-        px-3
-        py-1.5
-        font-medium
+  quiet:
+    'quiet, slower places',
 
-        ${
-          active
-            ? ''
-            : 'text-muted-foreground'
-        }
-      `}
-    >
-      {children}
-    </Button>
-  )
+  culture:
+    'culture and local life',
+
+  nature:
+    'nature nearby',
+
+  lively:
+    'lively, social areas',
 }
 
-function FeelingCard({ item }) {
-  const [saved, setSaved] = useState(false)
 
-  return (
-    <article className="w-[230px] shrink-0 overflow-hidden rounded-2xl border border-border bg-background shadow-sm">
-      <div className={`relative ${item.ratio}`}>
-        <img
-          src={item.image}
-          alt={item.title}
-          className="absolute inset-0 size-full object-cover"
-        />
 
-        {item.video && (
-          <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-foreground/85 px-2.5 py-1 text-[10px] font-semibold text-background">
-            <Play className="size-3 fill-current" />
-            Video
-          </span>
-        )}
-
-<Button
-  type="button"
-  size="icon-sm"
-  variant="ghost"
-  aria-label={`Save ${item.title}`}
-  onClick={() => setSaved(!saved)}
-  className="
-    absolute
-    right-3
-    top-3
-    size-9
-    rounded-full
-    bg-background/90
-    shadow-sm
-    backdrop-blur
-    hover:bg-background
-    active:scale-[0.94]
-  "
->
-  <Heart
-    className={`size-4 ${
-      saved
-        ? 'fill-primary text-primary'
-        : ''
-    }`}
-  />
-</Button>
-
-        <span className="absolute bottom-3 left-3 rounded-full bg-background/90 px-2.5 py-1 text-[10px]">
-          See original
-        </span>
-      </div>
-
-      <div className="p-3">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h3 className="text-sm font-bold">
-              {item.title}
-            </h3>
-
-            <p className="mt-1 text-xs text-muted-foreground">
-              {item.location}
-            </p>
-          </div>
-
-          <Share2 className="mt-1 size-3.5 text-muted-foreground" />
-        </div>
-
-        <p className="mt-3 text-sm leading-relaxed">
-          {item.activity}
-        </p>
-
-        <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
-          <span>{item.creator}</span>
-          <span>Food + local life</span>
-        </div>
-      </div>
-    </article>
-  )
-}
-
+/* -------------------------------------------------
+   HOTELS PAGE
+-------------------------------------------------- */
 
 export default function Page() {
-
-  const router = useRouter()
+  const router =
+    useRouter()
 
   const defaultStayDates =
-  getDefaultStayDates()
+    getDefaultStayDates()
 
-  const [search, setSearch] = useState({
+
+  /* -------------------------------------------------
+     TRAVELER PROFILE
+  -------------------------------------------------- */
+
+  const [
+    travelerProfile,
+    setTravelerProfile,
+  ] = useState(null)
+
+  useEffect(() => {
+    setTravelerProfile(
+      getTravelerProfile()
+    )
+  }, [])
+
+
+  /* -------------------------------------------------
+     HOTEL SEARCH
+  -------------------------------------------------- */
+
+  const [
+    search,
+    setSearch,
+  ] = useState({
     destination: {
       id: 'yogyakarta',
-      city: 'Yogyakarta',
-      country: 'Indonesia',
-      label: 'Yogyakarta, Indonesia',
+      city:
+        'Yogyakarta',
+      country:
+        'Indonesia',
+      label:
+        'Yogyakarta, Indonesia',
     },
+
     checkIn:
       defaultStayDates.checkIn,
+
     checkOut:
       defaultStayDates.checkOut,
+
     guests: 2,
+
     rooms: 1,
   })
 
-  const [activeTag, setActiveTag] = useState(
-    'For your profile'
+
+  /* -------------------------------------------------
+     SEARCH LOADING
+  -------------------------------------------------- */
+
+  const [
+    searchLoading,
+    setSearchLoading,
+  ] = useState(false)
+
+  const [
+    loadingDestination,
+    setLoadingDestination,
+  ] = useState(
+    'Yogyakarta'
   )
 
-  const [compared, setCompared] = useState([])
+  /* -------------------------------------------------
+     GLOBAL COMPARE and FAVORITE CART
+  -------------------------------------------------- */
 
-  const toggleCompare = (id) => {
-  setCompared((current) => {
-    if (current.includes(id)) {
-      return current.filter(
-        (item) => item !== id
+  const {
+    comparedIds,
+    count: compareCount,
+    toggleCompare,
+    maxCompare,
+  } = useCompare()
+
+const {
+  isHotelFavorite,
+  toggleHotelFavorite,
+  isDestinationFavorite,
+  toggleDestinationFavorite,
+} = useFavorite()
+
+  /* -------------------------------------------------
+     PROFILE DERIVED DATA
+  -------------------------------------------------- */
+
+  const travelerName =
+    travelerProfile?.name ??
+    'Traveler'
+
+  const profileLabel =
+    travelerProfile
+      ?.profileLabel ??
+    'Curious traveler'
+
+  const profileDestination =
+    travelerProfile
+      ?.destination
+      ?.name ??
+    'Yogyakarta'
+
+  const profileBudget =
+    travelerProfile
+      ?.budget
+      ?.shortLabel ??
+    travelerProfile
+      ?.budget
+      ?.label ??
+    null
+
+  const preferences =
+    travelerProfile
+      ?.preferences ??
+    []
+
+  const profilePreferenceText =
+    useMemo(
+      () => {
+        if (
+          preferences.length ===
+          0
+        ) {
+          return 'places and stays that fit your travel style'
+        }
+
+        const labels =
+          preferences
+            .map(
+              (
+                id
+              ) =>
+                preferenceCopy[
+                  id
+                ]
+            )
+            .filter(
+              Boolean
+            )
+            .slice(
+              0,
+              3
+            )
+
+        if (
+          labels.length ===
+          0
+        ) {
+          return 'places and stays that fit your travel style'
+        }
+
+        if (
+          labels.length ===
+          1
+        ) {
+          return labels[0]
+        }
+
+        if (
+          labels.length ===
+          2
+        ) {
+          return `${labels[0]} and ${labels[1]}`
+        }
+
+        return `${labels[0]}, ${labels[1]}, and ${labels[2]}`
+      },
+      [
+        preferences,
+      ]
+    )
+
+
+  /* -------------------------------------------------
+     CURATED EXPLORE PLACES
+  -------------------------------------------------- */
+
+  const curatedPlaces =
+    useMemo(
+      () => {
+        if (
+          !explorePlaces
+            ?.length
+        ) {
+          return []
+        }
+
+        /*
+         * For now we reuse the same
+         * Explore feed source.
+         *
+         * Later this can actually sort
+         * according to the traveler profile.
+         */
+        return explorePlaces
+          .slice(
+            0,
+            6
+          )
+      },
+      []
+    )
+
+
+  /* -------------------------------------------------
+     HOTEL SEARCH ACTION
+  -------------------------------------------------- */
+
+  const searchHotels =
+    () => {
+      const destinationName =
+        search.destination
+          ?.city ??
+        search.destination
+          ?.name ??
+        search.destination
+          ?.label ??
+        'your destination'
+
+      setLoadingDestination(
+        destinationName
       )
-    }
 
-    if (current.length >= 3) {
-      return current
-    }
+      setSearchLoading(
+        true
+      )
 
-    return [...current, id]
-  })
-}
-  return (
-    <main className="min-h-screen bg-background pb-24 text-foreground md:mx-auto md:max-w-md md:border-x md:border-border">
+      const params =
+        new URLSearchParams({
+          destination:
+            search.destination.id,
 
-{/* HERO + SEARCH */}
-<section className="relative">
- {/* HERO */}
-<div className="relative h-[200px] overflow-hidden">
-  <Image
-    src={heroHotels}
-    alt="hotels hero"
-    className="object-cover object-bottom"
-  />
+          checkIn:
+            search.checkIn,
 
-  {/* Contrast overlay */}
-  <div className="absolute inset-0 bg-black/0" />
+          checkOut:
+            search.checkOut,
 
-  {/* Fade into page background */}
-  <div className="absolute inset-x-0 bottom-0 h-[110px] bg-gradient-to-t from-background via-background/80 to-transparent" />
-</div>
+          guests:
+            String(
+              search.guests
+            ),
 
-  {/* SEARCH */}
-  <div className="relative z-10 mx-5 -mt-24">
-    <section className="rounded-2xl border border-border bg-background p-4 shadow-md">
+          rooms:
+            String(
+              search.rooms
+            ),
+        })
 
-            <div>
-            <p className="text-xs font-semibold text-secondary">
-              Hello, Dinda!
-            </p>
-
-            <h2 className="mt-1  font-bold mb-2">
-              Where will you stay next?
-            </h2>
-          </div>
-          
-      <SearchForm
-        value={search}
-        onChange={setSearch}
-        onSubmit={() => {
-          const params = new URLSearchParams({
-            destination: search.destination.id,
-            checkIn: search.checkIn,
-            checkOut: search.checkOut,
-            guests: String(search.guests),
-            rooms: String(search.rooms),
-          })
-
+      window.setTimeout(
+        () => {
           router.push(
             `/search?${params.toString()}`
           )
-        }}
+        },
+        1400
+      )
+    }
+
+
+  /* -------------------------------------------------
+     SEARCH LOADING SCREEN
+  -------------------------------------------------- */
+
+  if (searchLoading) {
+    return (
+      <LoadingScreen
+        titles={[
+          `Finding stays in ${loadingDestination}...`,
+          'Checking your trip details...',
+          'Preparing hotel options...',
+        ]}
+        message="Finding stays that fit your trip."
+        interval={450}
       />
-    </section>
-  </div>
-</section>
+    )
+  }
 
-      {/* ACTIVE PROFILE */}
-      <section className="mt-8 px-5">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
-              Discover your journey.
-            </p>
 
-            <h2 className="mt-1 text-2xl font-bold">
-              Where will you go next?
-            </h2>
-          </div>
+  /* -------------------------------------------------
+     PAGE
+  -------------------------------------------------- */
 
-<Button
-  type="button"
-  variant="link"
-  className="
-    h-auto
-    min-h-0
-    shrink-0
-    p-0
-    text-sm
-    font-medium
-    text-foreground
-  "
->
-  Edit profile
-</Button>
+  return (
+    <main
+      className="
+        min-h-screen
+        bg-background
+        pb-24
+        text-foreground
+
+        md:mx-auto
+        md:max-w-md
+        md:border-x
+        md:border-border
+      "
+    >
+      {/* -------------------------------------------------
+          HERO + HOTEL SEARCH
+      -------------------------------------------------- */}
+
+      <section
+        className="
+          relative
+        "
+      >
+        {/* HERO IMAGE */}
+        <div
+          className="
+            relative
+            h-[200px]
+            overflow-hidden
+          "
+        >
+          <Image
+            src={
+              heroHotels
+            }
+            alt="Hotels"
+            fill
+            priority
+            className="
+              object-cover
+              object-bottom
+            "
+          />
+
+          {/* FADE */}
+          <div
+            className="
+              absolute
+              inset-x-0
+              bottom-0
+              h-[110px]
+              bg-gradient-to-t
+              from-background
+              via-background/80
+              to-transparent
+            "
+          />
         </div>
 
-        <div className="mt-4 rounded-2xl border border-border bg-background p-4 shadow-sm">
-          <p className="font-bold">
-            Relaxed explorer{' '}
-            <span className="font-normal text-muted-foreground">
-              · Yogyakarta · $60–120/night
+
+        {/* SEARCH CARD */}
+        <div
+          className="
+            relative
+            z-10
+            mx-5
+            -mt-24
+          "
+        >
+          <section
+            className="
+              rounded-2xl
+              border
+              border-border
+              bg-background
+              p-4
+              shadow-md
+            "
+          >
+            <div>
+              <p
+                className="
+                  text-xs
+                  font-semibold
+                  text-secondary
+                "
+              >
+                Hello, {travelerName}!
+              </p>
+
+              <h1
+                className="
+                  mb-2
+                  mt-1
+                  font-bold
+                "
+              >
+                Where will you stay
+                next?
+              </h1>
+            </div>
+
+            <SearchForm
+              value={
+                search
+              }
+              onChange={
+                setSearch
+              }
+              onSubmit={
+                searchHotels
+              }
+            />
+          </section>
+        </div>
+      </section>
+
+
+      {/* -------------------------------------------------
+          TRAVELER PROFILE
+      -------------------------------------------------- */}
+
+      <section
+        className="
+          mt-8
+          px-5
+        "
+      >
+        <p
+          className="
+            text-xs
+            font-semibold
+            uppercase
+            tracking-[0.1em]
+            text-secondary
+          "
+        >
+          About you
+        </p>
+
+        <h2
+          className="
+            mt-1
+            text-1xl
+            font-bold
+          "
+        >
+          Traveling profile
+        </h2>
+
+
+        {/* PROFILE CARD */}
+        <div
+          className="
+            mt-4
+            rounded-2xl
+            border
+            border-border
+            bg-background
+            p-4
+            shadow-sm
+          "
+        >
+          <p
+            className="
+              font-bold
+            "
+          >
+            {profileLabel}
+
+            <span
+              className="
+                font-normal
+                text-muted-foreground
+              "
+            >
+              {' '}
+              · {profileDestination}
+
+              {profileBudget && (
+                <>
+                  {' '}
+                  · {profileBudget}/night
+                </>
+              )}
             </span>
           </p>
 
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Matched to your love of local food,
-            walkable neighborhoods, and a little
-            breathing room.
+          <p
+            className="
+              mt-2
+              text-sm
+              leading-relaxed
+              text-muted-foreground
+            "
+          >
+            {travelerName}, we&apos;re
+            matching places and stays
+            to your interest in{' '}
+            {profilePreferenceText}.
           </p>
         </div>
-
-     {/* MAGIC TRIP RECOMENDATION  */}      
-      <Link
-        href="/onboarding-survey"
-        className="
-          mt-5
-          flex
-          min-h-16
-          w-full
-          items-center
-          gap-3
-          rounded-2xl
-          bg-secondary
-          px-4
-          py-3.5
-          text-left
-          text-secondary-foreground
-          shadow-sm
-          transition-transform
-          touch-manipulation
-          active:scale-[0.99]
-        "
-      >
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-background/10 text-xl">
-          ✦
-        </span>
-
-        <span className="flex-1">
-          <strong className="block text-sm">
-            Help me decide where to go!
-          </strong>
-        </span>
-
-        <ArrowRight className="size-4" />
-      </Link>
       </section>
 
-      {/* EXPLORE BY FEELING */}
-      <section className="mt-9">
-        <div className="flex items-end justify-between px-5">
+
+      {/* -------------------------------------------------
+          EXPLORE BY FEELING
+      -------------------------------------------------- */}
+
+      <section
+        className="
+          mt-10
+        "
+      >
+        <div
+          className="
+            flex
+            items-end
+            justify-between
+            gap-4
+            px-5
+          "
+        >
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
-              Curated for you
+            <p
+              className="
+                text-xs
+                font-semibold
+                uppercase
+                tracking-[0.1em]
+                text-secondary
+              "
+            >
+              Explore by feeling
             </p>
 
-            <h2 className="mt-1 text-2xl font-bold">
-              Explore by feeling
-            </h2>
+            <p
+              className="
+                mt-1
+                max-w-xs
+                text-sm
+                leading-relaxed
+                text-muted-foreground
+              "
+            >
+              Places from Explore
+              that might fit your
+              travel style.
+            </p>
           </div>
 
           <Button
             type="button"
             variant="link"
+            onClick={() =>
+              router.push(
+                '/explore'
+              )
+            }
             className="
               h-auto
               min-h-0
+              shrink-0
               p-0
               text-sm
               font-medium
@@ -398,159 +655,293 @@ export default function Page() {
           </Button>
         </div>
 
-        
-        <div className="mt-4 flex snap-x gap-3 overflow-x-auto px-5 pb-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+{/* EXPLORE CARDS */}
+<div
+  className="
+    mt-4
+    flex
+    snap-x
+    snap-mandatory
+    gap-3
+    overflow-x-auto
+    px-5
+    pb-2
 
-          {[
-            'For your profile',
-            'Walkable',
-            'Local food',
-            'Quiet nature',
-            'Wellness',
-          ].map((tag) => (
-            <Chip
-              key={tag}
-              active={activeTag === tag}
-              onClick={() => setActiveTag(tag)}
-            >
-              {tag}
-            </Chip>
-          ))}
-        </div>
+    [scrollbar-width:none]
+    [&::-webkit-scrollbar]:hidden
+  "
+>
+  {curatedPlaces.map(
+    (place) => (
+      <div
+        key={place.id}
+        className="
+          snap-start
+        "
+      >
+        <DestinationCard
+          place={place}
 
-        <div className="mt-4 flex snap-x gap-3 overflow-x-auto px-5 pb-2">
-          
-          {feelings.map((item) => (
-            <FeelingCard
-              key={item.title}
-              item={item}
-            />
-          ))}
-        </div>
+          favorite={
+            isDestinationFavorite(
+              place.id
+            )
+          }
+
+          onFavorite={() =>
+            toggleDestinationFavorite(
+              place.id
+            )
+          }
+
+          onClick={() => {
+            const params =
+              new URLSearchParams({
+                q:
+                  place.place ??
+                  place.name ??
+                  '',
+              })
+
+            router.push(
+              `/explore/search?${params.toString()}`
+            )
+          }}
+        />
+      </div>
+    )
+  )}
+</div>
       </section>
 
-      {/* COMPARE */}
-      <section className="mx-5 mt-8 rounded-2xl border border-border bg-surface p-4">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
-              Your shortlist
-            </p>
 
-            <h2 className="mt-1 text-xl font-bold">
-              Compare stays
-            </h2>
-          </div>
+      {/* -------------------------------------------------
+          COMPARE
+      -------------------------------------------------- */}
 
-          <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-xs text-secondary-foreground">
-            {compared.length} selected
+      <section
+        className="
+          mx-5
+          mt-6
+        "
+      >
+ 
+        {/* EDIT PREFERENCES */}
+        <button
+          type="button"
+          onClick={() =>
+            router.push(
+              '/onboarding-survey?mode=preferences'
+            )
+          }
+          className="
+            mt-4
+            flex
+            min-h-16
+            w-full
+            items-center
+            gap-3
+            rounded-2xl
+            bg-secondary
+            px-4
+            py-3.5
+            text-left
+            text-secondary-foreground
+            shadow-sm
+            transition-transform
+            touch-manipulation
+            active:scale-[0.99]
+          "
+        >
+          <span
+            className="
+              flex
+              size-9
+              shrink-0
+              items-center
+              justify-center
+              rounded-xl
+              bg-background/10
+              text-xl
+            "
+          >
+            ✦
           </span>
-        </div>
 
-        <p className="mt-2 text-sm text-muted-foreground">
-          Keep your favorite prices together before
-          deciding.
-        </p>
+          <span
+            className="
+              min-w-0
+              flex-1
+            "
+          >
+            <strong
+              className="
+                block
+                text-sm
+              "
+            >
+              Edit preferences
+            </strong>
+
+            <span
+              className="
+                mt-0.5
+                block
+                text-xs
+                leading-relaxed
+                opacity-80
+              "
+            >
+              Update what matters for
+              your stay.
+            </span>
+          </span>
+
+          <ArrowRight
+            className="
+              size-4
+              shrink-0
+            "
+          />
+        </button>
       </section>
 
-      {/* HOTELS */}
-      <section className="mt-9 px-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
+
+      {/* -------------------------------------------------
+          HOTELS
+      -------------------------------------------------- */}
+
+      <section
+        className="
+          mt-9
+          px-5
+        "
+      >
+        <p
+          className="
+            text-xs
+            font-semibold
+            uppercase
+            tracking-[0.1em]
+            text-secondary
+          "
+        >
           Transparent stays
         </p>
 
-        <div className="mt-1 flex items-baseline justify-between gap-4">
-          <h2 className="text-2xl font-bold">
+        <div
+          className="
+            mt-1
+            flex
+            items-baseline
+            justify-between
+            gap-4
+          "
+        >
+          <h2
+            className="
+              text-1xl
+              font-bold
+            "
+          >
             Stay somewhere that fits
           </h2>
-
-          <span className="shrink-0 text-xs text-muted-foreground">
-            {compared.length} selected
-          </span>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3">
-          {hotels.slice(0, 5).map((hotel) => (
-            <HotelCard
-              key={hotel.id}
-              hotel={hotel}
-              compared={compared.includes(hotel.id)}
-              onCompare={() =>
-                toggleCompare(hotel.id)
-              }
-            />
-          ))}
+
+        {/* HOTEL CARDS */}
+        <div
+          className="
+            mt-4
+            flex
+            flex-col
+            gap-3
+          "
+        >
+          {hotels
+            .slice(
+              0,
+              3
+            )
+            .map(
+              (
+                hotel
+              ) => (
+ <HotelCard
+  key={hotel.id}
+  hotel={hotel}
+  currency="IDR"
+
+  compared={
+    comparedIds.includes(
+      hotel.id
+    )
+  }
+
+  onCompare={() =>
+    toggleCompare(
+      hotel.id
+    )
+  }
+
+  compareDisabled={
+    compareCount >= maxCompare &&
+    !comparedIds.includes(
+      hotel.id
+    )
+  }
+
+  favorite={
+    isHotelFavorite(
+      hotel.id
+    )
+  }
+
+  onFavorite={() =>
+    toggleHotelFavorite(
+      hotel.id
+    )
+  }
+/>
+              )
+            )}
         </div>
 
-        <div className="mt-4">
+
+        {/* SEE ALL */}
+        <div
+          className="
+            mt-4
+          "
+        >
           <Button
             type="button"
             variant="outline"
-            className="w-full"
-            onClick={() => {
-              const params = new URLSearchParams({
-                destination: search.destination.id,
-                checkIn: search.checkIn,
-                checkOut: search.checkOut,
-                guests: String(search.guests),
-                rooms: String(search.rooms),
-              })
-
-              router.push(
-                `/search?${params.toString()}`
-              )
-            }}
+            className="
+              w-full
+            "
+            onClick={
+              searchHotels
+            }
           >
             See all stays
           </Button>
         </div>
       </section>
 
-      {/* COMPARE BAR */}   
-      <CompareBar
-        count={compared.length}
-        onCompare={() => {
-          console.log('Open comparison')
-        }}
+
+  
+
+
+
+
+      {/* -------------------------------------------------
+          BOTTOM NAV
+      -------------------------------------------------- */}
+
+      <BottomNav
+        active="hotels"
       />
-
-      {/* FEATURED TRIPS */}
-      <section className="mt-10 px-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">
-            Featured trips
-          </h2>
-
-      <Button
-        type="button"
-        variant="link"
-        className="
-          h-auto
-          min-h-0
-          p-0
-          text-sm
-          font-medium
-          text-secondary
-          no-underline
-        "
-      >
-        See all
-      </Button>
-        </div>
-
-    {/* FEATURED TRIP */}
-    <div className="mt-4 flex flex-col gap-3">
-      {trips.slice(0, 4).map((trip) => (
-        <FeaturedTripCard
-          key={trip.id}
-          trip={trip}
-        />
-      ))}
-    </div>
-      </section>
-
-      {/* BOTTOM NAV */}
-<BottomNav active="hotels" />
     </main>
   )
 }

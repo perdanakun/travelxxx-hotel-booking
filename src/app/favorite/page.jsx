@@ -1,86 +1,496 @@
 'use client'
 
-import { useState } from 'react'
+import {
+  useState,
+} from 'react'
+
 import {
   Heart,
   MapPin,
-  Star,
 } from 'lucide-react'
+
+import {
+  useRouter,
+} from 'next/navigation'
 
 import AppHeader from '@/components/AppHeader'
 import BottomNav from '@/components/BottomNav'
-import { Button } from '@/components/ui/button'
+import HotelCard from '@/components/HotelCard'
 
-const favoriteHotels = [
-  {
-    id: 'saffron',
-    title: 'Saffron Boutique Hotel',
-    area: 'Prawirotaman',
-    destination: 'Yogyakarta',
-    rating: 4.8,
-    price: 'Rp1.280.000',
-    image:
-      'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=85',
-  },
-  {
-    id: 'lotus',
-    title: 'Lotus Heritage Stay',
-    area: 'Malioboro',
-    destination: 'Yogyakarta',
-    rating: 4.6,
-    price: 'Rp980.000',
-    image:
-      'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=900&q=85',
-  },
-]
+import {
+  Button,
+} from '@/components/ui/button'
 
-const favoriteDestinations = [
-  {
-    id: 'prawirotaman',
-    title: 'Prawirotaman',
-    location: 'Yogyakarta, Indonesia',
-    tags: ['Food', 'Walkable', 'Local'],
-    image:
-      'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=900&q=85',
-  },
-  {
-    id: 'ubud',
-    title: 'Ubud',
-    location: 'Bali, Indonesia',
-    tags: ['Quiet', 'Green', 'Culture'],
-    image:
-      'https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?auto=format&fit=crop&w=900&q=85',
-  },
-]
+import {
+  useFavorite,
+} from '@/context/FavoriteContext'
 
-export default function FavoritePage() {
-  const [activeTab, setActiveTab] =
-    useState('hotels')
+import {
+  useCompare,
+} from '@/context/CompareContext'
+
+import {
+  hotels,
+} from '@/data/hotels'
+
+import {
+  explorePlaces,
+} from '@/data/explorePlaces'
+
+
+/* -------------------------------------------------
+   DESTINATION CARD
+-------------------------------------------------- */
+
+function FavoriteDestinationCard({
+  place,
+  onRemove,
+}) {
+  const router =
+    useRouter()
+
+  const firstVideo =
+    place.videos?.[0]
+
+  const image =
+    firstVideo?.poster ??
+    place.poster ??
+    place.image
+
+  const title =
+    place.place ??
+    place.title ??
+    place.name ??
+    'Destination'
+
+  const destination =
+    place.destination ??
+    'Yogyakarta'
+
+  const tags =
+    place.tags?.slice(
+      0,
+      3
+    ) ?? []
+
+  const openDestination =
+    () => {
+      const params =
+        new URLSearchParams({
+          q: title,
+        })
+
+      router.push(
+        `/explore/search?${params.toString()}`
+      )
+    }
 
   return (
-    <main className="min-h-screen bg-background pb-24 text-foreground md:mx-auto md:max-w-md md:border-x md:border-border">
+    <article
+      className="
+        overflow-hidden
+        rounded-2xl
+        border
+        border-border
+        bg-background
+      "
+    >
+      {/* IMAGE */}
+      <button
+        type="button"
+        onClick={
+          openDestination
+        }
+        className="
+          relative
+          block
+          aspect-[4/5]
+          w-full
+          overflow-hidden
+          bg-muted
+          text-left
+        "
+      >
+        {image && (
+          <img
+            src={image}
+            alt={title}
+            className="
+              size-full
+              object-cover
+            "
+          />
+        )}
+
+        <div
+          className="
+            pointer-events-none
+            absolute
+            inset-0
+            bg-gradient-to-t
+            from-black/45
+            via-transparent
+            to-transparent
+          "
+        />
+
+        <span
+          className="
+            absolute
+            bottom-2.5
+            left-2.5
+            flex
+            max-w-[80%]
+            items-center
+            gap-1
+            rounded-full
+            bg-black/40
+            px-2.5
+            py-1.5
+            text-[10px]
+            font-medium
+            text-white
+            backdrop-blur-md
+          "
+        >
+          <MapPin
+            className="
+              size-3
+              shrink-0
+            "
+          />
+
+          <span className="truncate">
+            {destination}
+          </span>
+        </span>
+
+        {/* REMOVE FAVORITE */}
+        <button
+          type="button"
+          onClick={(
+            event
+          ) => {
+            event.stopPropagation()
+
+            onRemove()
+          }}
+          aria-label={`Remove ${title} from favorites`}
+          className="
+            absolute
+            right-2.5
+            top-2.5
+            flex
+            size-8
+            items-center
+            justify-center
+            rounded-full
+            bg-background/90
+            text-foreground
+            shadow-sm
+            backdrop-blur
+            transition
+            active:scale-[0.94]
+          "
+        >
+          <Heart
+            className="
+              size-4
+              fill-primary
+              text-primary
+            "
+          />
+        </button>
+      </button>
+
+      {/* CONTENT */}
+      <button
+        type="button"
+        onClick={
+          openDestination
+        }
+        className="
+          block
+          w-full
+          p-3
+          text-left
+        "
+      >
+        <h2
+          className="
+            text-sm
+            font-bold
+          "
+        >
+          {title}
+        </h2>
+
+        <p
+          className="
+            mt-1
+            text-xs
+            text-muted-foreground
+          "
+        >
+          {destination}
+        </p>
+
+        {tags.length >
+          0 && (
+          <div
+            className="
+              mt-2
+              flex
+              flex-wrap
+              gap-1
+            "
+          >
+            {tags.map(
+              (tag) => (
+                <span
+                  key={tag}
+                  className="
+                    rounded-full
+                    bg-surface
+                    px-2
+                    py-1
+                    text-[10px]
+                    text-muted-foreground
+                  "
+                >
+                  {tag}
+                </span>
+              )
+            )}
+          </div>
+        )}
+      </button>
+    </article>
+  )
+}
+
+
+/* -------------------------------------------------
+   EMPTY STATE
+-------------------------------------------------- */
+
+function EmptyState({
+  title,
+  description,
+  action,
+  onAction,
+}) {
+  return (
+    <div
+      className="
+        rounded-2xl
+        border
+        border-border
+        bg-surface
+        p-6
+        text-center
+      "
+    >
+      <div
+        className="
+          mx-auto
+          flex
+          size-12
+          items-center
+          justify-center
+          rounded-full
+          bg-background
+        "
+      >
+        <Heart
+          className="
+            size-5
+            text-muted-foreground
+          "
+        />
+      </div>
+
+      <h2
+        className="
+          mt-4
+          font-bold
+        "
+      >
+        {title}
+      </h2>
+
+      <p
+        className="
+          mx-auto
+          mt-1
+          max-w-[260px]
+          text-sm
+          leading-relaxed
+          text-muted-foreground
+        "
+      >
+        {description}
+      </p>
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={
+          onAction
+        }
+        className="
+          mt-4
+          rounded-xl
+        "
+      >
+        {action}
+      </Button>
+    </div>
+  )
+}
+
+
+/* -------------------------------------------------
+   PAGE
+-------------------------------------------------- */
+
+export default function FavoritePage() {
+  const router =
+    useRouter()
+
+  const [
+    activeTab,
+    setActiveTab,
+  ] = useState(
+    'hotels'
+  )
+
+  const {
+    favoriteHotelIds,
+    favoriteDestinationIds,
+
+    toggleHotelFavorite,
+    toggleDestinationFavorite,
+
+    isHotelFavorite,
+  } = useFavorite()
+
+  const {
+    comparedIds,
+    toggleCompare,
+    count: compareCount,
+    maxCompare,
+  } = useCompare()
+
+
+  /* -------------------------------------------------
+     RESOLVE FAVORITE DATA
+  -------------------------------------------------- */
+
+  const favoriteHotels =
+    hotels.filter(
+      (hotel) =>
+        favoriteHotelIds.includes(
+          hotel.id
+        )
+    )
+
+  const favoriteDestinations =
+    explorePlaces.filter(
+      (place) =>
+        favoriteDestinationIds.includes(
+          place.id
+        )
+    )
+
+
+  /* -------------------------------------------------
+     PAGE
+  -------------------------------------------------- */
+
+  return (
+    <main
+      className="
+        min-h-screen
+        bg-background
+        pb-24
+        text-foreground
+
+        md:mx-auto
+        md:max-w-md
+        md:border-x
+        md:border-border
+      "
+    >
       <AppHeader />
 
-      <section className="px-5 pb-5 pt-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+
+      {/* INTRO */}
+      <section
+        className="
+          px-5
+          pb-5
+          pt-6
+        "
+      >
+        <p
+          className="
+            text-xs
+            font-semibold
+            uppercase
+            tracking-[0.14em]
+            text-primary
+          "
+        >
           Your saved picks
         </p>
 
-        <h1 className="mt-1 text-2xl font-bold tracking-tight">
+        <h1
+          className="
+            mt-1
+            text-2xl
+            font-bold
+            tracking-tight
+          "
+        >
           Favorite
         </h1>
 
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          Keep hotels and destinations you want to come back to.
+        <p
+          className="
+            mt-1
+            text-sm
+            leading-relaxed
+            text-muted-foreground
+          "
+        >
+          Keep hotels and destinations
+          you want to come back to.
         </p>
       </section>
 
-      <section className="px-5">
-        <div className="grid grid-cols-2 rounded-xl bg-surface p-1">
+
+      {/* TABS */}
+      <section
+        className="
+          px-5
+        "
+      >
+        <div
+          className="
+            grid
+            grid-cols-2
+            rounded-xl
+            bg-surface
+            p-1
+          "
+        >
           <button
             type="button"
             onClick={() =>
-              setActiveTab('hotels')
+              setActiveTab(
+                'hotels'
+              )
             }
             className={`
               rounded-lg
@@ -89,10 +499,17 @@ export default function FavoritePage() {
               text-sm
               font-semibold
               transition
+
               ${
-                activeTab === 'hotels'
-                  ? 'bg-background shadow-sm'
-                  : 'text-muted-foreground'
+                activeTab ===
+                'hotels'
+                  ? `
+                    bg-background
+                    shadow-sm
+                  `
+                  : `
+                    text-muted-foreground
+                  `
               }
             `}
           >
@@ -102,7 +519,9 @@ export default function FavoritePage() {
           <button
             type="button"
             onClick={() =>
-              setActiveTab('destinations')
+              setActiveTab(
+                'destinations'
+              )
             }
             className={`
               rounded-lg
@@ -111,10 +530,17 @@ export default function FavoritePage() {
               text-sm
               font-semibold
               transition
+
               ${
-                activeTab === 'destinations'
-                  ? 'bg-background shadow-sm'
-                  : 'text-muted-foreground'
+                activeTab ===
+                'destinations'
+                  ? `
+                    bg-background
+                    shadow-sm
+                  `
+                  : `
+                    text-muted-foreground
+                  `
               }
             `}
           >
@@ -123,130 +549,144 @@ export default function FavoritePage() {
         </div>
       </section>
 
-      <section className="mt-5 px-5">
-        {activeTab === 'hotels' ? (
-          <div className="flex flex-col gap-4">
-            {favoriteHotels.map((hotel) => (
-              <article
-                key={hotel.id}
-                className="overflow-hidden rounded-2xl border border-border bg-background"
-              >
-                <div className="relative aspect-[16/9] overflow-hidden bg-muted">
-                  <img
-                    src={hotel.image}
-                    alt={hotel.title}
-                    className="size-full object-cover"
+
+      {/* CONTENT */}
+      <section
+        className="
+          mt-5
+          px-5
+        "
+      >
+        {activeTab ===
+        'hotels' ? (
+          /*
+           * ======================
+           * FAVORITE HOTELS
+           * ======================
+           */
+          favoriteHotels.length >
+          0 ? (
+            <div
+              className="
+                flex
+                flex-col
+                gap-4
+              "
+            >
+              {favoriteHotels.map(
+                (
+                  hotel
+                ) => (
+                  <HotelCard
+                    key={
+                      hotel.id
+                    }
+                    hotel={
+                      hotel
+                    }
+                    currency="IDR"
+
+                    favorite={
+                      isHotelFavorite(
+                        hotel.id
+                      )
+                    }
+
+                    onFavorite={() =>
+                      toggleHotelFavorite(
+                        hotel.id
+                      )
+                    }
+
+                    compared={
+                      comparedIds.includes(
+                        hotel.id
+                      )
+                    }
+
+                    onCompare={() =>
+                      toggleCompare(
+                        hotel.id
+                      )
+                    }
+
+                    compareDisabled={
+                      compareCount >=
+                        maxCompare &&
+                      !comparedIds.includes(
+                        hotel.id
+                      )
+                    }
                   />
-
-                  <button
-                    type="button"
-                    aria-label={`Remove ${hotel.title} from favorites`}
-                    className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full bg-background/90 shadow-sm backdrop-blur"
-                  >
-                    <Heart className="size-4 fill-primary text-primary" />
-                  </button>
-                </div>
-
-                <div className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h2 className="font-bold">
-                        {hotel.title}
-                      </h2>
-
-                      <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                        <MapPin className="size-3" />
-                        {hotel.area},{' '}
-                        {hotel.destination}
-                      </p>
-                    </div>
-
-                    <span className="flex shrink-0 items-center gap-1 text-sm font-medium">
-                      <Star
-                        className="size-3.5"
-                        fill="currentColor"
-                      />
-                      {hotel.rating}
-                    </span>
-                  </div>
-
-                  <div className="mt-4 flex items-end justify-between gap-3">
-                    <div>
-                      <p className="font-bold text-primary">
-                        {hotel.price}
-                      </p>
-
-                      <p className="text-[11px] text-muted-foreground">
-                        total incl. taxes & fees
-                      </p>
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      className="h-9 rounded-xl px-4 text-xs"
-                    >
-                      View hotel
-                    </Button>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+                )
+              )}
+            </div>
+          ) : (
+            <EmptyState
+              title="No saved hotels yet"
+              description="Tap the heart on a hotel you want to keep."
+              action="Explore hotels"
+              onAction={() =>
+                router.push(
+                  '/hotels'
+                )
+              }
+            />
+          )
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {favoriteDestinations.map(
-              (destination) => (
-                <article
-                  key={destination.id}
-                  className="overflow-hidden rounded-2xl border border-border bg-background"
-                >
-                  <div className="relative aspect-[4/5] overflow-hidden bg-muted">
-                    <img
-                      src={destination.image}
-                      alt={destination.title}
-                      className="size-full object-cover"
-                    />
-
-                    <button
-                      type="button"
-                      aria-label={`Remove ${destination.title} from favorites`}
-                      className="absolute right-2.5 top-2.5 flex size-8 items-center justify-center rounded-full bg-background/90 shadow-sm backdrop-blur"
-                    >
-                      <Heart className="size-4 fill-primary text-primary" />
-                    </button>
-                  </div>
-
-                  <div className="p-3">
-                    <h2 className="text-sm font-bold">
-                      {destination.title}
-                    </h2>
-
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {destination.location}
-                    </p>
-
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {destination.tags.map(
-                        (tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-full bg-surface px-2 py-1 text-[10px] text-muted-foreground"
-                          >
-                            {tag}
-                          </span>
-                        )
-                      )}
-                    </div>
-                  </div>
-                </article>
-              )
-            )}
-          </div>
+          /*
+           * ======================
+           * FAVORITE DESTINATIONS
+           * ======================
+           */
+          favoriteDestinations.length >
+          0 ? (
+            <div
+              className="
+                grid
+                grid-cols-2
+                gap-3
+              "
+            >
+              {favoriteDestinations.map(
+                (
+                  place
+                ) => (
+                  <FavoriteDestinationCard
+                    key={
+                      place.id
+                    }
+                    place={
+                      place
+                    }
+                    onRemove={() =>
+                      toggleDestinationFavorite(
+                        place.id
+                      )
+                    }
+                  />
+                )
+              )}
+            </div>
+          ) : (
+            <EmptyState
+              title="No saved destinations yet"
+              description="Save places from Explore and they'll appear here."
+              action="Explore places"
+              onAction={() =>
+                router.push(
+                  '/explore'
+                )
+              }
+            />
+          )
         )}
       </section>
 
-      <BottomNav active="favorite" />
+
+      <BottomNav
+        active="favorite"
+      />
     </main>
   )
 }

@@ -12,12 +12,14 @@ import {
   Compass,
   Heart,
   MapPin,
+  Search,
   Sparkles,
   X,
 } from 'lucide-react'
 
 import {
   useRouter,
+  useSearchParams,
 } from 'next/navigation'
 
 import {
@@ -25,11 +27,74 @@ import {
 } from '@/components/ui/button'
 
 import AppHeader from '@/components/AppHeader'
+import LoadingScreen from '@/components/LoadingScreen'
+import DestinationInput from '@/components/search/DestinationInput'
+import DestinationMapCard from '@/components/search/DestinationMapCard'
 
 import {
+  getTravelerProfile,
   saveTravelerProfile,
 } from '@/lib/travelerProfile'
 
+import {
+  destinations,
+} from '@/data/destinations'
+
+
+
+
+/* -------------------------------------------------
+   ONBOARDING LOADING
+-------------------------------------------------- */
+function OnboardingLoading({
+  name,
+  editMode = false,
+}) {
+  const router = useRouter()
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      router.replace(
+        editMode
+          ? '/hotels'
+          : '/explore'
+      )
+    }, 2200)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [
+    router,
+    editMode,
+  ])
+
+  return (
+    <LoadingScreen
+      title={
+        editMode
+          ? `Updating your trip, ${name}.`
+          : `Finding your kind of trip, ${name}.`
+      }
+      messages={
+        editMode
+          ? [
+              'Refreshing your travel style...',
+              'Updating neighborhood matches...',
+              'Updating stay recommendations...',
+              'Saving your preferences...',
+            ]
+          : [
+              'Reading your travel style...',
+              'Finding neighborhoods...',
+              'Matching stays...',
+              'Preparing your Explore feed...',
+            ]
+      }
+      interval={600}
+    />
+  )
+}
 
 /* -------------------------------------------------
    DATA
@@ -38,11 +103,16 @@ import {
 const preferenceCards = [
   {
     id: 'food-cafes',
-    label: 'Food & cafés',
+
+    label:
+      'Food & cafés',
+
     description:
       'Street food, coffee spots, bakeries, and places worth lingering around.',
+
     image:
-      'https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1710572093946-3ac18aefff1a?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+
     tags: [
       'Food',
       'Cafés',
@@ -52,12 +122,16 @@ const preferenceCards = [
 
   {
     id: 'walkable',
+
     label:
       'Walkable neighborhoods',
+
     description:
       'Areas where you can explore, eat, and wander without planning every move.',
+
     image:
-      'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1743485754201-2b438484b033?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+
     tags: [
       'Walkable',
       'Easy',
@@ -67,12 +141,16 @@ const preferenceCards = [
 
   {
     id: 'quiet',
+
     label:
       'Quiet & relaxing',
+
     description:
       'A slower pace, calmer streets, and somewhere you can actually unwind.',
+
     image:
-      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1709210974061-1dddba2dfc25?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+
     tags: [
       'Quiet',
       'Relaxed',
@@ -82,12 +160,16 @@ const preferenceCards = [
 
   {
     id: 'culture',
+
     label:
       'Culture & local life',
+
     description:
       'Places with history, crafts, neighborhoods, and a stronger sense of place.',
+
     image:
-      'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1590084505160-eb05e888643a?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+
     tags: [
       'Culture',
       'Local',
@@ -97,12 +179,16 @@ const preferenceCards = [
 
   {
     id: 'nature',
+
     label:
       'Nature nearby',
+
     description:
       'Greenery, cooler air, scenery, and easy access to outdoor escapes.',
+
     image:
-      'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1704287994766-3d76e0ca3264?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+
     tags: [
       'Nature',
       'Outdoors',
@@ -112,12 +198,16 @@ const preferenceCards = [
 
   {
     id: 'lively',
+
     label:
       'Lively & social',
+
     description:
       'Busier streets, nightlife, popular spots, and plenty happening around you.',
+
     image:
-      'https://images.unsplash.com/photo-1519671282429-b44660ead0a7?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1687677345376-ae90d26f6374?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+
     tags: [
       'Lively',
       'Social',
@@ -134,178 +224,36 @@ const stayPriorities = [
   'Local atmosphere',
 ]
 
-
-/* -------------------------------------------------
-   TRAVEL BUDDY
--------------------------------------------------- */
-function TravelBuddy({
-  size = 'md',
-}) {
-  const sizes = {
-    sm: {
-      body: 'size-12',
-      eye: 'h-4 w-3',
-      pupil: 'size-1.5',
-      gap: 'gap-1.5',
-      pupilOffset: 'bottom-1',
-    },
-
-    md: {
-      body: 'size-20',
-      eye: 'h-6 w-[18px]',
-      pupil: 'size-2',
-      gap: 'gap-2',
-      pupilOffset: 'bottom-1.5',
-    },
-
-    lg: {
-      body: 'size-28',
-      eye: 'h-8 w-6',
-      pupil: 'size-2.5',
-      gap: 'gap-2.5',
-      pupilOffset: 'bottom-2',
-    },
-  }
-
-  const current =
-    sizes[size] ?? sizes.md
-
-  return (
-    <div
-      className={`
-        relative
-        ${current.body}
-        shrink-0
-        rounded-full
-        bg-primary
-        shadow-sm
-        animate-[buddyBob_2.8s_ease-in-out_infinite]
-      `}
-    >
-      {/* EYES */}
-      <div
-        className={`
-          absolute
-          left-1/2
-          top-1/2
-          flex
-          -translate-x-1/2
-          -translate-y-1/2
-          items-center
-          ${current.gap}
-        `}
-      >
-        {/* LEFT EYE */}
- <div
-  className={`
-    relative
-    ${current.eye}
-    rounded-full
-    bg-white
-    overflow-hidden
-    origin-center
-    animate-[buddyBlink_4s_ease-in-out_infinite]
-  `}
->
-          <span
-            className={`
-              absolute
-              ${current.pupilOffset}
-              right-[20%]
-              ${current.pupil}
-              rounded-full
-              bg-foreground
-            `}
-          />
-        </div>
-
-        {/* RIGHT EYE */}
-<div
-  className={`
-    relative
-    ${current.eye}
-    rounded-full
-    bg-white
-    overflow-hidden
-    origin-center
-    animate-[buddyBlink_4s_ease-in-out_infinite]
-  `}
->
-          <span
-            className={`
-              absolute
-              ${current.pupilOffset}
-              left-[20%]
-              ${current.pupil}
-              rounded-full
-              bg-foreground
-            `}
-          />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/* -------------------------------------------------
-   SPEECH BUBBLE
--------------------------------------------------- */
-
-function BuddyMessage({
-  children,
-  align = 'left',
-}) {
-  return (
-    <div
-      className={`
-        relative
-        max-w-[240px]
-        rounded-2xl
-        border
-        border-border
-        bg-background
-        px-4
-        py-3
-        text-sm
-        font-medium
-        leading-relaxed
-        text-foreground
-        shadow-sm
-
-        animate-in
-        fade-in
-        slide-in-from-bottom-2
-        duration-500
-
-        ${
-          align === 'center'
-            ? 'text-center'
-            : ''
-        }
-      `}
-    >
-      {children}
-
-      <span
-        className="
-          absolute
-          -bottom-1.5
-          left-8
-          size-3
-          rotate-45
-          border-b
-          border-r
-          border-border
-          bg-background
-        "
-      />
-    </div>
-  )
-}
-
-
-
-
+const budgetOptions = [
+  {
+    id: 'budget',
+    label: 'Under Rp500K',
+    shortLabel: '< Rp500K',
+    min: 0,
+    max: 500000,
+  },
+  {
+    id: 'value',
+    label: 'Rp500K – 800K',
+    shortLabel: 'Rp500K–800K',
+    min: 500000,
+    max: 800000,
+  },
+  {
+    id: 'comfort',
+    label: 'Rp800K – 1.5M',
+    shortLabel: 'Rp800K–1.5M',
+    min: 800000,
+    max: 1500000,
+  },
+  {
+    id: 'premium',
+    label: 'Rp1.5M+',
+    shortLabel: 'Rp1.5M+',
+    min: 1500000,
+    max: null,
+  },
+]
 /* -------------------------------------------------
    INTRO
 -------------------------------------------------- */
@@ -342,80 +290,56 @@ function Intro({
           text-center
         "
       >
-        {/* GUIDE */}
+        {/* BRAND MARK */}
         <div
           className="
             flex
-            flex-col
+            size-22
             items-center
+            justify-center
+            rounded-full
+            bg-primary
+            text-secondary-foreground
           "
         >
-          <BuddyMessage
-            align="center"
-          >
-            Hi! I&apos;ll help you
-            find your kind of trip.
-          </BuddyMessage>
-
-          <div className="mt-5">
-            <TravelBuddy
-              size="lg"
-            />
-          </div>
+          <Compass
+            className="
+              size-14
+              animate-[spin_4s_linear_infinite]
+            "
+          />
         </div>
 
         {/* BRAND */}
-        <p
-          className="
-            mt-10
-            text-xs
-            font-bold
-            tracking-[0.18em]
-            text-primary
-          "
-        >
-          TRAVELXXX
-        </p>
-
         <h1
           className="
-            mt-3
+            mt-6
             max-w-sm
-            text-3xl
+            text-2xl
             font-bold
             leading-[1.08]
             tracking-tight
             text-balance
           "
         >
-          Discover where to go.
-          Find where to stay.
+          TravelXXX
         </h1>
 
         <p
           className="
-            mt-4
+            mt-1
             max-w-xs
-            text-sm
+            text-base
             leading-relaxed
             text-muted-foreground
           "
         >
-          Travel inspiration with
-          hotel options you can
-          actually book.
+          Discover where to go,
+          find where to stay.
         </p>
       </section>
 
-      <footer
-        className="
-          shrink-0
-          bg-background
-          px-5
-          pb-[calc(1.5rem+env(safe-area-inset-bottom))]
-          pt-4
-        "
-      >
+      <SurveyFooter>
         <Button
           type="button"
           size="lg"
@@ -431,9 +355,7 @@ function Intro({
             className="size-5"
           />
         </Button>
-      </footer>
-
-      <BuddyKeyframes />
+      </SurveyFooter>
     </main>
   )
 }
@@ -462,48 +384,42 @@ function NameStep({
   return (
     <SurveyShell
       step={1}
-      total={4}
+      total={5}
       onBack={onBack}
     >
-      <GuideRow>
-        <TravelBuddy
-          size="sm"
-        />
-
-        <BuddyMessage>
-          What should I call you?
-        </BuddyMessage>
-      </GuideRow>
-
       <div
         className="
           flex
+          min-h-0
           flex-1
           flex-col
+          overflow-y-auto
+          overscroll-contain
           px-5
+          pb-6
           pt-8
         "
       >
         <h1
           className="
-            text-3xl
+            text-2xl
             font-bold
             tracking-tight
           "
         >
-          Your name
+          What should we call you?
         </h1>
 
         <p
           className="
-            mt-2
+            mt-1
             text-sm
             leading-relaxed
             text-muted-foreground
           "
         >
-          We&apos;ll use it to
-          personalize your TravelXXX
+          We&apos;ll use your name
+          across your TravelXXX
           experience.
         </p>
 
@@ -533,7 +449,7 @@ function NameStep({
           className="
             mt-8
             w-full
-            rounded-2xl
+            rounded-xl
             border
             border-border
             bg-background
@@ -549,6 +465,17 @@ function NameStep({
             focus:ring-primary/15
           "
         />
+
+        <p
+          className="
+            mt-3
+            text-xs
+            text-muted-foreground
+          "
+        >
+          You can change this later
+          from Profile.
+        </p>
       </div>
 
       <SurveyFooter>
@@ -577,173 +504,105 @@ function NameStep({
 /* -------------------------------------------------
    DESTINATION
 -------------------------------------------------- */
-
 function DestinationStep({
+  destination,
+  onDestinationChange,
   onBack,
   onNext,
 }) {
+  const destinationSelected =
+    Boolean(destination)
+
   return (
     <SurveyShell
       step={2}
-      total={4}
+      total={5}
       onBack={onBack}
     >
-      <GuideRow>
-        <TravelBuddy
-          size="sm"
-        />
-
-        <BuddyMessage>
-          Let&apos;s start with
-          somewhere fun to explore.
-        </BuddyMessage>
-      </GuideRow>
-
       <div
         className="
           flex
           min-h-0
           flex-1
           flex-col
+          overflow-y-auto
+          overscroll-contain
           px-5
-          pt-6
+          pb-6
+          pt-7
         "
       >
         <h1
           className="
-            text-3xl
+            text-2xl
             font-bold
             tracking-tight
           "
         >
-          Where do you want to
-          explore?
+          Where to explore?
         </h1>
 
         <p
           className="
-            mt-2
+            mt-1
             text-sm
             leading-relaxed
             text-muted-foreground
           "
         >
-          This prototype starts
-          with Yogyakarta.
+          Choose a destination to
+          personalizing your profile.
         </p>
 
-        <button
-          type="button"
-          onClick={onNext}
-          className="
-            mt-7
-            overflow-hidden
-            rounded-2xl
-            border
-            border-primary
-            bg-background
-            text-left
-            shadow-sm
-            ring-1
-            ring-primary
-            transition
-            active:scale-[0.99]
-          "
-        >
-          <div
-            className="
-              relative
-              aspect-[16/9]
-              overflow-hidden
-              bg-muted
-            "
-          >
-            <img
-              src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1000&q=85"
-              alt="Yogyakarta"
-              className="
-                size-full
-                object-cover
-              "
-            />
+{/* MAP */}
+<div className="mt-5">
+  <DestinationMapCard
+    destination={
+      destination
+    }
+  />
+</div>
 
-            <span
-              className="
-                absolute
-                right-3
-                top-3
-                flex
-                size-9
-                items-center
-                justify-center
-                rounded-full
-                bg-background/90
-                text-primary
-                shadow-sm
-                backdrop-blur
-              "
-            >
-              <Check
-                className="size-4"
-              />
-            </span>
-          </div>
 
-          <div className="p-4">
-            <div
-              className="
-                flex
-                items-center
-                gap-2
-              "
-            >
-              <MapPin
-                className="
-                  size-4
-                  text-secondary
-                "
-              />
+        {/* DESTINATION SEARCH */}
+<div className="relative z-30 mt-6">
+  <DestinationInput
+    id="onboarding-destination"
+    value={destination}
+    onChange={
+      onDestinationChange
+    }
+    placeholder="Search city or destination"
+  />
+</div>
 
-              <h2
-                className="
-                  text-lg
-                  font-bold
-                "
-              >
-                Yogyakarta
-              </h2>
-            </div>
+<p
+  className="
+    mt-2
+    text-xs
+    text-muted-foreground
+  "
+>
+ Curently only Yogyakarta, Indonesia
+  available in this prototype.
+</p>
 
-            <p
-              className="
-                mt-2
-                text-sm
-                text-muted-foreground
-              "
-            >
-              Food, culture, nature,
-              neighborhoods and stays.
-            </p>
-          </div>
-        </button>
+
+
+
       </div>
 
       <SurveyFooter>
-        <Button
-          type="button"
-          size="lg"
-          onClick={onNext}
-          className="
-            w-full
-            font-bold
-          "
-        >
-          Continue
-
-          <ArrowRight
-            className="size-5"
-          />
-        </Button>
+<Button
+  type="button"
+  size="lg"
+  disabled={!destination}
+  onClick={onNext}
+  className="w-full font-bold"
+>
+  Continue
+  <ArrowRight className="size-5" />
+</Button>
       </SurveyFooter>
     </SurveyShell>
   )
@@ -772,6 +631,16 @@ function SwipeStep({
     setDragging,
   ] = useState(false)
 
+  const [
+    exiting,
+    setExiting,
+  ] = useState(null)
+
+  const [
+    cardReady,
+    setCardReady,
+  ] = useState(true)
+
   const startXRef =
     useRef(0)
 
@@ -780,15 +649,61 @@ function SwipeStep({
       currentIndex
     ]
 
+  const nextCard =
+    preferenceCards[
+      currentIndex + 1
+    ]
+
+  useEffect(() => {
+    if (!currentCard) {
+      return
+    }
+
+    /*
+     * Every newly promoted active card
+     * must start from the exact center
+     * with transition temporarily disabled.
+     *
+     * This prevents the previous card's
+     * dragX / exit transform from leaking
+     * into the new active card and causing
+     * the extra left-to-center bounce.
+     */
+    setCardReady(false)
+
+    setDragX(0)
+    setDragging(false)
+    setExiting(null)
+
+    const frame =
+      window.requestAnimationFrame(
+        () => {
+          setCardReady(true)
+        }
+      )
+
+    return () => {
+      window.cancelAnimationFrame(
+        frame
+      )
+    }
+  }, [currentIndex])
+
   const choose = (
     likedCard
   ) => {
+    if (
+      !currentCard ||
+      exiting
+    ) {
+      return
+    }
+
     let nextLiked =
       liked
 
     if (
       likedCard &&
-      currentCard &&
       !liked.includes(
         currentCard.id
       )
@@ -803,31 +718,59 @@ function SwipeStep({
       )
     }
 
-    setDragX(0)
     setDragging(false)
 
-    const nextIndex =
-      currentIndex + 1
+    const direction =
+      likedCard
+        ? 'right'
+        : 'left'
 
-    if (
-      nextIndex >=
-      preferenceCards.length
-    ) {
-      onComplete(
-        nextLiked
-      )
+    setExiting({
+      direction,
+      cardId:
+        currentCard.id,
+    })
 
-      return
-    }
+    setDragX(
+      likedCard
+        ? 620
+        : -620
+    )
 
-    onIndexChange(
-      nextIndex
+    window.setTimeout(
+      () => {
+        const nextIndex =
+          currentIndex + 1
+
+        if (
+          nextIndex >=
+          preferenceCards.length
+        ) {
+          onComplete(
+            nextLiked
+          )
+
+          return
+        }
+
+        onIndexChange(
+          nextIndex
+        )
+      },
+      260
     )
   }
 
   const handlePointerDown = (
     event
   ) => {
+    if (
+      exiting ||
+      !cardReady
+    ) {
+      return
+    }
+
     setDragging(true)
 
     startXRef.current =
@@ -842,7 +785,10 @@ function SwipeStep({
   const handlePointerMove = (
     event
   ) => {
-    if (!dragging) {
+    if (
+      !dragging ||
+      exiting
+    ) {
       return
     }
 
@@ -852,9 +798,9 @@ function SwipeStep({
 
     setDragX(
       Math.max(
-        -160,
+        -520,
         Math.min(
-          160,
+          520,
           delta
         )
       )
@@ -863,22 +809,31 @@ function SwipeStep({
 
   const handlePointerUp =
     () => {
-      if (!dragging) {
+      if (
+        !dragging ||
+        exiting
+      ) {
         return
       }
 
-      if (dragX > 80) {
+      if (
+        dragX > 90
+      ) {
         choose(true)
+
         return
       }
 
-      if (dragX < -80) {
+      if (
+        dragX < -90
+      ) {
         choose(false)
+
         return
       }
 
-      setDragX(0)
       setDragging(false)
+      setDragX(0)
     }
 
   if (!currentCard) {
@@ -886,87 +841,253 @@ function SwipeStep({
   }
 
   const rotation =
-    dragX / 18
+    dragX / 22
 
-  const likeOpacity =
+  const rightStrength =
     Math.min(
       Math.max(
-        dragX / 90,
+        dragX / 140,
         0
       ),
       1
     )
 
-  const skipOpacity =
+  const leftStrength =
     Math.min(
       Math.max(
-        -dragX / 90,
+        -dragX / 140,
         0
       ),
       1
     )
+
+  const currentIsExiting =
+    exiting?.cardId ===
+    currentCard.id
 
   return (
     <SurveyShell
       step={3}
-      total={4}
+      total={5}
       onBack={onBack}
       progressOverride={
-        (currentIndex + 1) /
-        preferenceCards.length
+        (
+          2 +
+          (
+            currentIndex + 1
+          ) /
+            preferenceCards.length
+        ) /
+        5
       }
     >
-      <GuideRow>
-        <TravelBuddy
-          size="sm"
-          mood="thinking"
-        />
-
-        <BuddyMessage>
-          Swipe right on what feels
-          like you.
-        </BuddyMessage>
-      </GuideRow>
-
       <div
         className="
           flex
           min-h-0
           flex-1
           flex-col
+          overflow-y-auto
+          overscroll-contain
           px-5
           pb-5
-          pt-4
+          pt-7
         "
       >
+        <div className="shrink-0">
+          <h1
+            className="
+              text-2xl
+              font-bold
+              leading-tight
+              tracking-tight
+            "
+          >
+            What feels like your
+            kind of trip?
+          </h1>
+
+          <p
+            className="
+              mt-1
+              text-sm
+              leading-relaxed
+              text-muted-foreground
+            "
+          >
+            Swipe right on what you
+            like. Swipe left to skip.
+          </p>
+        </div>
+
         <div
           className="
             relative
+            mt-5
             flex
-            min-h-0
+            min-h-[420px]
             flex-1
             items-center
             justify-center
           "
         >
-          {currentIndex + 1 <
-            preferenceCards.length && (
+          {nextCard && (
             <div
+              key={nextCard.id}
               className="
+                pointer-events-none
                 absolute
-                inset-x-5
-                bottom-3
-                top-3
-                scale-[0.96]
+                left-1/2
+                top-1/2
+                z-0
+                w-full
+                overflow-hidden
                 rounded-3xl
                 border
                 border-border
-                bg-surface
+                bg-background
+                shadow-md
+                will-change-transform
               "
-            />
+              style={{
+                transform:
+                  currentIsExiting
+                    ? `
+                        translate(-50%, -50%)
+                        translateY(0px)
+                        scale(1)
+                      `
+                    : `
+                        translate(-50%, -50%)
+                        translateY(14px)
+                        scale(0.92)
+                      `,
+                opacity:
+                  currentIsExiting
+                    ? 1
+                    : 0.84,
+                transition: `
+                  transform 280ms
+                  cubic-bezier(
+                    0.22,
+                    1,
+                    0.36,
+                    1
+                  ),
+                  opacity 240ms ease
+                `,
+              }}
+            >
+              <div
+                className="
+                  relative
+                  aspect-[4/5]
+                  overflow-hidden
+                  bg-muted
+                "
+              >
+                <img
+                  src={nextCard.image}
+                  alt=""
+                  draggable={false}
+                  className="
+                    size-full
+                    object-cover
+                  "
+                />
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    bg-gradient-to-t
+                    from-black/85
+                    via-black/5
+                    to-black/5
+                  "
+                />
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    bg-black
+                    transition-opacity
+                    duration-200
+                  "
+                  style={{
+                    opacity:
+                      currentIsExiting
+                        ? 0
+                        : 0.12,
+                  }}
+                />
+
+                <div
+                  className="
+                    absolute
+                    inset-x-0
+                    bottom-0
+                    p-5
+                    text-white
+                  "
+                >
+                  <h2
+                    className="
+                      text-2xl
+                      font-bold
+                    "
+                  >
+                    {nextCard.label}
+                  </h2>
+
+                  <p
+                    className="
+                      mt-1
+                      text-sm
+                      leading-relaxed
+                      text-white/85
+                    "
+                  >
+                    {
+                      nextCard.description
+                    }
+                  </p>
+
+                  <div
+                    className="
+                      mt-4
+                      flex
+                      flex-wrap
+                      gap-2
+                    "
+                  >
+                    {nextCard.tags.map(
+                      (tag) => (
+                        <span
+                          key={tag}
+                          className="
+                            rounded-full
+                            bg-white/15
+                            px-3
+                            py-1.5
+                            text-xs
+                            font-medium
+                            backdrop-blur-sm
+                          "
+                        >
+                          {tag}
+                        </span>
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
           <div
+            key={currentCard.id}
             onPointerDown={
               handlePointerDown
             }
@@ -991,16 +1112,38 @@ function SwipeStep({
               bg-background
               shadow-xl
               select-none
+              will-change-transform
             "
             style={{
-              transform: `
-                translateX(${dragX}px)
-                rotate(${rotation}deg)
-              `,
-              transition:
+              transform:
+                currentIsExiting ||
                 dragging
+                  ? `
+                      translateX(${dragX}px)
+                      rotate(${rotation}deg)
+                    `
+                  : `
+                      translateX(0px)
+                      rotate(0deg)
+                    `,
+              transition:
+                !cardReady ||
+                dragging ||
+                (
+                  exiting &&
+                  !currentIsExiting
+                )
                   ? 'none'
-                  : 'transform 220ms ease',
+                  : `
+                      transform
+                      260ms
+                      cubic-bezier(
+                        0.22,
+                        1,
+                        0.36,
+                        1
+                      )
+                    `,
             }}
           >
             <div
@@ -1012,12 +1155,8 @@ function SwipeStep({
               "
             >
               <img
-                src={
-                  currentCard.image
-                }
-                alt={
-                  currentCard.label
-                }
+                src={currentCard.image}
+                alt={currentCard.label}
                 draggable={false}
                 className="
                   size-full
@@ -1027,6 +1166,7 @@ function SwipeStep({
 
               <div
                 className="
+                  pointer-events-none
                   absolute
                   inset-0
                   bg-gradient-to-t
@@ -1036,15 +1176,45 @@ function SwipeStep({
                 "
               />
 
-              {/* LIKE */}
               <div
                 className="
+                  pointer-events-none
                   absolute
-                  left-4
-                  top-4
+                  inset-0
+                  bg-primary
+                "
+                style={{
+                  opacity:
+                    rightStrength *
+                    0.38,
+                }}
+              />
+
+              <div
+                className="
+                  pointer-events-none
+                  absolute
+                  inset-0
+                  bg-red-500
+                "
+                style={{
+                  opacity:
+                    leftStrength *
+                    0.34,
+                }}
+              />
+
+              <div
+                className="
+                  pointer-events-none
+                  absolute
+                  left-5
+                  top-5
+                  rotate-[-8deg]
                   rounded-xl
                   border-2
                   border-white
+                  bg-primary
                   px-3
                   py-1.5
                   text-sm
@@ -1052,24 +1222,27 @@ function SwipeStep({
                   uppercase
                   tracking-wide
                   text-white
+                  shadow-sm
                 "
                 style={{
                   opacity:
-                    likeOpacity,
+                    rightStrength,
                 }}
               >
                 Like
               </div>
 
-              {/* SKIP */}
               <div
                 className="
+                  pointer-events-none
                   absolute
-                  right-4
-                  top-4
+                  right-5
+                  top-5
+                  rotate-[8deg]
                   rounded-xl
                   border-2
                   border-white
+                  bg-red-500
                   px-3
                   py-1.5
                   text-sm
@@ -1077,10 +1250,11 @@ function SwipeStep({
                   uppercase
                   tracking-wide
                   text-white
+                  shadow-sm
                 "
                 style={{
                   opacity:
-                    skipOpacity,
+                    leftStrength,
                 }}
               >
                 Skip
@@ -1088,6 +1262,7 @@ function SwipeStep({
 
               <div
                 className="
+                  pointer-events-none
                   absolute
                   inset-x-0
                   bottom-0
@@ -1108,7 +1283,7 @@ function SwipeStep({
 
                 <p
                   className="
-                    mt-2
+                    mt-1
                     text-sm
                     leading-relaxed
                     text-white/85
@@ -1128,13 +1303,9 @@ function SwipeStep({
                   "
                 >
                   {currentCard.tags.map(
-                    (
-                      tag
-                    ) => (
+                    (tag) => (
                       <span
-                        key={
-                          tag
-                        }
+                        key={tag}
                         className="
                           rounded-full
                           bg-white/15
@@ -1145,9 +1316,7 @@ function SwipeStep({
                           backdrop-blur-sm
                         "
                       >
-                        {
-                          tag
-                        }
+                        {tag}
                       </span>
                     )
                   )}
@@ -1157,7 +1326,6 @@ function SwipeStep({
           </div>
         </div>
 
-        {/* CONTROLS */}
         <div
           className="
             mt-5
@@ -1172,6 +1340,8 @@ function SwipeStep({
             onClick={() =>
               choose(false)
             }
+            disabled={Boolean(exiting)}
+            aria-label="Skip preference"
             className="
               flex
               size-14
@@ -1179,17 +1349,17 @@ function SwipeStep({
               justify-center
               rounded-full
               border
-              border-border
-              bg-background
-              text-muted-foreground
+              border-red-200
+              bg-red-50
+              text-red-500
               shadow-sm
               transition
               active:scale-[0.94]
+              disabled:pointer-events-none
+              disabled:opacity-50
             "
           >
-            <X
-              className="size-6"
-            />
+            <X className="size-6" />
           </button>
 
           <span
@@ -1212,6 +1382,8 @@ function SwipeStep({
             onClick={() =>
               choose(true)
             }
+            disabled={Boolean(exiting)}
+            aria-label="Like preference"
             className="
               flex
               size-14
@@ -1223,6 +1395,8 @@ function SwipeStep({
               shadow-sm
               transition
               active:scale-[0.94]
+              disabled:pointer-events-none
+              disabled:opacity-50
             "
           >
             <Heart
@@ -1240,6 +1414,165 @@ function SwipeStep({
 
 
 /* -------------------------------------------------
+   BUDGET
+-------------------------------------------------- */
+
+function BudgetStep({
+  selected,
+  onChange,
+  onBack,
+  onNext,
+}) {
+  return (
+    <SurveyShell
+      step={4}
+      total={5}
+      onBack={onBack}
+    >
+      <section
+        className="
+          flex
+          min-h-0
+          flex-1
+          flex-col
+          overflow-y-auto
+          overscroll-contain
+          px-5
+          pb-6
+          pt-7
+        "
+      >
+        <h1
+          className="
+            text-2xl
+            font-bold
+            tracking-tight
+          "
+        >
+          What&apos;s your budget?
+        </h1>
+
+        <p
+          className="
+            mt-1
+            text-sm
+            leading-relaxed
+            text-muted-foreground
+          "
+        >
+          Pick your usual budget for one night.
+          We&apos;ll use it to find stays that fit.
+        </p>
+
+        <div
+          className="
+            mt-7
+            flex
+            flex-col
+            gap-3
+          "
+        >
+          {budgetOptions.map(
+            (option) => {
+              const active =
+                selected === option.id
+
+              return (
+                <Button
+                  key={option.id}
+                  type="button"
+                  variant={
+                    active
+                      ? 'secondary'
+                      : 'outline'
+                  }
+                  onClick={() =>
+                    onChange(option.id)
+                  }
+                  className="
+                    min-h-16
+                    w-full
+                    justify-between
+                    rounded-2xl
+                    px-4
+                    text-left
+                    text-base
+                    font-medium
+                    whitespace-normal
+                    active:scale-[0.99]
+                  "
+                >
+                  <div>
+                    <span
+                      className="
+                        block
+                        font-semibold
+                      "
+                    >
+                      {option.label}
+                    </span>
+
+                    <span
+                      className="
+                        mt-0.5
+                        block
+                        text-xs
+                        font-normal
+                        text-muted-foreground
+                      "
+                    >
+                      per night
+                    </span>
+                  </div>
+
+                  {active ? (
+                    <Check
+                      className="
+                        size-5
+                        shrink-0
+                      "
+                    />
+                  ) : (
+                    <span
+                      className="
+                        size-5
+                        shrink-0
+                        rounded-full
+                        border
+                        border-border
+                      "
+                    />
+                  )}
+                </Button>
+              )
+            }
+          )}
+        </div>
+      </section>
+
+      <SurveyFooter>
+        <Button
+          type="button"
+          size="lg"
+          disabled={!selected}
+          onClick={onNext}
+          className="
+            w-full
+            font-bold
+          "
+        >
+          Continue
+
+          <ArrowRight
+            className="size-5"
+          />
+        </Button>
+      </SurveyFooter>
+    </SurveyShell>
+  )
+}
+
+/* -------------------------------------------------
    PRIORITY
 -------------------------------------------------- */
 
@@ -1251,114 +1584,123 @@ function PriorityStep({
 }) {
   return (
     <SurveyShell
-      step={4}
-      total={4}
+      step={5}
+      total={5}
       onBack={onBack}
     >
-      <GuideRow>
-        <TravelBuddy
-          size="sm"
-        />
-
-        <BuddyMessage>
-          Last one. What matters
-          most in a stay?
-        </BuddyMessage>
-      </GuideRow>
-
       <section
         className="
           flex
           min-h-0
           flex-1
           flex-col
-          gap-3
           overflow-y-auto
           px-5
           pb-6
-          pt-6
+          pt-7
         "
       >
         <h1
           className="
-            mb-2
-            text-3xl
+            text-2xl
             font-bold
             tracking-tight
           "
         >
-          Choose your priorities
+          What matters most in a
+          stay?
         </h1>
 
-        {stayPriorities.map(
-          (
-            option
-          ) => {
-            const active =
-              selected.includes(
-                option
-              )
+        <p
+          className="
+            mt-1
+            text-sm
+            leading-relaxed
+            text-muted-foreground
+          "
+        >
+          Choose what matters most
+          when you pick a hotel.
+        </p>
 
-            return (
-              <Button
-                key={
+        <div
+          className="
+            mt-7
+            flex
+            flex-col
+            gap-3
+          "
+        >
+          {stayPriorities.map(
+            (
+              option
+            ) => {
+              const active =
+                selected.includes(
                   option
-                }
-                type="button"
-                variant={
-                  active
-                    ? 'secondary'
-                    : 'outline'
-                }
-                onClick={() =>
-                  onToggle(
+                )
+
+              return (
+                <Button
+                  key={
                     option
-                  )
-                }
-                className="
-                  min-h-16
-                  w-full
-                  justify-between
-                  rounded-2xl
-                  px-4
-                  text-left
-                  text-base
-                  font-medium
-                  whitespace-normal
-                  active:scale-[0.99]
-                "
-              >
-                <span
+                  }
+                  type="button"
+                  variant={
+                    active
+                      ? 'secondary'
+                      : 'outline'
+                  }
+                  onClick={() =>
+                    onToggle(
+                      option
+                    )
+                  }
                   className="
-                    flex-1
+                    min-h-16
+                    w-full
+                    justify-between
+                    rounded-2xl
+                    px-4
                     text-left
+                    text-base
+                    font-medium
+                    whitespace-normal
+                    active:scale-[0.99]
                   "
                 >
-                  {option}
-                </span>
-
-                {active ? (
-                  <Check
-                    className="
-                      size-5
-                      shrink-0
-                    "
-                  />
-                ) : (
                   <span
                     className="
-                      size-5
-                      shrink-0
-                      rounded-full
-                      border
-                      border-border
+                      flex-1
+                      text-left
                     "
-                  />
-                )}
-              </Button>
-            )
-          }
-        )}
+                  >
+                    {option}
+                  </span>
+
+                  {active ? (
+                    <Check
+                      className="
+                        size-5
+                        shrink-0
+                      "
+                    />
+                  ) : (
+                    <span
+                      className="
+                        size-5
+                        shrink-0
+                        rounded-full
+                        border
+                        border-border
+                      "
+                    />
+                  )}
+                </Button>
+              )
+            }
+          )}
+        </div>
       </section>
 
       <SurveyFooter>
@@ -1387,203 +1729,12 @@ function PriorityStep({
 }
 
 
-/* -------------------------------------------------
-   MATCHING
--------------------------------------------------- */
 
-function Matching({
-  name,
-}) {
-  const router =
-    useRouter()
-
-  const [
-    message,
-    setMessage,
-  ] = useState(
-    'Reading your travel style...'
-  )
-
-  useEffect(() => {
-    const messages = [
-      'Reading your travel style...',
-      'Finding neighborhoods...',
-      'Matching stays...',
-      'Preparing your recommendations...',
-    ]
-
-    let index = 0
-
-    const messageTimer =
-      setInterval(() => {
-        index =
-          (index + 1) %
-          messages.length
-
-        setMessage(
-          messages[index]
-        )
-      }, 600)
-
-    const redirectTimer =
-      setTimeout(() => {
-        router.replace(
-          '/explore'
-        )
-      }, 2200)
-
-    return () => {
-      clearInterval(
-        messageTimer
-      )
-
-      clearTimeout(
-        redirectTimer
-      )
-    }
-  }, [router])
-
-  return (
-    <main
-      className="
-        flex
-        h-[100dvh]
-        flex-col
-        items-center
-        justify-center
-        overflow-hidden
-        bg-background
-        px-5
-        text-center
-        text-foreground
-
-        md:mx-auto
-        md:max-w-md
-        md:border-x
-        md:border-border
-      "
-    >
-      <BuddyMessage
-        align="center"
-      >
-        Almost there,
-        {' '}
-        {name}!
-      </BuddyMessage>
-
-      <div className="mt-6">
-        <TravelBuddy
-          size="lg"
-        />
-      </div>
-
-      <p
-        className="
-          mt-9
-          text-xs
-          font-bold
-          tracking-[0.18em]
-          text-primary
-        "
-      >
-        TRAVELXXX
-      </p>
-
-      <h1
-        className="
-          mt-3
-          text-3xl
-          font-bold
-          tracking-tight
-        "
-      >
-        Finding your kind of trip...
-      </h1>
-
-      <p
-        className="
-          mt-3
-          max-w-xs
-          text-sm
-          leading-relaxed
-          text-muted-foreground
-        "
-      >
-        {message}
-      </p>
-
-      <div
-        className="
-          mt-7
-          flex
-          gap-1.5
-        "
-      >
-        <span
-          className="
-            size-2
-            rounded-full
-            bg-primary
-            animate-bounce
-            [animation-delay:-0.2s]
-          "
-        />
-
-        <span
-          className="
-            size-2
-            rounded-full
-            bg-primary
-            animate-bounce
-            [animation-delay:-0.1s]
-          "
-        />
-
-        <span
-          className="
-            size-2
-            rounded-full
-            bg-primary
-            animate-bounce
-          "
-        />
-      </div>
-
-      <BuddyKeyframes />
-    </main>
-  )
-}
 
 
 /* -------------------------------------------------
    SHARED
 -------------------------------------------------- */
-
-function GuideRow({
-  children,
-}) {
-  return (
-    <div
-      className="
-        shrink-0
-        px-5
-        pt-5
-      "
-    >
-      <div
-        className="
-          flex
-          items-end
-          gap-3
-        "
-      >
-        {children}
-      </div>
-    </div>
-  )
-}
-
-
 function SurveyShell({
   step,
   total,
@@ -1600,6 +1751,7 @@ function SurveyShell({
       className="
         flex
         h-[100dvh]
+        max-h-[100dvh]
         min-h-0
         flex-col
         overflow-hidden
@@ -1615,10 +1767,10 @@ function SurveyShell({
       <AppHeader
         showBack
         onBack={onBack}
-        trailing={`${step} / ${total}`}
         sticky={false}
       />
 
+      {/* PROGRESS */}
       <div
         className="
           shrink-0
@@ -1658,12 +1810,9 @@ function SurveyShell({
       </div>
 
       {children}
-
-      <BuddyKeyframes />
     </main>
   )
 }
-
 
 function SurveyFooter({
   children,
@@ -1671,12 +1820,15 @@ function SurveyFooter({
   return (
     <footer
       className="
+        sticky
+        bottom-0
+        z-40
         shrink-0
         border-t
         border-border
         bg-background
         px-5
-        pb-[calc(1.5rem+env(safe-area-inset-bottom))]
+        pb-[calc(1rem+env(safe-area-inset-bottom))]
         pt-4
       "
     >
@@ -1686,52 +1838,70 @@ function SurveyFooter({
 }
 
 
-function BuddyKeyframes() {
-  return (
-    <style jsx global>{`
-      @keyframes buddyBob {
-        0%,
-        100% {
-          transform: translateY(0);
-        }
-
-        50% {
-          transform: translateY(-4px);
-        }
-      }
-
-      @keyframes buddyBlink {
-        0%,
-        44%,
-        48%,
-        100% {
-          transform: scaleY(1);
-        }
-
-        46% {
-          transform: scaleY(0.08);
-        }
-      }
-    `}</style>
-  )
-}
-
-
 /* -------------------------------------------------
    PAGE
 -------------------------------------------------- */
-
 export default function Page() {
+  const router =
+    useRouter()
+
+  const searchParams =
+    useSearchParams()
+
+  const editPreferences =
+    searchParams.get(
+      'mode'
+    ) === 'preferences'
+
+  const existingProfile =
+    getTravelerProfile()
+
   const [
     screen,
     setScreen,
-  ] = useState('intro')
+  ] = useState(
+    editPreferences
+      ? 'destination'
+      : 'intro'
+  )
 
   const [
     name,
     setName,
-  ] = useState('')
+  ] = useState(
+    editPreferences
+      ? existingProfile?.name ?? ''
+      : ''
+  )
 
+const [
+  destination,
+  setDestination,
+] = useState(() => {
+  if (
+    editPreferences &&
+    existingProfile?.destination
+  ) {
+    return (
+      destinations.find(
+        (item) =>
+          item.id ===
+          existingProfile
+            .destination.id
+      ) ?? null
+    )
+  }
+
+  return null
+})
+
+  /*
+   * Swipe preferences are intentionally
+   * restarted when editing.
+   *
+   * This prevents old likes from remaining
+   * selected when the user swipes left.
+   */
   const [
     likedPreferences,
     setLikedPreferences,
@@ -1743,9 +1913,22 @@ export default function Page() {
   ] = useState(0)
 
   const [
+    budget,
+    setBudget,
+  ] = useState(
+    editPreferences
+      ? existingProfile?.budget?.id ?? ''
+      : ''
+  )
+
+  const [
     priorities,
     setPriorities,
-  ] = useState([])
+  ] = useState(
+    editPreferences
+      ? existingProfile?.stayPriorities ?? []
+      : []
+  )
 
   const togglePriority = (
     option
@@ -1777,16 +1960,28 @@ export default function Page() {
             )
         )
 
+      const selectedBudget =
+        budgetOptions.find(
+          (option) =>
+            option.id === budget
+        )
+
+      const now =
+        new Date()
+          .toISOString()
+
       const profile = {
         name:
           name.trim(),
 
-        destination: {
-          id: 'yogyakarta',
-          name: 'Yogyakarta',
-          country:
-            'Indonesia',
-        },
+destination: {
+  id: destination.id,
+  name: destination.city,
+  country:
+    destination.country,
+  label:
+    destination.label,
+},
 
         preferences:
           likedPreferences,
@@ -1797,6 +1992,32 @@ export default function Page() {
               item.label
           ),
 
+        budget:
+          selectedBudget
+            ? {
+                id:
+                  selectedBudget.id,
+
+                label:
+                  selectedBudget.label,
+
+                shortLabel:
+                  selectedBudget.shortLabel,
+
+                min:
+                  selectedBudget.min,
+
+                max:
+                  selectedBudget.max,
+
+                currency:
+                  'IDR',
+
+                unit:
+                  'night',
+              }
+            : null,
+
         stayPriorities:
           priorities,
 
@@ -1806,8 +2027,11 @@ export default function Page() {
           ),
 
         createdAt:
-          new Date()
-            .toISOString(),
+          existingProfile?.createdAt ??
+          now,
+
+        updatedAt:
+          now,
       }
 
       saveTravelerProfile(
@@ -1839,7 +2063,9 @@ export default function Page() {
     return (
       <NameStep
         name={name}
-        onChange={setName}
+        onChange={
+          setName
+        }
         onBack={() =>
           setScreen(
             'intro'
@@ -1859,18 +2085,28 @@ export default function Page() {
     'destination'
   ) {
     return (
-      <DestinationStep
-        onBack={() =>
-          setScreen(
-            'name'
-          )
-        }
-        onNext={() =>
-          setScreen(
-            'swipe'
-          )
-        }
-      />
+<DestinationStep
+  destination={
+    destination
+  }
+  onDestinationChange={
+    setDestination
+  }
+  onBack={() => {
+    if (editPreferences) {
+      router.back()
+      return
+    }
+
+    setScreen('name')
+  }}
+  onNext={() => {
+    setSwipeIndex(0)
+    setLikedPreferences([])
+
+    setScreen('swipe')
+  }}
+/>
     )
   }
 
@@ -1904,9 +2140,41 @@ export default function Page() {
           )
 
           setScreen(
-            'priority'
+            'budget'
           )
         }}
+      />
+    )
+  }
+
+  if (
+    screen === 'budget'
+  ) {
+    return (
+      <BudgetStep
+        selected={
+          budget
+        }
+        onChange={
+          setBudget
+        }
+        onBack={() => {
+          /*
+           * Going back to swipe means
+           * making a fresh set of choices.
+           */
+          setSwipeIndex(0)
+          setLikedPreferences([])
+
+          setScreen(
+            'swipe'
+          )
+        }}
+        onNext={() =>
+          setScreen(
+            'priority'
+          )
+        }
       />
     )
   }
@@ -1925,7 +2193,7 @@ export default function Page() {
         }
         onBack={() =>
           setScreen(
-            'swipe'
+            'budget'
           )
         }
         onFinish={
@@ -1935,14 +2203,24 @@ export default function Page() {
     )
   }
 
-  return (
-    <Matching
-      name={
-        name.trim() ||
-        'traveler'
-      }
-    />
-  )
+  if (
+    screen ===
+    'matching'
+  ) {
+    return (
+      <OnboardingLoading
+        name={
+          name.trim() ||
+          'traveler'
+        }
+        editMode={
+          editPreferences
+        }
+      />
+    )
+  }
+
+  return null
 }
 
 

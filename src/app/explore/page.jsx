@@ -15,6 +15,8 @@ import {
 } from 'next/navigation'
 
 import BottomNav from '@/components/BottomNav'
+import LoadingScreen from '@/components/LoadingScreen'
+
 import DestinationSection from '@/components/explore/DestinationSection'
 import ExploreDiscoveryBar from '@/components/explore/ExploreDiscoveryBar'
 
@@ -22,11 +24,21 @@ import {
   explorePlaces,
 } from '@/data/explorePlaces'
 
+import {
+  useFavorite,
+} from '@/context/FavoriteContext'
+
+import {
+  useCompare,
+} from '@/context/CompareContext'
+
+
 export default function ExplorePage() {
   const feedRef =
     useRef(null)
 
-  const router = useRouter()
+  const router =
+    useRouter()
 
   const [
     activeIndex,
@@ -38,30 +50,111 @@ export default function ExplorePage() {
     setMuted,
   ] = useState(true)
 
+  /*
+   * SEARCH LOADING
+   */
+  const [
+    searchLoading,
+    setSearchLoading,
+  ] = useState(false)
+
+  const [
+    searchQuery,
+    setSearchQuery,
+  ] = useState('')
+
   const activePlace =
     explorePlaces[
       activeIndex
     ]
 
-const handleSearch = (
-  query
-) => {
-  const params =
-    new URLSearchParams({
-      q: query,
-    })
 
-  router.push(
-    `/explore/search?${params.toString()}`
-  )
-}
+  const handleSearch = (
+    query
+  ) => {
+    const trimmedQuery =
+      query.trim()
 
-const handlePersonalize =
-  () => {
-    router.push(
-      '/onboarding-survey'
+    if (!trimmedQuery) {
+      return
+    }
+
+    /*
+     * Store query so LoadingScreen
+     * can show what is being searched.
+     */
+    setSearchQuery(
+      trimmedQuery
+    )
+
+    setSearchLoading(
+      true
+    )
+
+    const params =
+      new URLSearchParams({
+        q: trimmedQuery,
+      })
+
+    /*
+     * Short artificial transition
+     * for the prototype.
+     */
+    window.setTimeout(
+      () => {
+        router.push(
+          `/explore/search?${params.toString()}`
+        )
+      },
+      1200
     )
   }
+
+
+  const handlePersonalize =
+    () => {
+      router.push(
+        '/onboarding-survey'
+      )
+    }
+
+
+  const {
+  isDestinationFavorite,
+  toggleDestinationFavorite,
+  isHotelFavorite,
+  toggleHotelFavorite,
+} = useFavorite()
+
+const {
+  comparedIds,
+  count: compareCount,
+  toggleCompare,
+  maxCompare,
+} = useCompare()
+
+  /*
+   * SEARCH TRANSITION
+   *
+   * Because this return happens
+   * before the Explore UI below,
+   * the whole screen is replaced
+   * by our shared LoadingScreen.
+   */
+  if (searchLoading) {
+    return (
+      <LoadingScreen
+        title={`Exploring ${searchQuery}`}
+        messages={[
+          'Finding places...',
+          'Looking for inspiration...',
+          'Preparing your results...',
+        ]}
+        interval={400}
+      />
+    )
+  }
+
 
   return (
     <main
@@ -93,33 +186,54 @@ const handlePersonalize =
             place,
             index
           ) => (
-            <DestinationSection
-              key={
-                place.id
-              }
-              place={
-                place
-              }
-              active={
-                activeIndex ===
-                index
-              }
-              muted={
-                muted
-              }
-              index={
-                index
-              }
-              onActiveChange={
-                setActiveIndex
-              }
-              feedRef={
-                feedRef
-              }
-            />
+<DestinationSection
+  key={place.id}
+  place={place}
+  active={
+    activeIndex === index
+  }
+  muted={muted}
+  index={index}
+  onActiveChange={
+    setActiveIndex
+  }
+  feedRef={feedRef}
+
+  favorite={
+    isDestinationFavorite(
+      place.id
+    )
+  }
+  onFavorite={() =>
+    toggleDestinationFavorite(
+      place.id
+    )
+  }
+
+  comparedIds={
+    comparedIds
+  }
+  compareCount={
+    compareCount
+  }
+  maxCompare={
+    maxCompare
+  }
+  onToggleCompare={
+    toggleCompare
+  }
+
+  isHotelFavorite={
+    isHotelFavorite
+  }
+  onToggleHotelFavorite={
+    toggleHotelFavorite
+  }
+/>
           )
         )}
       </div>
+
 
       {/* SEARCH + PERSONALIZE */}
       <ExploreDiscoveryBar
@@ -131,6 +245,7 @@ const handlePersonalize =
         }
         profileLabel="Personalize"
       />
+
 
       {/* SOUND */}
       {activePlace && (
@@ -175,6 +290,7 @@ const handlePersonalize =
           )}
         </button>
       )}
+
 
       {/* BOTTOM NAV */}
       <div

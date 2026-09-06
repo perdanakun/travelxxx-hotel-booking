@@ -18,25 +18,35 @@ import {
 export default function HotelCard({
   hotel,
   badge,
-  currency = 'USD',
+  currency = 'IDR',
   href,
 
   variant = 'default',
 
   compared = false,
   onCompare,
+  compareDisabled = false,
 
   favorite = false,
   onFavorite,
 }) {
   const router = useRouter()
 
-  const openHotel = () => {
-    router.push(
-      href ??
-        `/hotel/${hotel.id}`
-    )
+const openHotel = () => {
+  if (href) {
+    router.push(href)
+    return
   }
+
+  const params =
+    new URLSearchParams({
+      currency,
+    })
+
+  router.push(
+    `/hotel/${hotel.id}?${params.toString()}`
+  )
+}
 
   const hotelTitle =
   hotel.title ??
@@ -287,12 +297,21 @@ if (variant === 'feed') {
           ? 'selected'
           : 'outline'
       }
+      disabled={compareDisabled}
       onClick={(event) => {
         event.stopPropagation()
         onCompare?.()
       }}
       aria-pressed={compared}
-      className="h-8 shrink-0 rounded-lg px-2 text-[11px]"
+      className="
+        h-8
+        shrink-0
+        rounded-lg
+        px-2
+        text-[11px]
+        disabled:cursor-not-allowed
+        disabled:opacity-45
+      "
     >
       {compared && (
         <Check className="size-3.5" />
@@ -300,33 +319,45 @@ if (variant === 'feed') {
 
       {compared
         ? 'Added'
-        : 'Compare'}
+        : compareDisabled
+          ? 'Full'
+          : 'Compare'}
     </Button>
 
-    <Button
-      type="button"
-      variant="outline"
-      size="icon"
-      aria-label={
-        favorite
-          ? 'Remove from favorites'
-          : 'Add to favorites'
-      }
-      aria-pressed={favorite}
-      onClick={(event) => {
-        event.stopPropagation()
-        onFavorite?.()
-      }}
-      className="size-8 rounded-lg"
-    >
-      <Heart
-        className={`size-3.5 ${
-          favorite
-            ? 'fill-current text-primary'
-            : ''
-        }`}
-      />
-    </Button>
+<Button
+  type="button"
+  variant="outline"
+  size="icon"
+  aria-label={
+    favorite
+      ? 'Remove from favorites'
+      : 'Add to favorites'
+  }
+  aria-pressed={favorite}
+  onClick={(event) => {
+    event.stopPropagation()
+    onFavorite?.()
+  }}
+  className={`
+    size-8
+    rounded-lg
+    transition
+
+    ${
+      favorite
+        ? 'border-primary bg-primary/10 text-primary'
+        : ''
+    }
+  `}
+>
+  <Heart
+    className={`size-3.5 ${
+      favorite
+        ? 'fill-current'
+        : ''
+    }`}
+  />
+</Button>
 
   </div>
 </div>
@@ -610,6 +641,7 @@ if (variant === 'feed') {
                 ? 'selected'
                 : 'outline'
             }
+            disabled={compareDisabled}
             onClick={(
               event
             ) => {
@@ -623,6 +655,8 @@ if (variant === 'feed') {
             className="
               shrink-0
               rounded-xl
+              disabled:cursor-not-allowed
+              disabled:opacity-45
             "
           >
             {compared && (
@@ -631,7 +665,9 @@ if (variant === 'feed') {
 
             {compared
               ? 'Added'
-              : 'Compare'}
+              : compareDisabled
+                ? 'Compare full'
+                : 'Compare'}
           </Button>
         </div>
       </div>

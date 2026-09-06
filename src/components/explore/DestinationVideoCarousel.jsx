@@ -20,6 +20,14 @@ export default function DestinationVideoCarousel({
   active,
   muted,
   onVideoIndexChange,
+
+  comparedIds = [],
+  compareCount = 0,
+  maxCompare = 3,
+  onToggleCompare,
+
+  isHotelFavorite,
+  onToggleHotelFavorite,
 }) {
   const carouselRef =
     useRef(null)
@@ -267,21 +275,54 @@ export default function DestinationVideoCarousel({
       {/* HOTEL RECOMMENDATION */}
       {recommendationVisible &&
         recommendedHotel && (
-          <DraggableHotelRecommendation
-            hotel={
-              recommendedHotel
-            }
-            currency="IDR"
-            onClose={() => {
-              setRecommendationOpen(
-                false
-              )
+<DraggableHotelRecommendation
+  hotel={
+    recommendedHotel
+  }
+  currency="IDR"
 
-              setRecommendationVisible(
-                false
-              )
-            }}
-          />
+  compared={
+    comparedIds.includes(
+      recommendedHotel.id
+    )
+  }
+
+  onCompare={() =>
+    onToggleCompare?.(
+      recommendedHotel.id
+    )
+  }
+
+  compareDisabled={
+    compareCount >=
+      maxCompare &&
+    !comparedIds.includes(
+      recommendedHotel.id
+    )
+  }
+
+  favorite={
+    isHotelFavorite?.(
+      recommendedHotel.id
+    ) ?? false
+  }
+
+  onFavorite={() =>
+    onToggleHotelFavorite?.(
+      recommendedHotel.id
+    )
+  }
+
+  onClose={() => {
+    setRecommendationOpen(
+      false
+    )
+
+    setRecommendationVisible(
+      false
+    )
+  }}
+/>
         )}
     </div>
   )

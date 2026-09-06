@@ -12,6 +12,7 @@ import {
 
 import {
   MapPin,
+  Heart,
 } from 'lucide-react'
 
 import DestinationVideoCarousel from '@/components/explore/DestinationVideoCarousel'
@@ -23,6 +24,17 @@ export default function DestinationSection({
   index,
   onActiveChange,
   feedRef,
+
+  favorite = false,
+  onFavorite,
+
+  comparedIds = [],
+  compareCount = 0,
+  maxCompare = 3,
+  onToggleCompare,
+
+  isHotelFavorite,
+  onToggleHotelFavorite,
 }) {
   const router =
     useRouter()
@@ -141,26 +153,36 @@ export default function DestinationSection({
         text-white
       "
     >
-      <DestinationVideoCarousel
-        videos={
-          place.videos
-        }
-        destinationName={
-          place.place
-        }
-        hotelIds={
-          place.hotelIds
-        }
-        active={
-          active
-        }
-        muted={
-          muted
-        }
-        onVideoIndexChange={
-          setActiveVideoIndex
-        }
-      />
+<DestinationVideoCarousel
+  videos={place.videos}
+  destinationName={place.place}
+  hotelIds={place.hotelIds}
+  active={active}
+  muted={muted}
+  onVideoIndexChange={
+    setActiveVideoIndex
+  }
+
+  comparedIds={
+    comparedIds
+  }
+  compareCount={
+    compareCount
+  }
+  maxCompare={
+    maxCompare
+  }
+  onToggleCompare={
+    onToggleCompare
+  }
+
+  isHotelFavorite={
+    isHotelFavorite
+  }
+  onToggleHotelFavorite={
+    onToggleHotelFavorite
+  }
+/>
 
       {/* VIDEO GRADIENT */}
       <div
@@ -233,57 +255,109 @@ export default function DestinationSection({
           </div>
         )}
 
-        {/* DESTINATION LINK */}
-        <button
-          type="button"
-          onClick={
-            openDestinationHotels
-          }
-          className="
-            block
-            max-w-full
-            text-left
-            transition-opacity
-            active:opacity-70
-          "
-        >
-          <div
-            className="
-              flex
-              items-center
-              gap-1.5
-            "
-          >
-            <MapPin
-              className="
-                size-4
-                shrink-0
-              "
-            />
+{/* DESTINATION HEADER */}
+<div
+  className="
+    flex
+    items-center
+    justify-between
+    gap-3
+  "
+>
+  {/* DESTINATION LINK */}
+  <button
+    type="button"
+    onClick={
+      openDestinationHotels
+    }
+    className="
+      min-w-0
+      text-left
+      transition-opacity
+      active:opacity-70
+    "
+  >
+    <div
+      className="
+        flex
+        min-w-0
+        items-center
+        gap-1.5
+      "
+    >
+      <MapPin
+        className="
+          size-4
+          shrink-0
+        "
+      />
 
-            <h2
-              className="
-                text-lg
-                font-bold
-              "
-            >
-              {
-                place.place
-              }
-            </h2>
+      <h2
+        className="
+          truncate
+          text-lg
+          font-bold
+        "
+      >
+        {place.place}
+      </h2>
 
-            <p
-              className="
-                text-xs
-                text-white/70
-              "
-            >
-              {
-                place.destination
-              }
-            </p>
-          </div>
-        </button>
+      <p
+        className="
+          shrink-0
+          text-xs
+          text-white/70
+        "
+      >
+        {place.destination}
+      </p>
+    </div>
+  </button>
+
+  {/* FAVORITE DESTINATION */}
+  <button
+    type="button"
+    onClick={(event) => {
+      event.stopPropagation()
+      onFavorite?.()
+    }}
+    aria-label={
+      favorite
+        ? `Remove ${place.place} from favorites`
+        : `Save ${place.place}`
+    }
+    aria-pressed={
+      favorite
+    }
+    className="
+      flex
+      size-9
+      shrink-0
+      items-center
+      justify-center
+      rounded-full
+      bg-black/35
+      text-white
+      backdrop-blur-md
+      transition
+      active:scale-[0.94]
+    "
+  >
+    <Heart
+      className={`
+        size-4
+
+        ${
+          favorite
+            ? 'fill-current'
+            : ''
+        }
+      `}
+    />
+  </button>
+</div>
+
+
 
  {/* CAPTION */}
 <button

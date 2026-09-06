@@ -26,6 +26,12 @@ export function FavoriteProvider({
     setFavoriteDestinationIds,
   ] = useState([])
 
+  const [
+    hydrated,
+    setHydrated,
+  ] = useState(false)
+
+  // LOAD
   useEffect(() => {
     try {
       const stored =
@@ -33,84 +39,113 @@ export function FavoriteProvider({
           STORAGE_KEY
         )
 
-      if (!stored) return
+      if (stored) {
+        const parsed =
+          JSON.parse(stored)
 
-      const parsed =
-        JSON.parse(stored)
+        if (
+          Array.isArray(
+            parsed.hotelIds
+          )
+        ) {
+          setFavoriteHotelIds(
+            parsed.hotelIds
+          )
+        }
 
-      setFavoriteHotelIds(
-        parsed.hotels ?? []
+        if (
+          Array.isArray(
+            parsed.destinationIds
+          )
+        ) {
+          setFavoriteDestinationIds(
+            parsed.destinationIds
+          )
+        }
+      }
+    } catch (error) {
+      console.error(
+        'Failed to load favorites:',
+        error
       )
+    }
 
-      setFavoriteDestinationIds(
-        parsed.destinations ??
-          []
-      )
-    } catch {}
+    setHydrated(true)
   }, [])
 
+  // SAVE
   useEffect(() => {
+    if (!hydrated) return
+
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
-        hotels:
+        hotelIds:
           favoriteHotelIds,
-
-        destinations:
+        destinationIds:
           favoriteDestinationIds,
       })
     )
   }, [
     favoriteHotelIds,
     favoriteDestinationIds,
+    hydrated,
   ])
 
-  const toggleFavoriteHotel = (
-    id
+  const toggleHotelFavorite = (
+    hotelId
   ) => {
     setFavoriteHotelIds(
       (current) =>
-        current.includes(id)
+        current.includes(hotelId)
           ? current.filter(
-              (item) =>
-                item !== id
+              (id) =>
+                id !== hotelId
             )
           : [
               ...current,
-              id,
+              hotelId,
             ]
     )
   }
 
-  const toggleFavoriteDestination =
-    (id) => {
-      setFavoriteDestinationIds(
-        (current) =>
-          current.includes(id)
-            ? current.filter(
-                (item) =>
-                  item !== id
-              )
-            : [
-                ...current,
-                id,
-              ]
-      )
-    }
+  const toggleDestinationFavorite = (
+    destinationId
+  ) => {
+    setFavoriteDestinationIds(
+      (current) =>
+        current.includes(
+          destinationId
+        )
+          ? current.filter(
+              (id) =>
+                id !==
+                destinationId
+            )
+          : [
+              ...current,
+              destinationId,
+            ]
+    )
+  }
 
-  const isFavoriteHotel = (
-    id
+  const isHotelFavorite = (
+    hotelId
   ) =>
     favoriteHotelIds.includes(
-      id
+      hotelId
     )
 
-  const isFavoriteDestination = (
-    id
+  const isDestinationFavorite = (
+    destinationId
   ) =>
     favoriteDestinationIds.includes(
-      id
+      destinationId
     )
+
+  const count =
+    favoriteHotelIds.length +
+    favoriteDestinationIds.length
 
   return (
     <FavoriteContext.Provider
@@ -118,11 +153,19 @@ export function FavoriteProvider({
         favoriteHotelIds,
         favoriteDestinationIds,
 
-        toggleFavoriteHotel,
-        toggleFavoriteDestination,
+        toggleHotelFavorite,
+        toggleDestinationFavorite,
 
-        isFavoriteHotel,
-        isFavoriteDestination,
+        isHotelFavorite,
+        isDestinationFavorite,
+
+        hotelCount:
+          favoriteHotelIds.length,
+
+        destinationCount:
+          favoriteDestinationIds.length,
+
+        count,
       }}
     >
       {children}

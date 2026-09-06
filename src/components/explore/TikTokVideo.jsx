@@ -16,6 +16,10 @@ export default function TikTokVideo({
   title,
   active = false,
   muted = true,
+
+  // feed    = fullscreen Explore
+  // preview = compact destination card
+  variant = 'feed',
 }) {
   const iframeRef =
     useRef(null)
@@ -24,6 +28,14 @@ export default function TikTokVideo({
     playerReady,
     setPlayerReady,
   ] = useState(false)
+
+  const isPreview =
+    variant === 'preview'
+
+
+  /* ---------------------------------------------
+     SEND COMMAND TO TIKTOK PLAYER
+  ---------------------------------------------- */
 
   const sendMessage = (
     type,
@@ -48,6 +60,11 @@ export default function TikTokVideo({
       '*'
     )
   }
+
+
+  /* ---------------------------------------------
+     PLAYER READY
+  ---------------------------------------------- */
 
   useEffect(() => {
     const handleMessage = (
@@ -88,17 +105,23 @@ export default function TikTokVideo({
     }
   }, [])
 
+
+  /* ---------------------------------------------
+     PLAY / PAUSE / SOUND
+  ---------------------------------------------- */
+
   useEffect(() => {
     if (!playerReady) {
       return
     }
 
     if (active) {
-      sendMessage(
-        'play'
-      )
+      sendMessage('play')
 
-      if (muted) {
+      if (
+        muted ||
+        isPreview
+      ) {
         sendMessage(
           'mute'
         )
@@ -116,7 +139,13 @@ export default function TikTokVideo({
     active,
     muted,
     playerReady,
+    isPreview,
   ])
+
+
+  /* ---------------------------------------------
+     TIKTOK PLAYER URL
+  ---------------------------------------------- */
 
   const playerUrl =
     `https://www.tiktok.com/player/v1/${videoId}` +
@@ -130,67 +159,27 @@ export default function TikTokVideo({
     `&music_info=0` +
     `&description=0`
 
-  return (
-    <div
-      className="
-        absolute
-        inset-0
-        overflow-hidden
-        bg-black
-      "
-    >
-      {active ? (
-        <div
-          className="
-            absolute
-            inset-0
-            overflow-hidden
-            bg-black
-          "
-        >
-          <iframe
-            ref={
-              iframeRef
-            }
-            key={
-              videoId
-            }
-            src={
-              playerUrl
-            }
-            title={
-              title ??
-              'TikTok travel video'
-            }
-            allow="
-              autoplay;
-              fullscreen
-            "
-            loading="eager"
-            className="
-              absolute
-              left-1/2
-              top-1/2
 
-              h-[100dvh]
-              w-[56.25dvh]
+  /* ---------------------------------------------
+     INACTIVE STATE
 
-              min-h-full
-              min-w-full
+     Don't mount iframe at all.
+     This is important for performance.
+  ---------------------------------------------- */
 
-              -translate-x-1/2
-              -translate-y-1/2
-
-              border-0
-            "
-          />
-        </div>
-      ) : (
-        <>
+  if (!active) {
+    return (
+      <div
+        className="
+          absolute
+          inset-0
+          overflow-hidden
+          bg-black
+        "
+      >
+        {poster && (
           <img
-            src={
-              poster
-            }
+            src={poster}
             alt=""
             className="
               absolute
@@ -199,7 +188,9 @@ export default function TikTokVideo({
               object-cover
             "
           />
+        )}
 
+        {!isPreview && (
           <div
             className="
               absolute
@@ -231,8 +222,136 @@ export default function TikTokVideo({
               />
             </span>
           </div>
-        </>
-      )}
+        )}
+      </div>
+    )
+  }
+
+
+  /* ---------------------------------------------
+     PREVIEW MODE
+
+     Follows DestinationCard container instead
+     of viewport height.
+  ---------------------------------------------- */
+
+  if (isPreview) {
+    return (
+      <div
+        className="
+          absolute
+          inset-0
+          overflow-hidden
+          bg-black
+        "
+      >
+        {/* Poster stays underneath while
+            TikTok iframe is loading */}
+        {poster && (
+          <img
+            src={poster}
+            alt=""
+            className="
+              absolute
+              inset-0
+              size-full
+              object-cover
+            "
+          />
+        )}
+
+        <iframe
+          ref={iframeRef}
+          key={videoId}
+          src={playerUrl}
+          title={
+            title ??
+            'TikTok travel preview'
+          }
+          allow="
+            autoplay;
+            fullscreen
+          "
+          loading="lazy"
+          tabIndex={-1}
+          className="
+            pointer-events-none
+
+            absolute
+            left-1/2
+            top-1/2
+
+            h-[177.78%]
+            w-full
+
+            min-h-full
+            min-w-full
+
+            -translate-x-1/2
+            -translate-y-1/2
+
+            border-0
+          "
+        />
+      </div>
+    )
+  }
+
+
+  /* ---------------------------------------------
+     FEED MODE
+
+     Existing fullscreen Explore behavior.
+  ---------------------------------------------- */
+
+  return (
+    <div
+      className="
+        absolute
+        inset-0
+        overflow-hidden
+        bg-black
+      "
+    >
+      <div
+        className="
+          absolute
+          inset-0
+          overflow-hidden
+          bg-black
+        "
+      >
+        <iframe
+          ref={iframeRef}
+          key={videoId}
+          src={playerUrl}
+          title={
+            title ??
+            'TikTok travel video'
+          }
+          allow="
+            autoplay;
+            fullscreen
+          "
+          loading="eager"
+          className="
+            absolute
+            left-1/2
+            top-1/2
+
+            h-[100dvh]
+            w-[56.25dvh]
+
+            min-h-full
+            min-w-full
+
+            -translate-x-1/2
+            -translate-y-1/2
+
+            border-0
+          "
+        />
+      </div>
     </div>
   )
 }

@@ -28,6 +28,7 @@ import { getDefaultStayDates } from '@/lib/defaultStayDates'
 
 import { Button } from '@/components/ui/button'
 import Facilities from '@/components/hotel/Facilities'
+import LoadingScreen from '@/components/LoadingScreen'
 
 
 function SectionTitle({
@@ -150,6 +151,10 @@ function CheckoutContent() {
       brand: 'Visa',
       lastFour: '4242',
     })
+    const [
+    processing,
+    setProcessing,
+  ] = useState(false)
 
   const nights = useMemo(() => {
     const start = new Date(
@@ -183,22 +188,22 @@ function CheckoutContent() {
   const total =
     roomSubtotal + taxes
 
-  const formatStayDate = (
-    dateString
-  ) => {
-    return new Intl.DateTimeFormat(
-      'en-GB',
-      {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      }
-    ).format(
-      new Date(
-        `${dateString}T00:00:00`
-      )
+const formatStayDate = (
+  dateString
+) => {
+  return new Intl.DateTimeFormat(
+    'en-GB',
+    {
+      day: 'numeric',
+      month: 'short',
+    }
+  ).format(
+    new Date(
+      `${dateString}T00:00:00`
     )
-  }
+  )
+}
+
 
   const updateGuest = (
     field,
@@ -211,16 +216,23 @@ function CheckoutContent() {
   }
 
 const confirmBooking = () => {
+  if (processing) {
+    return
+  }
+
   const query =
     new URLSearchParams({
       hotel: hotel.id,
       roomName,
       roomDetail,
-      roomPrice: String(roomPrice),
+      roomPrice:
+        String(roomPrice),
       checkIn,
       checkOut,
-      guests: String(guests),
-      rooms: String(roomsCount),
+      guests:
+        String(guests),
+      rooms:
+        String(roomsCount),
       currency,
       guestName:
         guestDetails.fullName,
@@ -228,14 +240,35 @@ const confirmBooking = () => {
         guestDetails.email,
     })
 
-  router.push(
-    `/booking-confirmation?${query.toString()}`
+  setProcessing(true)
+
+  window.setTimeout(
+    () => {
+      router.push(
+        `/booking-confirmation?${query.toString()}`
+      )
+    },
+    1800
   )
 }
 
   if (!hotel) {
     return null
   }
+
+  if (processing) {
+  return (
+<LoadingScreen
+  titles={[
+    'Checking your booking details...',
+    'Processing your payment...',
+    'Confirming your stay...',
+  ]}
+  message="This will only take a moment."
+  interval={550}
+/>
+  )
+}
 
   return (
     <main className="min-h-screen bg-background pb-32 text-foreground md:mx-auto md:max-w-md md:border-x md:border-border">
@@ -262,92 +295,104 @@ const confirmBooking = () => {
       </header>
 
       {/* HOTEL + ROOM SUMMARY */}
-      <section className="px-5 py-6">
-        <article className="overflow-hidden rounded-2xl border border-border bg-background">
-          <div className="flex gap-4 p-4">
-            <div className="size-24 shrink-0 overflow-hidden rounded-xl bg-muted">
-              <img
-                src={hotel.image}
-                alt={hotel.title}
-                className="size-full object-cover"
-              />
-            </div>
 
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-muted-foreground">
-                {hotel.area},{' '}
-                {hotel.destination}
-              </p>
+{/* YOUR TRIP */}
+<section className="px-5 py-7">
+  <div className="flex items-start justify-between gap-4">
+    <div className="min-w-0">
+      <h2 className="text-lg font-bold leading-tight">
+        Check your Booking
+      </h2>
 
-              <h2 className="mt-1 line-clamp-2 text-base font-bold leading-snug">
-                {hotel.title}
-              </h2>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+        Review your stay details before confirming.
+      </p>
+    </div>
 
-              <div className="mt-2 flex items-center gap-1 text-xs">
-                <span className="font-semibold">
-                  ★ {hotel.rating}
-                </span>
+    <button
+      type="button"
+      onClick={() => router.back()}
+      className="shrink-0 text-sm font-medium leading-tight text-primary hover:underline"
+    >
+      Edit
+    </button>
+  </div>
 
-                <span className="text-muted-foreground">
-                  · Selected stay
-                </span>
-              </div>
-            </div>
-          </div>
+  <div className="mt-5 grid grid-cols-2 gap-4">
+    <InfoRow
+      label="Dates"
+      value={`${formatStayDate(
+        checkIn
+      )} – ${formatStayDate(
+        checkOut
+      )}`}
+    />
 
-          <div className="border-t border-border bg-surface px-4 py-4">
-            <p className="text-sm font-semibold">
-              {roomName}
-            </p>
+    <InfoRow
+      label="Guests"
+      value={`${guests} ${
+        guests === 1
+          ? 'guest'
+          : 'guests'
+      } · ${roomsCount} ${
+        roomsCount === 1
+          ? 'room'
+          : 'rooms'
+      }`}
+    />
+  </div>
+</section>
 
-            <p className="mt-1 text-xs text-muted-foreground">
-              {roomDetail}
-            </p>
-          </div>
-        </article>
-      </section>
 
-      <div className="h-2 bg-surface" />
 
-      {/* YOUR TRIP */}
-      <section className="px-5 py-7">
-        <SectionTitle
-          title="Your trip"
-          description="Review your stay details before confirming."
+<section className="px-5 pt-0 pb-6">
+  <article className="overflow-hidden rounded-2xl border border-border bg-background">
+    <div className="flex gap-4 p-4">
+      <div className="size-24 shrink-0 overflow-hidden rounded-xl bg-muted">
+        <img
+          src={hotel.image}
+          alt={hotel.title}
+          className="size-full object-cover"
         />
+      </div>
 
-        <div className="mt-6 space-y-6">
-          <InfoRow
-            label="Dates"
-            value={`${formatStayDate(
-              checkIn
-            )} – ${formatStayDate(
-              checkOut
-            )}`}
-            action="Edit"
-            onAction={() =>
-              router.back()
-            }
-          />
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-muted-foreground">
+          {hotel.area},{' '}
+          {hotel.destination}
+        </p>
 
-          <InfoRow
-            label="Guests"
-            value={`${guests} ${
-              guests === 1
-                ? 'guest'
-                : 'guests'
-            } · ${roomsCount} ${
-              roomsCount === 1
-                ? 'room'
-                : 'rooms'
-            }`}
-            action="Edit"
-            onAction={() =>
-              router.back()
-            }
-          />
+        <h2 className="mt-1 line-clamp-2 text-base font-bold leading-snug">
+          {hotel.title}
+        </h2>
+
+        <div className="mt-2 flex items-center gap-1 text-xs">
+          <span className="font-semibold">
+            ★ {hotel.rating}
+          </span>
+
+          <span className="text-muted-foreground">
+            · Selected stay
+          </span>
         </div>
-      </section>
+      </div>
+    </div>
+
+    <div className="border-t border-border bg-surface px-4 py-4">
+      <p className="text-sm font-semibold">
+        {roomName}
+      </p>
+
+      <p className="mt-1 text-xs text-muted-foreground">
+        {roomDetail}
+      </p>
+    </div>
+  </article>
+</section>
+
+
+
+ 
 
       <div className="h-2 bg-surface" />
 
@@ -442,25 +487,7 @@ const confirmBooking = () => {
 
       <div className="h-2 bg-surface" />
 
-      {/* STAY HIGHLIGHTS */}
-      <section className="px-5 py-7">
-        <SectionTitle
-          title="Stay highlights"
-          description="Included with your selected stay."
-        />
 
-        <div className="mt-5">
-          <Facilities
-            amenities={
-              hotel.amenities
-            }
-            variant="compact"
-            initialLimit={3}
-          />
-        </div>
-      </section>
-
-      <div className="h-2 bg-surface" />
 
       {/* CANCELLATION */}
       <section className="px-5 py-7">
@@ -699,16 +726,19 @@ const confirmBooking = () => {
             </span>
           </div>
 
-          <Button
-            type="button"
-            size="lg"
-            onClick={
-              confirmBooking
-            }
-            className="w-full rounded-full"
-          >
-            Confirm booking
-          </Button>
+<Button
+  type="button"
+  size="lg"
+  onClick={
+    confirmBooking
+  }
+  disabled={
+    processing
+  }
+  className="w-full rounded-full"
+>
+  Confirm booking
+</Button>
         </div>
       </div>
     </main>
