@@ -438,23 +438,12 @@ export default function FavoritePage() {
             text-xs
             font-semibold
             uppercase
-            tracking-[0.14em]
+            tracking-[0.10em]
             text-primary
           "
         >
           Your saved picks
         </p>
-
-        <h1
-          className="
-            mt-1
-            text-2xl
-            font-bold
-            tracking-tight
-          "
-        >
-          Favorite
-        </h1>
 
         <p
           className="
