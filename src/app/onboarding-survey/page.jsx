@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Suspense,
   useEffect,
   useRef,
   useState,
@@ -1842,7 +1843,7 @@ function SurveyFooter({
 /* -------------------------------------------------
    PAGE
 -------------------------------------------------- */
-export default function Page() {
+function OnboardingSurveyContent() {
   const router =
     useRouter()
 
@@ -2275,4 +2276,21 @@ function getProfileLabel(
   }
 
   return 'Curious traveler'
+}
+
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <LoadingScreen
+          title="Opening TravelXXX"
+          messages={[
+            'Preparing your traveler profile...',
+          ]}
+        />
+      }
+    >
+      <OnboardingSurveyContent />
+    </Suspense>
+  )
 }
