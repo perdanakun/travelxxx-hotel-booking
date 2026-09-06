@@ -1,8 +1,6 @@
 'use client'
 
 import {
-  ChevronLeft,
-  ChevronRight,
   X,
 } from 'lucide-react'
 
@@ -186,6 +184,37 @@ function formatShortDate(
 }
 
 
+function formatMonthLabel(
+  date
+) {
+  return new Intl.DateTimeFormat(
+    'en-US',
+    {
+      month: 'long',
+      year: 'numeric',
+    }
+  ).format(
+    date
+  )
+}
+
+
+function buildMonths(
+  startMonth,
+  count = 60
+) {
+  return Array.from(
+    { length: count },
+    (_, index) =>
+      new Date(
+        startMonth.getFullYear(),
+        startMonth.getMonth() + index,
+        1
+      )
+  )
+}
+
+
 export default function DateRangeSheet({
   open,
   checkIn,
@@ -208,24 +237,26 @@ export default function DateRangeSheet({
       []
     )
 
-
-  const initialMonth =
-    fromDateString(
-      checkIn
-    ) ?? today
-
-
-  const [
-    visibleMonth,
-    setVisibleMonth,
-  ] = useState(
-    new Date(
-      initialMonth.getFullYear(),
-      initialMonth.getMonth(),
-      1
+  const currentMonth =
+    useMemo(
+      () =>
+        new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          1
+        ),
+      [today]
     )
-  )
 
+  const months =
+    useMemo(
+      () =>
+        buildMonths(
+          currentMonth,
+          60
+        ),
+      [currentMonth]
+    )
 
   const [
     draftCheckIn,
@@ -236,7 +267,6 @@ export default function DateRangeSheet({
     )
   )
 
-
   const [
     draftCheckOut,
     setDraftCheckOut,
@@ -246,29 +276,9 @@ export default function DateRangeSheet({
     )
   )
 
-
   if (!open) {
     return null
   }
-
-
-  const days =
-    getMonthDays(
-      visibleMonth
-    )
-
-
-  const monthLabel =
-    new Intl.DateTimeFormat(
-      'en-US',
-      {
-        month: 'long',
-        year: 'numeric',
-      }
-    ).format(
-      visibleMonth
-    )
-
 
   const chooseDate = (
     date
@@ -282,15 +292,6 @@ export default function DateRangeSheet({
       return
     }
 
-
-    /*
-     * Start a new range.
-     *
-     * This happens when:
-     * - no check-in exists
-     * - a complete range already exists
-     * - user selects a date before check-in
-     */
     if (
       !draftCheckIn ||
       draftCheckOut ||
@@ -310,10 +311,6 @@ export default function DateRangeSheet({
       return
     }
 
-
-    /*
-     * Don't allow same-day checkout.
-     */
     if (
       isSameDay(
         date,
@@ -323,59 +320,10 @@ export default function DateRangeSheet({
       return
     }
 
-
-    /*
-     * Second valid selection
-     * becomes checkout.
-     */
     setDraftCheckOut(
       date
     )
   }
-
-
-  const goPreviousMonth =
-    () => {
-      const previous =
-        new Date(
-          visibleMonth.getFullYear(),
-          visibleMonth.getMonth() -
-            1,
-          1
-        )
-
-      const currentMonth =
-        new Date(
-          today.getFullYear(),
-          today.getMonth(),
-          1
-        )
-
-      if (
-        previous <
-        currentMonth
-      ) {
-        return
-      }
-
-      setVisibleMonth(
-        previous
-      )
-    }
-
-
-  const goNextMonth =
-    () => {
-      setVisibleMonth(
-        new Date(
-          visibleMonth.getFullYear(),
-          visibleMonth.getMonth() +
-            1,
-          1
-        )
-      )
-    }
-
 
   const applyDates =
     () => {
@@ -399,10 +347,20 @@ export default function DateRangeSheet({
       })
     }
 
+  // Must match BottomNav's real visual height:
+  // pt-3 (12px) + icon (16px) + gap-1 (4px) + label line (~16px)
+  // + bottom padding (12px + safe area) = ~60px + safe area.
+  const bottomNavOffset =
+    'calc(3.75rem + env(safe-area-inset-bottom))'
 
   return (
-    <div className="fixed inset-0 z-[80]">
-      {/* BACKDROP */}
+    <div
+      className="fixed inset-x-0 top-0 z-[80]"
+      style={{
+        bottom: bottomNavOffset,
+      }}
+    >
+      {/* BACKDROP — stops above bottom navigation */}
       <button
         type="button"
         aria-label="Close calendar"
@@ -425,9 +383,10 @@ export default function DateRangeSheet({
           inset-x-0
           bottom-0
           mx-auto
-          max-h-[90vh]
+          flex
           max-w-md
-          overflow-y-auto
+          flex-col
+          overflow-hidden
           rounded-t-3xl
           border-x
           border-t
@@ -435,9 +394,15 @@ export default function DateRangeSheet({
           bg-background
           shadow-2xl
         "
+        style={{
+          height:
+            `calc(100dvh - ${bottomNavOffset})`,
+          maxHeight:
+            `calc(100dvh - ${bottomNavOffset})`,
+        }}
       >
         {/* HANDLE */}
-        <div className="flex justify-center pt-2.5">
+        <div className="shrink-0 flex justify-center pt-2.5">
           <div className="h-1 w-10 rounded-full bg-border" />
         </div>
 
@@ -445,9 +410,7 @@ export default function DateRangeSheet({
         {/* HEADER */}
         <div
           className="
-            sticky
-            top-0
-            z-20
+            shrink-0
             flex
             items-center
             justify-between
@@ -483,7 +446,7 @@ export default function DateRangeSheet({
 
 
         {/* SELECTED DATES */}
-        <div className="grid grid-cols-2 gap-3 px-5 pt-5">
+        <div className="shrink-0 grid grid-cols-2 gap-3 px-5 py-4">
           <div
             className={`
               rounded-xl
@@ -539,285 +502,276 @@ export default function DateRangeSheet({
         </div>
 
 
-        {/* MONTH NAVIGATION */}
-        <div
-          className="
-            mt-5
-            flex
-            items-center
-            justify-between
-            px-5
-          "
-        >
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Previous month"
-            onClick={
-              goPreviousMonth
-            }
-          >
-            <ChevronLeft className="size-4" />
-          </Button>
-
-          <strong className="text-sm">
-            {monthLabel}
-          </strong>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Next month"
-            onClick={
-              goNextMonth
-            }
-          >
-            <ChevronRight className="size-4" />
-          </Button>
-        </div>
-
-
-        {/* WEEK DAYS */}
-        <div
-          className="
-            mt-4
-            grid
-            grid-cols-7
-            px-5
-            text-center
-            text-[11px]
-            font-medium
-            text-muted-foreground
-          "
-        >
-          {[
-            'S',
-            'M',
-            'T',
-            'W',
-            'T',
-            'F',
-            'S',
-          ].map(
-            (
-              day,
-              index
-            ) => (
-              <span
-                key={`${day}-${index}`}
-              >
-                {day}
-              </span>
-            )
-          )}
-        </div>
-
-
-        {/* CALENDAR */}
-        <div
-          className="
-            mt-2
-            grid
-            grid-cols-7
-            px-5
-            pb-5
-          "
-        >
-          {days.map(
-            (
-              date,
-              index
-            ) => {
-              if (!date) {
-                return (
-                  <div
-                    key={`empty-${index}`}
-                    className="aspect-square"
-                  />
+        {/* SCROLLABLE MONTH LIST — clipped between dates and Apply */}
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="h-full min-h-0 overflow-y-auto overscroll-contain touch-pan-y"
+            style={{ WebkitOverflowScrolling: 'touch' }}>
+          {months.map(
+            monthDate => {
+              const days =
+                getMonthDays(
+                  monthDate
                 )
-              }
-
-
-              const disabled =
-                isBeforeDay(
-                  date,
-                  today
-                )
-
-
-              const isStart =
-                isSameDay(
-                  date,
-                  draftCheckIn
-                )
-
-
-              const isEnd =
-                isSameDay(
-                  date,
-                  draftCheckOut
-                )
-
-
-              const inRange =
-                isBetween(
-                  date,
-                  draftCheckIn,
-                  draftCheckOut
-                )
-
 
               return (
-                <button
-                  key={
-                    date.toISOString()
-                  }
-                  type="button"
-                  disabled={
-                    disabled
-                  }
-                  onClick={() =>
-                    chooseDate(
-                      date
-                    )
-                  }
-                  aria-label={
-                    date.toLocaleDateString(
-                      'en-US',
-                      {
-                        weekday:
-                          'long',
-                        month:
-                          'long',
-                        day:
-                          'numeric',
-                      }
-                    )
-                  }
-                  aria-pressed={
-                    isStart ||
-                    isEnd
-                  }
-                  className={`
-                    relative
-                    flex
-                    aspect-square
-                    items-center
-                    justify-center
-                    text-sm
-                    outline-none
-
-                    ${
-                      disabled
-                        ? 'cursor-not-allowed text-muted-foreground/35'
-                        : ''
-                    }
-                  `}
+                <section
+                  key={`${monthDate.getFullYear()}-${monthDate.getMonth()}`}
+                  className="pb-6"
                 >
-                  {/* --------------------------------
-                      RANGE BACKGROUND
-
-                      These three layers create one
-                      continuous horizontal range.
-                  --------------------------------- */}
-
-
-                  {/* MIDDLE OF RANGE */}
-                  {inRange && (
-                    <span
-                      className="
-                        pointer-events-none
-                        absolute
-                        inset-x-0
-                        inset-y-1.5
-                        bg-primary/10
-                      "
-                    />
-                  )}
-
-
-                  {/* CHECK-IN → RANGE */}
-                  {isStart &&
-                    draftCheckOut && (
-                      <span
-                        className="
-                          pointer-events-none
-                          absolute
-                          bottom-1.5
-                          left-1/2
-                          right-0
-                          top-1.5
-                          bg-primary/10
-                        "
-                      />
-                    )}
-
-
-                  {/* RANGE → CHECK-OUT */}
-                  {isEnd &&
-                    draftCheckIn && (
-                      <span
-                        className="
-                          pointer-events-none
-                          absolute
-                          bottom-1.5
-                          left-0
-                          right-1/2
-                          top-1.5
-                          bg-primary/10
-                        "
-                      />
-                    )}
-
-
-                  {/* --------------------------------
-                      DATE CIRCLE
-                  --------------------------------- */}
-                  <span
-                    className={`
-                      relative
-                      z-10
-                      flex
-                      size-9
-                      items-center
-                      justify-center
-                      rounded-full
-                      transition
-
-                      ${
-                        isStart ||
-                        isEnd
-                          ? 'bg-primary font-bold text-primary-foreground'
-                          : ''
-                      }
-
-                      ${
-                        !disabled &&
-                        !isStart &&
-                        !isEnd
-                          ? 'hover:bg-surface'
-                          : ''
-                      }
-                    `}
+                  {/* MONTH TITLE */}
+                  <div
+                    className="
+                      sticky
+                      top-0
+                      z-30
+                      isolate
+                      overflow-hidden
+                      bg-background
+                      px-5
+                      pb-3
+                      pt-2
+                      before:absolute
+                      before:inset-0
+                      before:-z-10
+                      before:bg-background
+                      before:content-['']
+                    "
                   >
-                    {
-                      date.getDate()
-                    }
-                  </span>
-                </button>
+                    <strong className="relative z-10 text-sm">
+                      {formatMonthLabel(
+                        monthDate
+                      )}
+                    </strong>
+                  </div>
+
+
+                  {/* WEEK DAYS */}
+                  <div
+                    className="
+                      grid
+                      grid-cols-7
+                      px-5
+                      text-center
+                      text-[11px]
+                      font-medium
+                      text-muted-foreground
+                    "
+                  >
+                    {[
+                      'S',
+                      'M',
+                      'T',
+                      'W',
+                      'T',
+                      'F',
+                      'S',
+                    ].map(
+                      (
+                        day,
+                        index
+                      ) => (
+                        <span
+                          key={`${day}-${index}`}
+                        >
+                          {day}
+                        </span>
+                      )
+                    )}
+                  </div>
+
+
+                  {/* MONTH CALENDAR */}
+                  <div
+                    className="
+                      mt-2
+                      grid
+                      grid-cols-7
+                      px-5
+                    "
+                  >
+                    {days.map(
+                      (
+                        date,
+                        index
+                      ) => {
+                        if (!date) {
+                          return (
+                            <div
+                              key={`empty-${index}`}
+                              className="aspect-square"
+                            />
+                          )
+                        }
+
+                        const disabled =
+                          isBeforeDay(
+                            date,
+                            today
+                          )
+
+                        const isStart =
+                          isSameDay(
+                            date,
+                            draftCheckIn
+                          )
+
+                        const isEnd =
+                          isSameDay(
+                            date,
+                            draftCheckOut
+                          )
+
+                        const inRange =
+                          isBetween(
+                            date,
+                            draftCheckIn,
+                            draftCheckOut
+                          )
+
+                        return (
+                          <button
+                            key={
+                              date.toISOString()
+                            }
+                            type="button"
+                            disabled={
+                              disabled
+                            }
+                            onClick={() =>
+                              chooseDate(
+                                date
+                              )
+                            }
+                            aria-label={
+                              date.toLocaleDateString(
+                                'en-US',
+                                {
+                                  weekday:
+                                    'long',
+                                  month:
+                                    'long',
+                                  day:
+                                    'numeric',
+                                }
+                              )
+                            }
+                            aria-pressed={
+                              isStart ||
+                              isEnd
+                            }
+                            className={`
+                              relative
+                              flex
+                              aspect-square
+                              items-center
+                              justify-center
+                              text-sm
+                              outline-none
+
+                              ${
+                                disabled
+                                  ? 'cursor-not-allowed text-muted-foreground/35'
+                                  : ''
+                              }
+                            `}
+                          >
+                            {/* MIDDLE OF RANGE */}
+                            {inRange && (
+                              <span
+                                className="
+                                  pointer-events-none
+                                  absolute
+                                  inset-x-0
+                                  inset-y-1.5
+                                  bg-primary/10
+                                "
+                              />
+                            )}
+
+
+                            {/* CHECK-IN → RANGE */}
+                            {isStart &&
+                              draftCheckOut && (
+                                <span
+                                  className="
+                                    pointer-events-none
+                                    absolute
+                                    bottom-1.5
+                                    left-1/2
+                                    right-0
+                                    top-1.5
+                                    bg-primary/10
+                                  "
+                                />
+                              )}
+
+
+                            {/* RANGE → CHECK-OUT */}
+                            {isEnd &&
+                              draftCheckIn && (
+                                <span
+                                  className="
+                                    pointer-events-none
+                                    absolute
+                                    bottom-1.5
+                                    left-0
+                                    right-1/2
+                                    top-1.5
+                                    bg-primary/10
+                                  "
+                                />
+                              )}
+
+
+                            {/* DATE CIRCLE */}
+                            <span
+                              className={`
+                                relative
+                                z-10
+                                flex
+                                size-9
+                                items-center
+                                justify-center
+                                rounded-full
+                                transition
+
+                                ${
+                                  isStart ||
+                                  isEnd
+                                    ? 'bg-primary font-bold text-primary-foreground'
+                                    : ''
+                                }
+
+                                ${
+                                  !disabled &&
+                                  !isStart &&
+                                  !isEnd
+                                    ? 'hover:bg-surface'
+                                    : ''
+                                }
+                              `}
+                            >
+                              {
+                                date.getDate()
+                              }
+                            </span>
+                          </button>
+                        )
+                      }
+                    )}
+                  </div>
+                </section>
               )
             }
           )}
+          </div>
         </div>
 
 
-        {/* APPLY */}
+        {/* APPLY — always visible and directly attached to bottom nav */}
         <div
           className="
-            sticky
-            bottom-0
+            shrink-0
             border-t
             border-border
             bg-background
