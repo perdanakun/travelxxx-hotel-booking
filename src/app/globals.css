@@ -1,4 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap');
+
 @import 'tailwindcss';
+
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
@@ -217,5 +220,92 @@
   select,
   textarea {
     font: inherit;
+  }
+}
+
+/* =====================================================
+   TRAVELXXX INTRO BRAND
+===================================================== */
+
+.travel-intro-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-family:
+    'Fredoka',
+    var(--travel-font-sans),
+    sans-serif;
+
+  font-size: clamp(
+    2.25rem,
+    10vw,
+    2.85rem
+  );
+
+  font-weight: 700;
+
+  line-height: 0.95;
+
+  letter-spacing: -0.055em;
+
+  user-select: none;
+}
+
+
+/* -----------------------------------------------------
+   TRAVEL
+----------------------------------------------------- */
+
+.travel-intro-logo-main {
+  color: #0b427f;
+}
+
+
+/* -----------------------------------------------------
+   XXX
+----------------------------------------------------- */
+
+.travel-intro-logo-accent {
+  position: relative;
+
+  margin-left: 0.07em;
+
+  color: #2897ff;
+
+  letter-spacing: -0.075em;
+}
+
+
+/* Slight playful lift without looking childish */
+
+.travel-intro-logo-accent {
+  transform:
+    translateY(-0.015em)
+    rotate(-1deg);
+
+  transform-origin: center;
+}
+
+
+/* -----------------------------------------------------
+   MOBILE
+----------------------------------------------------- */
+
+@media (max-width: 380px) {
+  .travel-intro-logo {
+    font-size: 2.2rem;
+  }
+}
+
+@keyframes onboarding-enter {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }

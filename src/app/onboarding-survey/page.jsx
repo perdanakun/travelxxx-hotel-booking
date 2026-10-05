@@ -29,6 +29,7 @@ import AppHeader from '@/components/AppHeader'
 import LoadingScreen from '@/components/LoadingScreen'
 import DestinationInput from '@/components/search/DestinationInput'
 import DestinationMapCard from '@/components/search/DestinationMapCard'
+import Intro from './Intro'
 
 import {
   useTravelerProfile,
@@ -256,111 +257,6 @@ const budgetOptions = [
     max: null,
   },
 ]
-/* -------------------------------------------------
-   INTRO
--------------------------------------------------- */
-
-function Intro({
-  onStart,
-}) {
-  return (
-    <main
-      className="
-        flex
-        h-[100dvh]
-        min-h-0
-        flex-col
-        overflow-hidden
-        bg-background
-        text-foreground
-
-        md:mx-auto
-        md:max-w-md
-        md:border-x
-        md:border-border
-      "
-    >
-      <section
-        className="
-          flex
-          flex-1
-          flex-col
-          items-center
-          justify-center
-          px-5
-          pb-10
-          text-center
-        "
-      >
-        {/* BRAND MARK */}
-        <div
-          className="
-            flex
-            size-22
-            items-center
-            justify-center
-            rounded-full
-            bg-primary
-            text-secondary-foreground
-          "
-        >
-          <Compass
-            className="
-              size-14
-              animate-[spin_4s_linear_infinite]
-            "
-          />
-        </div>
-
-        {/* BRAND */}
-        <h1
-          className="
-            mt-6
-            max-w-sm
-            text-2xl
-            font-bold
-            leading-[1.08]
-            tracking-tight
-            text-balance
-          "
-        >
-          TravelXXX
-        </h1>
-
-        <p
-          className="
-            mt-1
-            max-w-xs
-            text-base
-            leading-relaxed
-            text-muted-foreground
-          "
-        >
-          Discover where to go,
-          find where to stay.
-        </p>
-      </section>
-
-      <SurveyFooter>
-        <Button
-          type="button"
-          size="lg"
-          onClick={onStart}
-          className="
-            w-full
-            font-bold
-          "
-        >
-          Get started
-
-          <ArrowRight
-            className="size-5"
-          />
-        </Button>
-      </SurveyFooter>
-    </main>
-  )
-}
 
 
 /* -------------------------------------------------

@@ -1,0 +1,742 @@
+/* =====================================================
+   SCREEN
+===================================================== */
+
+.screen {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 100dvh;
+
+  overflow: hidden;
+
+  background: #ffffff;
+  color: #ffffff;
+}
+
+
+@media (min-width: 768px) {
+  .screen {
+    max-width: 28rem;
+
+    margin-inline: auto;
+
+    border-inline:
+      1px solid var(--border);
+  }
+}
+
+
+
+/* =====================================================
+   PARALLAX SCENE
+
+   Layer 1 = automatic slow movement
+===================================================== */
+
+.parallaxScene {
+  position: absolute;
+
+  inset: -4%;
+
+  width: 108%;
+  height: 108%;
+
+  overflow: hidden;
+
+  pointer-events: none;
+
+  animation:
+    autoParallax
+    5s
+    ease-in-out
+    infinite alternate;
+
+  will-change: transform;
+}
+
+
+@keyframes autoParallax {
+  0% {
+    transform:
+      translate3d(
+        -5px,
+        -4px,
+        0
+      )
+      scale(1.01);
+  }
+
+  25% {
+    transform:
+      translate3d(
+        3px,
+        -7px,
+        0
+      )
+      scale(1.018);
+  }
+
+  50% {
+    transform:
+      translate3d(
+        6px,
+        2px,
+        0
+      )
+      scale(1.025);
+  }
+
+  75% {
+    transform:
+      translate3d(
+        -2px,
+        6px,
+        0
+      )
+      scale(1.018);
+  }
+
+  100% {
+    transform:
+      translate3d(
+        -6px,
+        3px,
+        0
+      )
+      scale(1.01);
+  }
+}
+
+
+
+/* =====================================================
+   IMAGE
+
+   Layer 2 = pointer movement
+===================================================== */
+
+.bgImage {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center;
+
+  user-select: none;
+  pointer-events: none;
+
+  transform:
+    translate3d(
+      var(--pointer-x, 0px),
+      var(--pointer-y, 0px),
+      0
+    )
+    scale(1.035);
+
+  transition:
+    transform
+    450ms
+    cubic-bezier(
+      0.22,
+      1,
+      0.36,
+      1
+    );
+
+  will-change: transform;
+}
+
+
+
+/* Faster response for mouse */
+
+@media (hover: hover) and (pointer: fine) {
+  .bgImage {
+    transition:
+      transform
+      180ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      );
+  }
+}
+
+
+
+/* =====================================================
+   OVERLAY
+===================================================== */
+
+.overlay {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 1;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(5, 20, 38, 0.18) 0%,
+      rgba(5, 20, 38, 0.02) 30%,
+      rgba(5, 20, 38, 0.04) 55%,
+      rgba(5, 20, 38, 0.24) 100%
+    );
+}
+
+
+
+/* =====================================================
+   CONTENT
+===================================================== */
+
+.content {
+  position: relative;
+
+  z-index: 2;
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  min-height: 0;
+}
+
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.header {
+  padding:
+    calc(
+      2rem +
+      env(safe-area-inset-top)
+    )
+    1.5rem
+    0;
+
+  text-align: center;
+}
+
+
+
+/* =====================================================
+   LOGO
+===================================================== */
+
+.logo {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-family:
+    var(--travel-font-sans);
+
+  font-size: 2rem;
+
+  font-weight:
+    var(--font-weight-bold);
+
+  line-height: 1;
+
+  letter-spacing:
+    var(--tracking-heading);
+
+  text-shadow:
+    0 2px 12px
+    rgba(0, 0, 0, 0.16);
+}
+
+
+
+/* =====================================================
+   TAGLINE
+===================================================== */
+
+.tagline {
+  max-width: 290px;
+
+  margin:
+    0.75rem
+    auto
+    0;
+
+  color:
+    rgba(
+      255,
+      255,
+      255,
+      0.92
+    );
+
+  font-size: 1rem;
+  font-weight:
+    var(--font-weight-medium);
+
+  line-height: 1.5;
+
+  letter-spacing:
+    var(--tracking-body);
+
+  text-shadow:
+    0 2px 12px
+    rgba(0, 0, 0, 0.18);
+}
+
+
+
+/* =====================================================
+   CTA POSITION
+===================================================== */
+
+.cta {
+  position: relative;
+
+  z-index: 30;
+
+  flex-shrink: 0;
+
+  padding:
+    0
+    1.25rem
+    calc(
+      1rem +
+      env(safe-area-inset-bottom)
+    );
+}
+
+
+.ctaMotion {
+  position: relative;
+
+  display: flex;
+
+  width: 100%;
+
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+/* =====================================================
+   BUTTON
+
+   Visual style tetap berasal dari global Button.
+   Intro hanya mengatur layout + animation.
+===================================================== */
+
+.startButton {
+  position: relative;
+
+  width: 100%;
+
+  overflow: hidden;
+
+  transition:
+    width
+      280ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+
+    padding
+      280ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+
+    border-radius
+      280ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+
+    transform
+      280ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+
+    opacity
+      120ms
+      ease;
+}
+
+
+
+/* =====================================================
+   LABEL
+===================================================== */
+
+.startLabel {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.5rem;
+
+  white-space: nowrap;
+
+  transition:
+    opacity
+      140ms ease,
+
+    transform
+      200ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      );
+}
+
+
+.startLabelHidden {
+  opacity: 0;
+
+  transform:
+    scale(0.7);
+}
+
+
+
+/* =====================================================
+   BUTTON → CIRCLE
+===================================================== */
+
+.startButtonCircle {
+  width: 48px;
+
+  padding-inline: 0;
+
+  border-radius:
+    9999px;
+}
+
+
+
+/* =====================================================
+   BUTTON DISAPPEARS
+===================================================== */
+
+.startButtonHidden {
+  width: 48px;
+
+  padding-inline: 0;
+
+  border-radius:
+    9999px;
+
+  opacity: 0;
+
+  transform:
+    scale(0.8);
+
+  pointer-events: none;
+}
+
+
+
+/* =====================================================
+   WHITE DOT
+===================================================== */
+
+.transitionDot {
+  position: absolute;
+
+  z-index: 50;
+
+  left:
+    var(--dot-start-x);
+
+  top:
+    var(--dot-start-y);
+
+  width: 48px;
+  height: 48px;
+
+  border-radius:
+    9999px;
+
+  background:
+    #ffffff;
+
+  pointer-events: none;
+
+  transform:
+    translate(
+      -50%,
+      -50%
+    );
+
+  transition:
+    left
+      420ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+
+    top
+      420ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+
+    width
+      620ms
+      cubic-bezier(
+        0.76,
+        0,
+        0.24,
+        1
+      ),
+
+    height
+      620ms
+      cubic-bezier(
+        0.76,
+        0,
+        0.24,
+        1
+      );
+}
+
+
+
+/* =====================================================
+   CENTER DOT
+===================================================== */
+
+.transitionDotCenter {
+  left: 50%;
+  top: 50%;
+
+  width: 18px;
+  height: 18px;
+}
+
+
+
+/* =====================================================
+   NATURAL MULTI BOUNCE
+===================================================== */
+
+.transitionDotBounce {
+  animation:
+    dotBounce
+    620ms
+    cubic-bezier(
+      0.22,
+      1,
+      0.36,
+      1
+    );
+}
+
+
+@keyframes dotBounce {
+
+  0% {
+    transform:
+      translate(
+        -50%,
+        -50%
+      )
+      scale(1);
+  }
+
+
+  14% {
+    transform:
+      translate(
+        -50%,
+        calc(-50% - 22px)
+      )
+      scaleX(0.92)
+      scaleY(1.12);
+  }
+
+
+  28% {
+    transform:
+      translate(
+        -50%,
+        calc(-50% + 9px)
+      )
+      scaleX(1.12)
+      scaleY(0.9);
+  }
+
+
+  43% {
+    transform:
+      translate(
+        -50%,
+        calc(-50% - 12px)
+      )
+      scaleX(0.96)
+      scaleY(1.07);
+  }
+
+
+  57% {
+    transform:
+      translate(
+        -50%,
+        calc(-50% + 5px)
+      )
+      scaleX(1.07)
+      scaleY(0.95);
+  }
+
+
+  70% {
+    transform:
+      translate(
+        -50%,
+        calc(-50% - 5px)
+      )
+      scaleX(0.98)
+      scaleY(1.03);
+  }
+
+
+  82% {
+    transform:
+      translate(
+        -50%,
+        calc(-50% + 2px)
+      )
+      scaleX(1.025)
+      scaleY(0.985);
+  }
+
+
+  91% {
+    transform:
+      translate(
+        -50%,
+        calc(-50% - 1px)
+      );
+  }
+
+
+  100% {
+    transform:
+      translate(
+        -50%,
+        -50%
+      )
+      scale(1);
+  }
+}
+
+
+
+/* =====================================================
+   FULLSCREEN WHITE
+===================================================== */
+
+.transitionDotExpand {
+  left: 50%;
+  top: 50%;
+
+  width: 230vmax;
+  height: 230vmax;
+}
+
+
+
+/* =====================================================
+   SHORT SCREEN
+===================================================== */
+
+@media (max-height: 740px) {
+
+  .header {
+    padding-top:
+      calc(
+        1.3rem +
+        env(safe-area-inset-top)
+      );
+  }
+
+
+  .logo {
+    font-size:
+      1.8rem;
+  }
+
+
+  .tagline {
+    margin-top:
+      0.6rem;
+
+    font-size:
+      0.9375rem;
+  }
+}
+
+
+
+/* =====================================================
+   REDUCED MOTION
+===================================================== */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+
+  .parallaxScene {
+    animation: none;
+  }
+
+
+  .bgImage,
+  .startButton,
+  .startLabel,
+  .transitionDot {
+    transition-duration:
+      1ms;
+  }
+
+
+  .transitionDotBounce {
+    animation: none;
+  }
+}
