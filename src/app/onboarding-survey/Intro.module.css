@@ -9,708 +9,1665 @@
   flex-direction: column;
 
   width: 100%;
+  min-height: 100svh;
   height: 100dvh;
 
   overflow: hidden;
 
-  background: #ffffff;
-  color: #ffffff;
+  background: var(--background);
+  color: var(--foreground);
+
+  isolation: isolate;
 }
 
 
 @media (min-width: 768px) {
   .screen {
     max-width: 28rem;
-
     margin-inline: auto;
 
     border-inline:
-      1px solid var(--border);
+      1px solid
+      var(--border);
   }
 }
-
 
 
 /* =====================================================
-   PARALLAX SCENE
-
-   Layer 1 = automatic slow movement
+   SLIDE
 ===================================================== */
 
-.parallaxScene {
-  position: absolute;
+.slide {
+  position: relative;
+  z-index: 2;
 
-  inset: -4%;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
 
-  width: 108%;
-  height: 108%;
+  align-items: center;
 
-  overflow: hidden;
+  min-height: 0;
 
-  pointer-events: none;
+  padding:
+    calc(
+      clamp(
+        0.85rem,
+        3vh,
+        1.5rem
+      ) +
+      env(safe-area-inset-top)
+    )
+    clamp(
+      1rem,
+      5vw,
+      1.5rem
+    )
+    0;
 
-  animation:
-    autoParallax
-    5s
-    ease-in-out
-    infinite alternate;
-
-  will-change: transform;
+  touch-action: pan-y;
+  user-select: none;
 }
 
 
-@keyframes autoParallax {
-  0% {
-    transform:
-      translate3d(
-        -5px,
-        -4px,
-        0
-      )
-      scale(1.01);
-  }
+/* =====================================================
+   VISUAL AREA
+===================================================== */
 
-  25% {
+.visual {
+  position: relative;
+
+  display: flex;
+  flex: 1 1 auto;
+
+  width: 100%;
+  min-height: 0;
+
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    clamp(0rem, 1.5vh, 0.4rem)
+    0
+    clamp(0.4rem, 2vh, 0.9rem);
+}
+
+
+/* =====================================================
+   MASCOT
+===================================================== */
+
+.mascot {
+  position: relative;
+  z-index: 2;
+
+  display: block;
+
+  width:
+    min(
+      76vw,
+      18.5rem
+    );
+
+  height: auto;
+  max-width: 100%;
+
+  max-height:
+    min(
+      41dvh,
+      21rem
+    );
+
+  object-fit: contain;
+  object-position: center;
+
+  pointer-events: none;
+  user-select: none;
+
+  transform-origin: center;
+
+  will-change:
+    transform,
+    opacity,
+    filter;
+}
+
+
+/* =====================================================
+   IDLE MASCOT MOTION
+===================================================== */
+
+.motionWelcome .mascot:not(.mascotCollapse):not(.mascotPop):not(.mascotSettle):not(.mascotHidden) {
+  animation:
+    mascotFloat
+    4.8s
+    ease-in-out
+    900ms
+    infinite;
+}
+
+
+.motionDiscover .mascot:not(.mascotCollapse):not(.mascotPop):not(.mascotSettle):not(.mascotHidden) {
+  animation:
+    mascotFloatAlt
+    5.2s
+    ease-in-out
+    900ms
+    infinite;
+}
+
+
+.motionFind .mascot:not(.mascotCollapse):not(.mascotPop):not(.mascotSettle):not(.mascotHidden) {
+  animation:
+    mascotFloat
+    5.4s
+    ease-in-out
+    900ms
+    infinite;
+}
+
+
+@keyframes mascotFloat {
+  0%,
+  100% {
     transform:
-      translate3d(
-        3px,
-        -7px,
-        0
-      )
-      scale(1.018);
+      translateY(0);
   }
 
   50% {
     transform:
-      translate3d(
-        6px,
-        2px,
-        0
-      )
-      scale(1.025);
-  }
-
-  75% {
-    transform:
-      translate3d(
-        -2px,
-        6px,
-        0
-      )
-      scale(1.018);
-  }
-
-  100% {
-    transform:
-      translate3d(
-        -6px,
-        3px,
-        0
-      )
-      scale(1.01);
+      translateY(-5px);
   }
 }
 
 
+@keyframes mascotFloatAlt {
+  0%,
+  100% {
+    transform:
+      translateY(0)
+      rotate(0deg);
+  }
+
+  50% {
+    transform:
+      translateY(-4px)
+      rotate(0.6deg);
+  }
+}
+
 
 /* =====================================================
-   IMAGE
-
-   Layer 2 = pointer movement
+   MASCOT → LIQUID DOT
 ===================================================== */
 
-.bgImage {
-  display: block;
+.mascotCollapse {
+  animation:
+    mascotToDot
+    280ms
+    cubic-bezier(
+      0.55,
+      0,
+      1,
+      0.45
+    )
+    both !important;
+}
 
-  width: 100%;
-  height: 100%;
 
-  object-fit: cover;
-  object-position: center;
+@keyframes mascotToDot {
+  0% {
+    opacity: 1;
 
-  user-select: none;
-  pointer-events: none;
+    transform:
+      translateY(0)
+      scale(1)
+      rotate(0deg);
+
+    filter:
+      blur(0);
+  }
+
+  45% {
+    opacity: 1;
+
+    transform:
+      translateY(2px)
+      scaleX(0.5)
+      scaleY(0.62)
+      rotate(-2deg);
+
+    filter:
+      blur(0.5px);
+  }
+
+  78% {
+    opacity: 0.65;
+
+    transform:
+      translateY(2px)
+      scaleX(0.16)
+      scaleY(0.22)
+      rotate(-5deg);
+
+    filter:
+      blur(2px);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translateY(2px)
+      scale(0.055)
+      rotate(-7deg);
+
+    filter:
+      blur(5px);
+  }
+}
+
+
+.mascotHidden {
+  opacity: 0;
 
   transform:
-    translate3d(
-      var(--pointer-x, 0px),
-      var(--pointer-y, 0px),
-      0
-    )
-    scale(1.035);
+    scale(0.05);
 
-  transition:
-    transform
-    450ms
+  filter:
+    blur(5px);
+
+  animation: none !important;
+}
+
+
+/* =====================================================
+   LIQUID BLUE DOT
+===================================================== */
+
+.morphDot {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  z-index: 5;
+
+  width: 22px;
+  height: 22px;
+
+  border-radius: 50%;
+
+  background:
+    var(--primary);
+
+  box-shadow:
+    0 8px 24px
+    color-mix(
+      in srgb,
+      var(--primary) 22%,
+      transparent
+    );
+
+  opacity: 0;
+
+  transform:
+    translate(-50%, -50%)
+    scale(0);
+
+  pointer-events: none;
+
+  will-change:
+    transform,
+    border-radius,
+    opacity;
+}
+
+
+.morphDotLiquid {
+  animation:
+    liquidDot
+    360ms
     cubic-bezier(
       0.22,
       1,
       0.36,
       1
-    );
-
-  will-change: transform;
+    )
+    both;
 }
 
 
+@keyframes liquidDot {
+  0% {
+    opacity: 0;
 
-/* Faster response for mouse */
+    border-radius:
+      50%;
 
-@media (hover: hover) and (pointer: fine) {
-  .bgImage {
-    transition:
-      transform
-      180ms
-      cubic-bezier(
-        0.22,
-        1,
-        0.36,
-        1
-      );
+    transform:
+      translate(-50%, -50%)
+      scale(0.32);
+  }
+
+  20% {
+    opacity: 1;
+
+    border-radius:
+      62% 38% 48% 52% /
+      44% 60% 40% 56%;
+
+    transform:
+      translate(-50%, -50%)
+      scaleX(1.24)
+      scaleY(0.78);
+  }
+
+  44% {
+    border-radius:
+      42% 58% 60% 40% /
+      58% 40% 60% 42%;
+
+    transform:
+      translate(-50%, -50%)
+      scaleX(0.82)
+      scaleY(1.24);
+  }
+
+  67% {
+    border-radius:
+      58% 42% 44% 56% /
+      46% 58% 42% 54%;
+
+    transform:
+      translate(-50%, -50%)
+      scaleX(1.14)
+      scaleY(0.9);
+  }
+
+  84% {
+    border-radius:
+      46% 54% 55% 45% /
+      55% 45% 56% 44%;
+
+    transform:
+      translate(-50%, -50%)
+      scaleX(0.96)
+      scaleY(1.08);
+  }
+
+  100% {
+    opacity: 1;
+
+    border-radius:
+      50%;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1);
   }
 }
 
-
-
 /* =====================================================
-   OVERLAY
+   HOME → INTRO HANDOFF DOT
+
+   IMPORTANT:
+   This dot is positioned against .screen, not .visual.
+   It begins at the exact screen center used by HomeOpening,
+   then glides to the measured center of the mascot stage.
 ===================================================== */
 
-.overlay {
-  position: absolute;
-
-  inset: 0;
-
-  z-index: 1;
-
-  pointer-events: none;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(5, 20, 38, 0.18) 0%,
-      rgba(5, 20, 38, 0.02) 30%,
-      rgba(5, 20, 38, 0.04) 55%,
-      rgba(5, 20, 38, 0.24) 100%
-    );
-}
-
-
-
-/* =====================================================
-   CONTENT
-===================================================== */
-
-.content {
-  position: relative;
-
-  z-index: 2;
-
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-
-  min-height: 0;
-}
-
-
-
-/* =====================================================
-   HEADER
-===================================================== */
-
-.header {
-  padding:
-    calc(
-      2rem +
-      env(safe-area-inset-top)
-    )
-    1.5rem
-    0;
-
-  text-align: center;
-}
-
-
-
-/* =====================================================
-   LOGO
-===================================================== */
-
-.logo {
-  margin: 0;
-
-  color: #ffffff;
-
-  font-family:
-    var(--travel-font-sans);
-
-  font-size: 2rem;
-
-  font-weight:
-    var(--font-weight-bold);
-
-  line-height: 1;
-
-  letter-spacing:
-    var(--tracking-heading);
-
-  text-shadow:
-    0 2px 12px
-    rgba(0, 0, 0, 0.16);
-}
-
-
-
-/* =====================================================
-   TAGLINE
-===================================================== */
-
-.tagline {
-  max-width: 290px;
-
-  margin:
-    0.75rem
-    auto
-    0;
-
-  color:
-    rgba(
-      255,
-      255,
-      255,
-      0.92
-    );
-
-  font-size: 1rem;
-  font-weight:
-    var(--font-weight-medium);
-
-  line-height: 1.5;
-
-  letter-spacing:
-    var(--tracking-body);
-
-  text-shadow:
-    0 2px 12px
-    rgba(0, 0, 0, 0.18);
-}
-
-
-
-/* =====================================================
-   CTA POSITION
-===================================================== */
-
-.cta {
-  position: relative;
-
-  z-index: 30;
-
-  flex-shrink: 0;
-
-  padding:
-    0
-    1.25rem
-    calc(
-      1rem +
-      env(safe-area-inset-bottom)
-    );
-}
-
-
-.ctaMotion {
-  position: relative;
-
-  display: flex;
-
-  width: 100%;
-
-  align-items: center;
-  justify-content: center;
-}
-
-
-
-/* =====================================================
-   BUTTON
-
-   Visual style tetap berasal dari global Button.
-   Intro hanya mengatur layout + animation.
-===================================================== */
-
-.startButton {
-  position: relative;
-
-  width: 100%;
-
-  overflow: hidden;
-
-  transition:
-    width
-      280ms
-      cubic-bezier(
-        0.22,
-        1,
-        0.36,
-        1
-      ),
-
-    padding
-      280ms
-      cubic-bezier(
-        0.22,
-        1,
-        0.36,
-        1
-      ),
-
-    border-radius
-      280ms
-      cubic-bezier(
-        0.22,
-        1,
-        0.36,
-        1
-      ),
-
-    transform
-      280ms
-      cubic-bezier(
-        0.22,
-        1,
-        0.36,
-        1
-      ),
-
-    opacity
-      120ms
-      ease;
-}
-
-
-
-/* =====================================================
-   LABEL
-===================================================== */
-
-.startLabel {
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  gap: 0.5rem;
-
-  white-space: nowrap;
-
-  transition:
-    opacity
-      140ms ease,
-
-    transform
-      200ms
-      cubic-bezier(
-        0.22,
-        1,
-        0.36,
-        1
-      );
-}
-
-
-.startLabelHidden {
-  opacity: 0;
-
-  transform:
-    scale(0.7);
-}
-
-
-
-/* =====================================================
-   BUTTON → CIRCLE
-===================================================== */
-
-.startButtonCircle {
-  width: 48px;
-
-  padding-inline: 0;
-
-  border-radius:
-    9999px;
-}
-
-
-
-/* =====================================================
-   BUTTON DISAPPEARS
-===================================================== */
-
-.startButtonHidden {
-  width: 48px;
-
-  padding-inline: 0;
-
-  border-radius:
-    9999px;
-
-  opacity: 0;
-
-  transform:
-    scale(0.8);
-
-  pointer-events: none;
-}
-
-
-
-/* =====================================================
-   WHITE DOT
-===================================================== */
-
-.transitionDot {
+.entryHandoffDot {
   position: absolute;
 
   z-index: 50;
 
-  left:
-    var(--dot-start-x);
-
-  top:
-    var(--dot-start-y);
-
-  width: 48px;
-  height: 48px;
-
-  border-radius:
-    9999px;
-
-  background:
-    #ffffff;
-
-  pointer-events: none;
-
-  transform:
-    translate(
-      -50%,
-      -50%
-    );
-
-  transition:
-    left
-      420ms
-      cubic-bezier(
-        0.22,
-        1,
-        0.36,
-        1
-      ),
-
-    top
-      420ms
-      cubic-bezier(
-        0.22,
-        1,
-        0.36,
-        1
-      ),
-
-    width
-      620ms
-      cubic-bezier(
-        0.76,
-        0,
-        0.24,
-        1
-      ),
-
-    height
-      620ms
-      cubic-bezier(
-        0.76,
-        0,
-        0.24,
-        1
-      );
-}
-
-
-
-/* =====================================================
-   CENTER DOT
-===================================================== */
-
-.transitionDotCenter {
   left: 50%;
   top: 50%;
 
   width: 18px;
   height: 18px;
+
+  border-radius: 9999px;
+
+  background:
+    var(--primary);
+
+  box-shadow:
+    0 10px 26px
+    color-mix(
+      in srgb,
+      var(--primary) 24%,
+      transparent
+    );
+
+  pointer-events: none;
+
+  transform:
+    translate(-50%, -50%);
+
+  transform-origin: center;
+
+  will-change:
+    left,
+    top,
+    transform,
+    border-radius,
+    opacity;
 }
 
 
+.entryHandoffHold {
+  opacity: 1;
 
-/* =====================================================
-   NATURAL MULTI BOUNCE
-===================================================== */
+  left: 50%;
+  top: 50%;
 
-.transitionDotBounce {
+  transform:
+    translate(-50%, -50%)
+    scale(1);
+}
+
+
+.entryHandoffGlide {
   animation:
-    dotBounce
-    620ms
+    entryHandoffGlide
+    360ms
     cubic-bezier(
       0.22,
       1,
       0.36,
       1
+    )
+    both;
+}
+
+
+@keyframes entryHandoffGlide {
+  0% {
+    opacity: 1;
+
+    left: 50%;
+    top: 50%;
+
+    border-radius: 50%;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1);
+  }
+
+  22% {
+    opacity: 1;
+
+
+    border-radius:
+      56% 44% 50% 50% /
+      45% 57% 43% 55%;
+
+    transform:
+      translate(-50%, -50%)
+      scaleX(1.08)
+      scaleY(0.94);
+  }
+
+  48% {
+    opacity: 1;
+
+
+    border-radius:
+      63% 37% 45% 55% /
+      40% 62% 38% 60%;
+
+    transform:
+      translate(-50%, -50%)
+      scaleX(1.32)
+      scaleY(0.76);
+  }
+
+  72% {
+    opacity: 1;
+
+
+    border-radius:
+      42% 58% 59% 41% /
+      59% 41% 61% 39%;
+
+    transform:
+      translate(-50%, -50%)
+      scaleX(0.82)
+      scaleY(1.2);
+  }
+
+  100% {
+    opacity: 1;
+
+    left:
+      var(--entry-target-x);
+
+    top:
+      var(--entry-target-y);
+
+    border-radius: 50%;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1);
+  }
+}
+
+
+.entryHandoffPop {
+  left:
+    var(--entry-target-x);
+
+  top:
+    var(--entry-target-y);
+
+  animation:
+    entryHandoffPop
+    300ms
+    cubic-bezier(
+      0.16,
+      1,
+      0.3,
+      1
+    )
+    both;
+}
+
+
+@keyframes entryHandoffPop {
+  0% {
+    opacity: 1;
+
+    border-radius: 50%;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1);
+  }
+
+  35% {
+    opacity: 1;
+
+    border-radius:
+      60% 40% 56% 44% /
+      44% 56% 44% 56%;
+
+    transform:
+      translate(-50%, -50%)
+      scaleX(1.75)
+      scaleY(1.12);
+  }
+
+  68% {
+    opacity: 0.58;
+
+    border-radius: 50%;
+
+    transform:
+      translate(-50%, -50%)
+      scale(2.45);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translate(-50%, -50%)
+      scale(3.5);
+  }
+}
+
+
+.entryHandoffGone {
+  left:
+    var(--entry-target-x);
+
+  top:
+    var(--entry-target-y);
+
+  opacity: 0;
+
+  transform:
+    translate(-50%, -50%)
+    scale(3.5);
+}
+
+
+/* =====================================================
+   LIQUID DOT → NEXT MASCOT
+===================================================== */
+
+.morphDotPop {
+  animation:
+    liquidDotPop
+    340ms
+    cubic-bezier(
+      0.16,
+      1,
+      0.3,
+      1
+    )
+    both;
+}
+
+
+@keyframes liquidDotPop {
+  0% {
+    opacity: 1;
+
+    border-radius: 50%;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1);
+  }
+
+  32% {
+    opacity: 1;
+
+    border-radius:
+      60% 40% 56% 44% /
+      44% 56% 44% 56%;
+
+    transform:
+      translate(-50%, -50%)
+      scaleX(1.7)
+      scaleY(1.15);
+  }
+
+  62% {
+    opacity: 0.8;
+
+    border-radius:
+      50%;
+
+    transform:
+      translate(-50%, -50%)
+      scale(2.1);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translate(-50%, -50%)
+      scale(3.4);
+  }
+}
+
+
+.mascotPop {
+  animation:
+    dotToMascot
+    300ms
+    cubic-bezier(
+      0.16,
+      1,
+      0.3,
+      1
+    )
+    both !important;
+}
+
+
+@keyframes dotToMascot {
+  0% {
+    opacity: 0;
+
+    transform:
+      translateY(3px)
+      scale(0.055)
+      rotate(5deg);
+
+    filter:
+      blur(5px);
+  }
+
+  38% {
+    opacity: 1;
+
+    transform:
+      translateY(-3px)
+      scale(0.82)
+      rotate(-2deg);
+
+    filter:
+      blur(1px);
+  }
+
+  68% {
+    opacity: 1;
+
+    transform:
+      translateY(-5px)
+      scale(1.075)
+      rotate(0.8deg);
+
+    filter:
+      blur(0);
+  }
+
+  84% {
+    transform:
+      translateY(1px)
+      scale(0.975)
+      rotate(0deg);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1)
+      rotate(0deg);
+
+    filter:
+      blur(0);
+  }
+}
+
+
+.mascotSettle {
+  animation:
+    mascotSettle
+    140ms
+    cubic-bezier(
+      0.22,
+      1,
+      0.36,
+      1
+    )
+    both !important;
+}
+
+
+@keyframes mascotSettle {
+  from {
+    transform:
+      translateY(1px)
+      scale(0.985);
+  }
+
+  to {
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+
+/* =====================================================
+   COPY
+
+   Typography intentionally inherits the app's global
+   design-system font family. Weight, tracking, colors,
+   and hierarchy use existing design tokens.
+===================================================== */
+
+.copy {
+  position: relative;
+  top: -48px;
+
+  flex: 0 0 auto;
+
+  width: 100%;
+  max-width: 23rem;
+
+  padding:
+    0
+    0
+    clamp(
+      0.5rem,
+      1.6vh,
+      0.9rem
+    );
+
+  text-align: center;
+
+  will-change:
+    transform,
+    opacity,
+    filter;
+}
+
+
+.eyebrow {
+  margin: 0;
+
+  color:
+    var(--primary);
+
+  font-size:
+    clamp(
+      0.6875rem,
+      2.8vw,
+      0.75rem
+    );
+
+  font-weight:
+    var(--font-weight-semibold);
+
+  line-height: 1.25;
+
+  letter-spacing:
+    0.08em;
+
+  text-transform:
+    uppercase;
+}
+
+
+.title {
+  max-width: 21rem;
+
+  margin:
+    clamp(
+      0.5rem,
+      1.35vh,
+      0.7rem
+    )
+    auto
+    0;
+
+  color:
+    var(--foreground);
+
+  font-size:
+    clamp(
+      1.45rem,
+      6.4vw,
+      2rem
+    );
+
+  font-weight:
+    var(--font-weight-bold);
+
+  line-height:
+    1.08;
+
+  letter-spacing:
+    var(--tracking-heading);
+
+  text-wrap:
+    balance;
+}
+
+
+.description {
+  max-width: 20.5rem;
+
+  margin:
+    clamp(
+      0.7rem,
+      1.8vh,
+      0.95rem
+    )
+    auto
+    0;
+
+  color:
+    var(--muted-foreground);
+
+  font-size:
+    clamp(
+      0.8125rem,
+      3.6vw,
+      0.9375rem
+    );
+
+  font-weight:
+    var(--font-weight-regular);
+
+  line-height:
+    1.5;
+
+  letter-spacing:
+    var(--tracking-body);
+
+  text-wrap:
+    pretty;
+}
+
+
+.copyEntryHidden {
+  opacity: 0;
+
+  transform:
+    translateY(10px);
+
+  filter:
+    blur(2px);
+}
+
+
+/* =====================================================
+   COPY FIRST ENTRANCE
+===================================================== */
+
+.copyIntro .eyebrow {
+  animation:
+    copyRise
+    480ms
+    cubic-bezier(0.22, 1, 0.36, 1)
+    120ms
+    both;
+}
+
+
+.copyIntro .title {
+  animation:
+    copyRise
+    540ms
+    cubic-bezier(0.22, 1, 0.36, 1)
+    190ms
+    both;
+}
+
+
+.copyIntro .description {
+  animation:
+    copyRise
+    560ms
+    cubic-bezier(0.22, 1, 0.36, 1)
+    280ms
+    both;
+}
+
+
+@keyframes copyRise {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(14px);
+
+    filter:
+      blur(2px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0);
+
+    filter:
+      blur(0);
+  }
+}
+
+
+/* =====================================================
+   COPY TRANSITIONS
+===================================================== */
+
+.copyExitForward {
+  animation:
+    copyExitForward
+    220ms
+    ease
+    both;
+}
+
+
+.copyExitBackward {
+  animation:
+    copyExitBackward
+    220ms
+    ease
+    both;
+}
+
+
+@keyframes copyExitForward {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+}
+
+
+@keyframes copyExitBackward {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+}
+
+
+.copyEnterForward {
+  animation:
+    copyEnterForward
+    440ms
+    cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+}
+
+
+.copyEnterBackward {
+  animation:
+    copyEnterBackward
+    440ms
+    cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+}
+
+
+@keyframes copyEnterForward {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+
+@keyframes copyEnterBackward {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+
+.copyIdle {
+  opacity: 1;
+  transform: none;
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.footer {
+  position: relative;
+  z-index: 10;
+
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+
+  width: 100%;
+
+  padding:
+    clamp(
+      0.2rem,
+      0.8vh,
+      0.45rem
+    )
+    clamp(
+      1rem,
+      5vw,
+      1.25rem
+    )
+    calc(
+      clamp(
+        0.75rem,
+        2vh,
+        1rem
+      ) +
+      env(safe-area-inset-bottom)
+    );
+
+  background:
+    var(--background);
+}
+
+
+/* =====================================================
+   PROGRESS DOTS
+===================================================== */
+
+.dots {
+  position: relative;
+  z-index: 20;
+
+  display: flex;
+  flex: 0 0 auto;
+
+  min-height: 1.25rem;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.4rem;
+
+  margin-bottom:
+    clamp(
+      0.3rem,
+      1vh,
+      0.55rem
     );
 }
 
 
-@keyframes dotBounce {
+.dot {
+  width: 6px;
+  height: 6px;
 
+  flex: 0 0 auto;
+
+  border: 0;
+  border-radius: 9999px;
+  padding: 0;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--primary) 22%,
+      transparent
+    );
+
+  cursor: pointer;
+
+  transition:
+    width 260ms
+      cubic-bezier(0.22, 1, 0.36, 1),
+    transform 180ms ease,
+    background-color 180ms ease;
+}
+
+
+.dot:hover:not(:disabled) {
+  transform:
+    scale(1.15);
+}
+
+
+.dotActive {
+  width: 22px;
+  background: var(--primary);
+}
+
+
+.dot:disabled {
+  pointer-events: none;
+}
+
+
+/* =====================================================
+   CTA
+   Appearance stays owned by shared Button component.
+===================================================== */
+
+.nextButton {
+  position: relative;
+
+  width: 100%;
+  flex: 0 0 auto;
+
+  overflow: hidden;
+
+  transition:
+    transform 180ms
+      cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms ease;
+}
+
+
+.nextButton:hover:not(:disabled) {
+  transform:
+    translateY(-1px);
+}
+
+
+.nextButton:active:not(:disabled) {
+  transform:
+    translateY(0)
+    scale(0.985);
+}
+
+
+.nextButtonPulse {
+  animation:
+    buttonPulse
+    380ms
+    cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+@keyframes buttonPulse {
   0% {
+    transform: scale(1);
+  }
+
+  42% {
+    transform: scale(0.978);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+
+.nextLabel {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+
+.nextIconWrap {
+  display: grid;
+
+  width: 1.65rem;
+  height: 1.65rem;
+
+  flex: 0 0 auto;
+  place-items: center;
+
+  transition:
+    transform 220ms
+      cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+.nextButton:hover:not(:disabled)
+.nextIconWrap {
+  transform:
+    translateX(3px);
+}
+
+
+.nextButtonPulse
+.nextIconWrap {
+  animation:
+    arrowKick
+    380ms
+    cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+@keyframes arrowKick {
+  0% {
+    transform: translateX(0);
+  }
+
+  45% {
+    transform: translateX(4px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+
+.nextIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+
+/* =====================================================
+   FINAL TRANSITION
+===================================================== */
+
+.finishLayer {
+  position: absolute;
+  z-index: 100;
+  inset: 0;
+
+  overflow: hidden;
+  pointer-events: none;
+}
+
+
+.finishDot {
+  position: absolute;
+
+  left: var(--finish-x);
+  top: var(--finish-y);
+
+  width: 20px;
+  height: 20px;
+
+  border-radius: 9999px;
+
+  background:
+    var(--primary);
+
+  transform:
+    translate(-50%, -50%);
+
+  animation:
+    finishDotExpand
+    760ms
+    cubic-bezier(0.76, 0, 0.24, 1)
+    both;
+}
+
+
+@keyframes finishDotExpand {
+  0% {
+    width: 20px;
+    height: 20px;
+
     transform:
-      translate(
-        -50%,
-        -50%
-      )
+      translate(-50%, -50%)
+      scale(0.2);
+  }
+
+  16% {
+    width: 20px;
+    height: 20px;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1.15);
+  }
+
+  28% {
+    width: 20px;
+    height: 20px;
+
+    transform:
+      translate(-50%, -50%)
       scale(1);
   }
 
+  100% {
+    width: 230vmax;
+    height: 230vmax;
 
-  14% {
     transform:
-      translate(
-        -50%,
-        calc(-50% - 22px)
-      )
-      scaleX(0.92)
-      scaleY(1.12);
+      translate(-50%, -50%)
+      scale(1);
+  }
+}
+
+
+.screenFinishing .slide,
+.screenFinishing .footer {
+  animation:
+    contentFinishExit
+    260ms
+    ease
+    both;
+}
+
+
+@keyframes contentFinishExit {
+  from {
+    opacity: 1;
   }
 
+  to {
+    opacity: 0;
+  }
+}
 
-  28% {
-    transform:
-      translate(
-        -50%,
-        calc(-50% + 9px)
-      )
-      scaleX(1.12)
-      scaleY(0.9);
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 480px) {
+  .slide {
+    padding-inline: 1.125rem;
   }
 
+  .mascot {
+    width:
+      min(
+        74vw,
+        17rem
+      );
 
-  43% {
-    transform:
-      translate(
-        -50%,
-        calc(-50% - 12px)
-      )
-      scaleX(0.96)
-      scaleY(1.07);
+    max-height: 39dvh;
   }
 
-
-  57% {
-    transform:
-      translate(
-        -50%,
-        calc(-50% + 5px)
-      )
-      scaleX(1.07)
-      scaleY(0.95);
+  .copy {
+    max-width: 21rem;
   }
 
-
-  70% {
-    transform:
-      translate(
-        -50%,
-        calc(-50% - 5px)
-      )
-      scaleX(0.98)
-      scaleY(1.03);
+  .footer {
+    padding-inline: 1rem;
   }
 
-
-  82% {
-    transform:
-      translate(
-        -50%,
-        calc(-50% + 2px)
-      )
-      scaleX(1.025)
-      scaleY(0.985);
+  .morphDot {
+    width: 20px;
+    height: 20px;
   }
 
+  .entryHandoffDot {
+    width: 16px;
+    height: 16px;
+  }
+}
 
-  91% {
-    transform:
-      translate(
-        -50%,
-        calc(-50% - 1px)
+
+@media (max-width: 359px) {
+  .slide {
+    padding-inline: 0.875rem;
+  }
+
+  .mascot {
+    width:
+      min(
+        70vw,
+        14rem
       );
   }
 
+  .title {
+    font-size: 1.35rem;
+  }
 
-  100% {
-    transform:
-      translate(
-        -50%,
-        -50%
-      )
-      scale(1);
+  .description {
+    max-width: 18rem;
+    font-size: 0.8rem;
+  }
+
+  .footer {
+    padding-inline: 0.875rem;
   }
 }
 
 
-
 /* =====================================================
-   FULLSCREEN WHITE
-===================================================== */
-
-.transitionDotExpand {
-  left: 50%;
-  top: 50%;
-
-  width: 230vmax;
-  height: 230vmax;
-}
-
-
-
-/* =====================================================
-   SHORT SCREEN
+   SHORT MOBILE
 ===================================================== */
 
 @media (max-height: 740px) {
-
-  .header {
+  .slide {
     padding-top:
       calc(
-        1.3rem +
+        0.75rem +
         env(safe-area-inset-top)
       );
   }
 
-
-  .logo {
-    font-size:
-      1.8rem;
+  .visual {
+    padding-bottom: 0.3rem;
   }
 
+  .mascot {
+    width:
+      min(
+        66vw,
+        15rem
+      );
 
-  .tagline {
-    margin-top:
-      0.6rem;
+    max-height: 33dvh;
+  }
+
+  .eyebrow {
+    font-size: 0.6875rem;
+  }
+
+  .title {
+    margin-top: 0.4rem;
 
     font-size:
-      0.9375rem;
+      clamp(
+        1.3rem,
+        5.8vw,
+        1.55rem
+      );
+  }
+
+  .description {
+    margin-top: 0.55rem;
+
+    font-size:
+      clamp(
+        0.78rem,
+        3.3vw,
+        0.875rem
+      );
+
+    line-height: 1.4;
+  }
+
+  .copy {
+    padding-bottom: 0.3rem;
+  }
+
+  .footer {
+    padding-top: 0.25rem;
   }
 }
 
+
+@media (max-height: 640px) {
+  .slide {
+    padding-top:
+      calc(
+        0.45rem +
+        env(safe-area-inset-top)
+      );
+  }
+
+  .visual {
+    padding: 0 0 0.15rem;
+  }
+
+  .mascot {
+    width:
+      min(
+        58vw,
+        12.5rem
+      );
+
+    max-height: 28dvh;
+  }
+
+  .copy {
+    padding-bottom: 0.15rem;
+  }
+
+  .eyebrow {
+    font-size: 0.625rem;
+  }
+
+  .title {
+    margin-top: 0.3rem;
+
+    font-size:
+      clamp(
+        1.18rem,
+        5.5vw,
+        1.35rem
+      );
+
+    line-height: 1.06;
+  }
+
+  .description {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .dots {
+    min-height: 1rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .dotActive {
+    width: 18px;
+  }
+
+  .footer {
+    padding-top: 0.2rem;
+
+    padding-bottom:
+      calc(
+        0.65rem +
+        env(safe-area-inset-bottom)
+      );
+  }
+}
+
+
+@media (max-height: 560px) {
+  .mascot {
+    width:
+      min(
+        50vw,
+        10.5rem
+      );
+
+    max-height: 24dvh;
+  }
+
+  .description {
+    max-width: 18rem;
+    font-size: 0.7rem;
+  }
+
+  .footer {
+    padding-top: 0.15rem;
+  }
+}
+
+
+@media (
+  min-width: 600px
+) and (
+  max-height: 700px
+) {
+  .mascot {
+    width:
+      min(
+        42vw,
+        15rem
+      );
+
+    max-height: 34dvh;
+  }
+}
 
 
 /* =====================================================
@@ -721,22 +1678,45 @@
   prefers-reduced-motion:
   reduce
 ) {
-
-  .parallaxScene {
-    animation: none;
+  .entryHandoffGlide,
+  .entryHandoffPop,
+  .motionWelcome .mascot,
+  .motionDiscover .mascot,
+  .motionFind .mascot,
+  .mascotCollapse,
+  .mascotPop,
+  .mascotSettle,
+  .morphDotLiquid,
+  .morphDotPop,
+  .copyIntro .eyebrow,
+  .copyIntro .title,
+  .copyIntro .description,
+  .copyExitForward,
+  .copyExitBackward,
+  .copyEnterForward,
+  .copyEnterBackward,
+  .nextButtonPulse,
+  .nextButtonPulse .nextIconWrap,
+  .finishDot,
+  .screenFinishing .slide,
+  .screenFinishing .footer {
+    animation: none !important;
+    transition-duration: 1ms;
   }
 
-
-  .bgImage,
-  .startButton,
-  .startLabel,
-  .transitionDot {
-    transition-duration:
-      1ms;
+  .mascot,
+  .copy,
+  .copyEntryHidden,
+  .copyIntro .eyebrow,
+  .copyIntro .title,
+  .copyIntro .description {
+    opacity: 1;
+    transform: none;
+    filter: none;
   }
 
-
-  .transitionDotBounce {
-    animation: none;
+  .morphDot,
+  .entryHandoffDot {
+    display: none;
   }
 }
