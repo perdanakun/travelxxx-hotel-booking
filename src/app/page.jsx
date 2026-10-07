@@ -24,7 +24,12 @@ const OPENING_TIMING = {
   morphStart: 120,
   brandStart: 720,
   brandEnd: 1350,
-  complete: 1800,
+
+  /*
+   * Bounce ends at ~1540ms. Keep only a short settled hold before
+   * routing so the same dot feels continuous into Intro.
+   */
+  complete: 1660,
 }
 
 

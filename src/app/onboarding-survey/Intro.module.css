@@ -327,7 +327,7 @@
 .morphDotLiquid {
   animation:
     liquidDot
-    360ms
+    285ms
     cubic-bezier(
       0.22,
       1,
@@ -564,20 +564,27 @@
   top:
     var(--entry-target-y);
 
+  /*
+   * The incoming Home dot now sits BEHIND the mascot while it is
+   * absorbed. This mirrors the 1 → 2 → 3 mascot handoff and avoids
+   * the old blue burst flashing over the artwork.
+   */
+  z-index: 3;
+
   animation:
-    entryHandoffPop
-    300ms
+    entryHandoffAbsorb
+    330ms
     cubic-bezier(
-      0.16,
+      0.22,
       1,
-      0.3,
+      0.36,
       1
     )
     both;
 }
 
 
-@keyframes entryHandoffPop {
+@keyframes entryHandoffAbsorb {
   0% {
     opacity: 1;
 
@@ -588,27 +595,35 @@
       scale(1);
   }
 
-  35% {
+  18% {
     opacity: 1;
 
     border-radius:
-      60% 40% 56% 44% /
-      44% 56% 44% 56%;
+      55% 45% 51% 49% /
+      46% 54% 46% 54%;
 
     transform:
       translate(-50%, -50%)
-      scaleX(1.75)
-      scaleY(1.12);
+      scaleX(1.14)
+      scaleY(0.92);
   }
 
-  68% {
-    opacity: 0.58;
+  42% {
+    opacity: 0.72;
 
     border-radius: 50%;
 
     transform:
       translate(-50%, -50%)
-      scale(2.45);
+      scale(0.9);
+  }
+
+  72% {
+    opacity: 0.24;
+
+    transform:
+      translate(-50%, -50%)
+      scale(0.58);
   }
 
   100% {
@@ -616,7 +631,7 @@
 
     transform:
       translate(-50%, -50%)
-      scale(3.5);
+      scale(0.34);
   }
 }
 
@@ -628,11 +643,13 @@
   top:
     var(--entry-target-y);
 
+  z-index: 3;
+
   opacity: 0;
 
   transform:
     translate(-50%, -50%)
-    scale(3.5);
+    scale(0.34);
 }
 
 
@@ -641,20 +658,22 @@
 ===================================================== */
 
 .morphDotPop {
+  z-index: 3;
+
   animation:
-    liquidDotPop
-    340ms
+    liquidDotAbsorb
+    330ms
     cubic-bezier(
-      0.16,
+      0.22,
       1,
-      0.3,
+      0.36,
       1
     )
     both;
 }
 
 
-@keyframes liquidDotPop {
+@keyframes liquidDotAbsorb {
   0% {
     opacity: 1;
 
@@ -665,28 +684,35 @@
       scale(1);
   }
 
-  32% {
+  18% {
     opacity: 1;
 
     border-radius:
-      60% 40% 56% 44% /
-      44% 56% 44% 56%;
+      55% 45% 51% 49% /
+      46% 54% 46% 54%;
 
     transform:
       translate(-50%, -50%)
-      scaleX(1.7)
-      scaleY(1.15);
+      scaleX(1.14)
+      scaleY(0.92);
   }
 
-  62% {
-    opacity: 0.8;
+  42% {
+    opacity: 0.72;
 
-    border-radius:
-      50%;
+    border-radius: 50%;
 
     transform:
       translate(-50%, -50%)
-      scale(2.1);
+      scale(0.9);
+  }
+
+  72% {
+    opacity: 0.24;
+
+    transform:
+      translate(-50%, -50%)
+      scale(0.58);
   }
 
   100% {
@@ -694,15 +720,17 @@
 
     transform:
       translate(-50%, -50%)
-      scale(3.4);
+      scale(0.34);
   }
 }
 
 
 .mascotPop {
+  z-index: 6;
+
   animation:
     dotToMascot
-    300ms
+    330ms
     cubic-bezier(
       0.16,
       1,
@@ -715,45 +743,54 @@
 
 @keyframes dotToMascot {
   0% {
-    opacity: 0;
+    opacity: 0.08;
 
     transform:
-      translateY(3px)
-      scale(0.055)
-      rotate(5deg);
+      translateY(2px)
+      scale(0.07)
+      rotate(3deg);
 
     filter:
-      blur(5px);
+      blur(3px);
   }
 
-  38% {
+  20% {
+    opacity: 0.72;
+
+    transform:
+      translateY(-2px)
+      scale(0.56)
+      rotate(-1.4deg);
+
+    filter:
+      blur(1.2px);
+  }
+
+  46% {
     opacity: 1;
 
     transform:
-      translateY(-3px)
-      scale(0.82)
-      rotate(-2deg);
+      translateY(-5px)
+      scale(0.94)
+      rotate(-0.5deg);
 
     filter:
-      blur(1px);
+      blur(0);
   }
 
   68% {
     opacity: 1;
 
     transform:
-      translateY(-5px)
-      scale(1.075)
-      rotate(0.8deg);
-
-    filter:
-      blur(0);
+      translateY(-4px)
+      scale(1.055)
+      rotate(0.5deg);
   }
 
   84% {
     transform:
       translateY(1px)
-      scale(0.975)
+      scale(0.985)
       rotate(0deg);
   }
 
@@ -1325,18 +1362,21 @@
 
 
 /* =====================================================
-   FINAL TRANSITION
+   FINAL TRANSITION — INTRO → SURVEY PROGRESS
+
+   Character bounce handoff:
+   1. CTA mass collapses cleanly into one real dot.
+   2. The dot travels toward progress in damped, advancing hops.
+   3. Each bounce loses height and deformation before settling.
 ===================================================== */
 
 .finishLayer {
   position: absolute;
   z-index: 100;
   inset: 0;
-
   overflow: hidden;
   pointer-events: none;
 }
-
 
 .finishDot {
   position: absolute;
@@ -1344,81 +1384,211 @@
   left: var(--finish-x);
   top: var(--finish-y);
 
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 
   border-radius: 9999px;
 
-  background:
-    var(--primary);
+  background: var(--primary);
+
+  opacity: 0;
 
   transform:
     translate(-50%, -50%);
 
-  animation:
-    finishDotExpand
-    760ms
-    cubic-bezier(0.76, 0, 0.24, 1)
-    both;
+  transform-origin: center center;
+
+  will-change:
+    left,
+    top,
+    width,
+    height,
+    transform,
+    border-radius,
+    opacity;
 }
 
+/*
+ * Use the same strong in/out curve as HomeOpening's
+ * fullscreen -> dot collapse. The button keeps its layout slot,
+ * but its visible mass resolves all the way to 18px before the
+ * overlay dot takes over.
+ */
+.screenFinishing .nextButton {
+  pointer-events: none;
+  transform-origin: left center;
 
-@keyframes finishDotExpand {
+  animation:
+    finishButtonToDot
+    680ms
+    linear
+    both;
+
+  will-change:
+    width,
+    border-radius,
+    transform,
+    opacity;
+}
+
+.screenFinishing .nextLabel {
+  transform-origin: left center;
+
+  animation:
+    finishButtonLabelOut
+    250ms
+    cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+
+  will-change:
+    opacity,
+    transform,
+    filter;
+}
+
+/*
+ * Character-style button -> dot transformation.
+ *
+ * 0–15%   anticipation: a tiny press/squash
+ * 15–32%  recoil: the CTA gets a little energy back
+ * 32–76%  mass gather: both dimensions resolve into a pill
+ * 76–94%  dot overshoot / recovery
+ * 94–100% crossfade into the overlay dot
+ *
+ * Width is deliberately held near full-size during the press/recoil.
+ * Most horizontal collapse happens only after the anticipation, which
+ * makes the shape feel like it is gathering its mass instead of simply
+ * being resized by CSS.
+ */
+@keyframes finishButtonToDot {
   0% {
-    width: 20px;
-    height: 20px;
-
-    transform:
-      translate(-50%, -50%)
-      scale(0.2);
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: inherit;
+    opacity: 1;
+    transform: translateY(0) scaleX(1) scaleY(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  16% {
-    width: 20px;
-    height: 20px;
-
-    transform:
-      translate(-50%, -50%)
-      scale(1.15);
+  15% {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: inherit;
+    opacity: 1;
+    transform: translateY(1px) scaleX(1.012) scaleY(0.965);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  28% {
-    width: 20px;
-    height: 20px;
+  32% {
+    width: 96%;
+    margin-left: 0;
+    margin-right: auto;
+    border-radius: inherit;
+    opacity: 1;
+    transform: translateY(-1px) scaleX(0.992) scaleY(1.025);
+    animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+  }
 
-    transform:
-      translate(-50%, -50%)
-      scale(1);
+  54% {
+    width: 58%;
+    margin-left: 0;
+    margin-right: auto;
+    border-radius: 9999px;
+    opacity: 1;
+    transform: translateY(0) scaleX(1) scaleY(0.99);
+    animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  70% {
+    width: 64px;
+    margin-left: 0;
+    margin-right: auto;
+    border-radius: 9999px;
+    opacity: 1;
+    transform: translateY(0) scaleX(1.04) scaleY(0.96);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  79% {
+    width: 18px;
+    margin-left: 0;
+    margin-right: auto;
+    border-radius: 9999px;
+    opacity: 1;
+    transform: translateY(-1px) scaleX(0.9) scaleY(1.16);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  88% {
+    width: 18px;
+    margin-left: 0;
+    margin-right: auto;
+    border-radius: 9999px;
+    opacity: 1;
+    transform: translateY(1px) scaleX(1.12) scaleY(0.9);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  95% {
+    width: 18px;
+    margin-left: 0;
+    margin-right: auto;
+    border-radius: 9999px;
+    opacity: 1;
+    transform: translateY(0) scale(0.98);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   100% {
-    width: 230vmax;
-    height: 230vmax;
-
-    transform:
-      translate(-50%, -50%)
-      scale(1);
+    width: 18px;
+    margin-left: 0;
+    margin-right: auto;
+    border-radius: 9999px;
+    opacity: 0;
+    transform: translateY(0) scale(1);
   }
 }
 
+@keyframes finishButtonLabelOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
 
-.screenFinishing .slide,
-.screenFinishing .footer {
-  animation:
-    contentFinishExit
-    260ms
-    ease
-    both;
+  45% {
+    opacity: 0.72;
+    transform: translateX(-2px) scale(0.97);
+    filter: blur(0.4px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.9);
+    filter: blur(2px);
+  }
 }
 
+/* Keep the rest of Intro quiet; don't compete with the moving dot. */
+.screenFinishing .slide {
+  animation:
+    contentFinishExit
+    620ms
+    cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+}
 
 @keyframes contentFinishExit {
   from {
     opacity: 1;
+    transform: translateY(0);
   }
 
   to {
     opacity: 0;
+    transform: translateY(-2px);
   }
 }
 
@@ -1698,6 +1868,8 @@
   .nextButtonPulse,
   .nextButtonPulse .nextIconWrap,
   .finishDot,
+  .screenFinishing .nextButton,
+  .screenFinishing .nextLabel,
   .screenFinishing .slide,
   .screenFinishing .footer {
     animation: none !important;

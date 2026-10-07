@@ -89,7 +89,8 @@
 /* =====================================================
    FULLSCREEN BLUE → SMALL DOT
 
-   90ms flash + 470ms collapse.
+   Keep the original timing:
+   600ms collapse.
 ===================================================== */
 
 .dotMorph {
@@ -176,8 +177,10 @@
 /* =====================================================
    BRAND WORDMARK
 
-   The dot becomes part of:
-   trave ● xxx
+   Larger visual scale so the blue circle reads
+   clearly as a real logo dot:
+
+   Travel  ●  XXX
 ===================================================== */
 
 .brandPart {
@@ -190,15 +193,25 @@
   color:
     var(--foreground);
 
+  /*
+   * Bigger wordmark.
+   * Roughly aligned with the visual scale
+   * of the onboarding Intro title.
+   */
   font-size:
-    1.35rem;
+    clamp(
+      1.75rem,
+      7vw,
+      2rem
+    );
 
   font-weight:
     var(--font-weight-bold);
 
   line-height: 1;
+
   letter-spacing:
-    -0.035em;
+    -0.045em;
 
   opacity: 0;
 
@@ -221,31 +234,46 @@
 }
 
 
+
+/* -----------------------------------------------------
+   LEFT — Travel
+----------------------------------------------------- */
+
 .brandLeft {
   right:
     calc(
-      50% + 15px
+      50% + 13px
     );
 
   transform:
     translateY(-50%)
-    translateX(9px)
+    translateX(10px)
     scale(0.96);
 }
 
+
+
+/* -----------------------------------------------------
+   RIGHT — XXX
+----------------------------------------------------- */
 
 .brandRight {
   left:
     calc(
-      50% + 15px
+      50% + 13px
     );
 
   transform:
     translateY(-50%)
-    translateX(-9px)
+    translateX(-10px)
     scale(0.96);
 }
 
+
+
+/* -----------------------------------------------------
+   WORDMARK VISIBLE
+----------------------------------------------------- */
 
 .brandVisible {
   opacity: 1;
@@ -272,12 +300,20 @@
 /* =====================================================
    DOT BOUNCE
 
-   Starts after the fullscreen collapse.
-   Keep final dot centered for Home → Intro handoff.
+   Dot stays intentionally small.
+   The larger wordmark now makes the circle feel
+   like a punctuation / logo mark instead of a ball.
+
+   Final position remains centered for
+   Home → Intro handoff.
 ===================================================== */
+
 .dotBounce {
-  width: 18px;
-  height: 18px;
+  width:
+    18px;
+
+  height:
+    18px;
 
   box-shadow:
     0 10px 26px
@@ -388,6 +424,10 @@
 
 /* =====================================================
    MOBILE
+
+   Keep dot at 18px here too so the mark remains
+   visually consistent with desktop and with the
+   Home → Intro handoff.
 ===================================================== */
 
 @media (max-width: 480px) {
@@ -399,33 +439,26 @@
 
   .dotBounce {
     width:
-      16px;
+      18px;
 
     height:
-      16px;
+      18px;
   }
 
 
   .brandPart {
     font-size:
-      1.2rem;
+      1.75rem;
   }
 
 
-  .brandLeft {
-    right:
-      calc(
-        50% + 14px
-      );
-  }
+.brandLeft {
+  right: calc(50% + 19px);
+}
 
-
-  .brandRight {
-    left:
-      calc(
-        50% + 14px
-      );
-  }
+.brandRight {
+  left: calc(50% + 19px);
+}
 
 
   @keyframes entryBounce {
@@ -530,7 +563,8 @@
     height:
       18px;
 
-    animation: none;
+    animation:
+      none;
 
     transform:
       translate(

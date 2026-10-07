@@ -1,0 +1,342 @@
+/* =====================================================
+   ONBOARDING SURVEY MOTION SYSTEM
+
+   Visual styling stays in the shared design system.
+   This module only owns motion, progress continuity,
+   and top-to-bottom sequencing.
+===================================================== */
+
+:root {
+  --survey-motion-ease:
+    cubic-bezier(0.22, 1, 0.36, 1);
+
+  --survey-motion-inout:
+    cubic-bezier(0.65, 0, 0.35, 1);
+
+  --survey-motion-soft:
+    cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
+/* =====================================================
+   HEADER
+
+   Persistent between onboarding screens.
+   Back button must never blink / re-enter.
+===================================================== */
+
+.shellHeader,
+.shellHeaderHandoff {
+  opacity: 1;
+  transform: none;
+  animation: none;
+
+  will-change: auto;
+}
+
+
+@keyframes surveyTopEnter {
+  from {
+    opacity: 0;
+
+    transform:
+      translate3d(
+        0,
+        -8px,
+        0
+      );
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translate3d(
+        0,
+        0,
+        0
+      );
+  }
+}
+
+
+/* -----------------------------------------------------
+   INTRO → IDENTITY HEADER HANDOFF
+----------------------------------------------------- */
+
+.shellHeaderHandoff {
+  /*
+   * Intro has already visually completed
+   * the initial transition.
+   *
+   * Keep the structural header present
+   * instead of replaying its entrance.
+   */
+
+  opacity: 1;
+
+  transform: none;
+
+  animation: none;
+}
+
+
+/* =====================================================
+   PROGRESS STAGE
+
+   Persistent visual element.
+
+   Do NOT fade, translate, or replay an entrance
+   animation when SurveyShell remounts.
+
+   Only the fill width changes.
+===================================================== */
+
+.progressStage {
+  opacity: 1;
+
+  transform: none;
+
+  animation: none;
+
+  will-change: auto;
+}
+
+
+/* -----------------------------------------------------
+   INTRO → IDENTITY PROGRESS HANDOFF
+----------------------------------------------------- */
+
+.progressStageHandoff {
+  /*
+   * Intro ends visually on the progress origin.
+   * Keep the track permanently visible so there
+   * is no blink between Intro and Identity.
+   */
+
+  opacity: 1;
+
+  transform: none;
+
+  animation: none;
+}
+
+
+/* =====================================================
+   PROGRESS FILL
+
+   The progress bar should feel like one continuous
+   object slowly catching up with the user's journey.
+
+   No fade.
+   No vertical motion.
+   No shimmer.
+   Only width changes.
+===================================================== */
+
+.progressFill {
+  position: relative;
+
+  overflow: hidden;
+
+  transform-origin:
+    left center;
+
+  transition:
+    width
+    900ms
+    var(--survey-motion-ease);
+
+  will-change:
+    width;
+}
+
+
+/* -----------------------------------------------------
+   INTRO → IDENTITY FILL
+
+   First progress movement is intentionally slower.
+
+   Intro dot / seed
+       ↓
+   grow smoothly into Identity 20%
+----------------------------------------------------- */
+
+.progressFillHandoff {
+  min-width: 6px;
+
+  transition:
+    width
+    1250ms
+    var(--survey-motion-ease);
+
+  transition-delay:
+    100ms;
+}
+
+
+/* -----------------------------------------------------
+   NO PROGRESS SHIMMER
+
+   The previous sweep animation restarted whenever a
+   new SurveyShell mounted and visually looked like
+   the progress bar was flashing.
+
+   Keep progress calm and persistent.
+----------------------------------------------------- */
+
+.progressFill::after,
+.progressFillHandoff::after {
+  content: none;
+
+  display: none;
+}
+
+
+/* =====================================================
+   SCREEN CONTENT
+
+   page.jsx controls sequencing using:
+   --survey-delay
+
+   These components are allowed to disappear/re-enter
+   because they represent the changing survey screen.
+===================================================== */
+
+.motionItem {
+  opacity: 0;
+
+  transform:
+    translate3d(
+      0,
+      14px,
+      0
+    )
+    scale(0.992);
+
+  animation:
+    surveyItemEnter
+    480ms
+    var(--survey-motion-ease)
+    var(--survey-delay, 140ms)
+    both;
+
+  will-change:
+    transform,
+    opacity;
+}
+
+
+@keyframes surveyItemEnter {
+  0% {
+    opacity: 0;
+
+    transform:
+      translate3d(
+        0,
+        14px,
+        0
+      )
+      scale(0.992);
+  }
+
+  58% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      translate3d(
+        0,
+        0,
+        0
+      )
+      scale(1);
+  }
+}
+
+
+/* =====================================================
+   BUTTONS
+
+   No separate button morph lives here.
+
+   Buttons keep their existing visual interaction
+   from the shared Button design system.
+
+   SurveyFooter uses .motionItem, so it still enters
+   as part of the top → bottom stagger.
+===================================================== */
+
+
+/* =====================================================
+   SHORT SCREENS
+
+   Slightly reduce content entrance duration on
+   shorter devices.
+
+   Progress still remains slower than the content
+   so it feels continuous rather than attached to
+   the screen transition.
+===================================================== */
+
+@media (max-height: 740px) {
+  .motionItem {
+    animation-duration:
+      420ms;
+  }
+
+  .progressFill {
+    transition-duration:
+      700ms;
+  }
+
+  .progressFillHandoff {
+    transition-duration:
+      1050ms;
+  }
+}
+
+
+/* =====================================================
+   REDUCED MOTION
+===================================================== */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .shellHeader,
+  .shellHeaderHandoff,
+  .progressStage,
+  .progressStageHandoff,
+  .motionItem {
+    opacity: 1;
+
+    transform: none;
+
+    animation: none;
+  }
+
+
+  .progressFill,
+  .progressFillHandoff {
+    transition-duration:
+      1ms;
+
+    transition-delay:
+      0ms;
+  }
+
+
+  .progressFill::after,
+  .progressFillHandoff::after {
+    content: none;
+
+    display: none;
+
+    animation: none;
+  }
+}

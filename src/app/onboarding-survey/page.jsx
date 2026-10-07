@@ -10,7 +10,6 @@ import {
 import {
   ArrowRight,
   Check,
-  Compass,
   Heart,
   Sparkles,
   X,
@@ -30,6 +29,7 @@ import LoadingScreen from '@/components/LoadingScreen'
 import DestinationInput from '@/components/search/DestinationInput'
 import DestinationMapCard from '@/components/search/DestinationMapCard'
 import Intro from './Intro'
+import styles from './OnboardingSurvey.module.css'
 
 import {
   useTravelerProfile,
@@ -227,36 +227,11 @@ const stayPriorities = [
   'Local atmosphere',
 ]
 
-const budgetOptions = [
-  {
-    id: 'budget',
-    label: 'Under Rp500K',
-    shortLabel: '< Rp500K',
-    min: 0,
-    max: 500000,
-  },
-  {
-    id: 'value',
-    label: 'Rp500K – 800K',
-    shortLabel: 'Rp500K–800K',
-    min: 500000,
-    max: 800000,
-  },
-  {
-    id: 'comfort',
-    label: 'Rp800K – 1.5M',
-    shortLabel: 'Rp800K–1.5M',
-    min: 800000,
-    max: 1500000,
-  },
-  {
-    id: 'premium',
-    label: 'Rp1.5M+',
-    shortLabel: 'Rp1.5M+',
-    min: 1500000,
-    max: null,
-  },
-]
+const BUDGET_MIN = 0
+const BUDGET_MAX = 500
+const BUDGET_STEP = 5
+
+
 
 
 /* -------------------------------------------------
@@ -264,6 +239,8 @@ const budgetOptions = [
 -------------------------------------------------- */
 
 function NameStep({
+  progressFrom,
+  entryHandoff = false,
   name,
   onChange,
   onBack,
@@ -281,6 +258,8 @@ function NameStep({
 
   return (
     <SurveyShell
+      progressFrom={progressFrom}
+      entryHandoff={entryHandoff}
       step={1}
       total={5}
       onBack={onBack}
@@ -299,27 +278,11 @@ function NameStep({
         "
       >
         <h1
-          className="
-            text-2xl
-            font-bold
-            tracking-tight
-          "
+          className={`${styles.motionItem} text-2xl font-bold tracking-tight`}
+          style={{ '--survey-delay': entryHandoff ? '360ms' : '140ms' }}
         >
-          What should we call you?
+          Hi, traveler!
         </h1>
-
-        <p
-          className="
-            mt-1
-            text-sm
-            leading-relaxed
-            text-muted-foreground
-          "
-        >
-          We&apos;ll use your name
-          across your TravelXXX
-          experience.
-        </p>
 
         <input
           ref={inputRef}
@@ -343,56 +306,34 @@ function NameStep({
               onNext()
             }
           }}
-          placeholder="e.g. Dinda"
-          className="
-            mt-8
-            w-full
-            rounded-xl
-            border
-            border-border
-            bg-background
-            px-4
-            py-4
-            text-lg
-            font-medium
-            outline-none
-            transition
-
-            focus:border-primary
-            focus:ring-2
-            focus:ring-primary/15
-          "
+          placeholder="What should we call you?"
+          className={`${styles.motionItem} mt-8 w-full rounded-xl border border-border bg-background px-4 py-4 text-lg font-medium outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15`}
+          style={{ '--survey-delay': entryHandoff ? '460ms' : '220ms' }}
         />
 
         <p
-          className="
-            mt-3
-            text-xs
-            text-muted-foreground
-          "
+          className={`${styles.motionItem} mt-3 text-xs text-muted-foreground`}
+          style={{ '--survey-delay': entryHandoff ? '545ms' : '285ms' }}
         >
-          You can change this later
-          from Profile.
+          Don't worry, you can change this later.
         </p>
       </div>
 
-      <SurveyFooter>
-        <Button
-          type="button"
-          size="lg"
-          disabled={!valid}
-          onClick={onNext}
-          className="
-            w-full
-            font-bold
-          "
-        >
-          Continue
-
-          <ArrowRight
-            className="size-5"
-          />
-        </Button>
+      <SurveyFooter delay={entryHandoff ? '650ms' : '360ms'}>
+          <Button
+            type="button"
+            size="lg"
+            disabled={!valid}
+            onClick={onNext}
+            className="w-full font-bold"
+          >
+            <span className="flex items-center justify-center gap-2">
+              {valid
+                ? "That’s me!"
+                : "Continue"}
+              <ArrowRight className="size-5" />
+            </span>
+          </Button>
       </SurveyFooter>
     </SurveyShell>
   )
@@ -403,16 +344,19 @@ function NameStep({
    DESTINATION
 -------------------------------------------------- */
 function DestinationStep({
+  progressFrom,
+  name,
   destination,
   onDestinationChange,
   onBack,
   onNext,
 }) {
-  const destinationSelected =
-    Boolean(destination)
+  const displayName =
+    name.trim() || 'traveler'
 
   return (
     <SurveyShell
+      progressFrom={progressFrom}
       step={2}
       total={5}
       onBack={onBack}
@@ -431,29 +375,24 @@ function DestinationStep({
         "
       >
         <h1
-          className="
-            text-2xl
-            font-bold
-            tracking-tight
-          "
+          key={
+            destination?.id
+              ? `destination-${destination.id}`
+              : 'destination-empty'
+          }
+          className={`${styles.motionItem} text-2xl font-bold tracking-tight`}
+          style={{ '--survey-delay': '90ms' }}
         >
-          Where to explore?
+          {destination
+            ? `That's great choice!`
+            : `Hey, ${displayName}. Where to?`}
         </h1>
 
-        <p
-          className="
-            mt-1
-            text-sm
-            leading-relaxed
-            text-muted-foreground
-          "
-        >
-          Choose a destination to
-          personalizing your profile.
-        </p>
-
 {/* MAP */}
-<div className="mt-5">
+<div
+  className={`${styles.motionItem} mt-5`}
+  style={{ '--survey-delay': '160ms' }}
+>
   <DestinationMapCard
     destination={
       destination
@@ -463,7 +402,10 @@ function DestinationStep({
 
 
         {/* DESTINATION SEARCH */}
-<div className="relative z-30 mt-6">
+<div
+  className={`${styles.motionItem} relative z-30 mt-6`}
+  style={{ '--survey-delay': '230ms' }}
+>
   <DestinationInput
     id="onboarding-destination"
     value={destination}
@@ -475,14 +417,11 @@ function DestinationStep({
 </div>
 
 <p
-  className="
-    mt-2
-    text-xs
-    text-muted-foreground
-  "
+  className={`${styles.motionItem} mt-2 text-xs text-muted-foreground`}
+  style={{ '--survey-delay': '285ms' }}
 >
- Curently only Yogyakarta, Indonesia
-  available in this prototype.
+  Currently only Yogyakarta
+  is available in this prototype.
 </p>
 
 
@@ -491,16 +430,18 @@ function DestinationStep({
       </div>
 
       <SurveyFooter>
-<Button
-  type="button"
-  size="lg"
-  disabled={!destination}
-  onClick={onNext}
-  className="w-full font-bold"
->
-  Continue
-  <ArrowRight className="size-5" />
-</Button>
+          <Button
+            type="button"
+            size="lg"
+            disabled={!destination}
+            onClick={onNext}
+            className="w-full font-bold"
+          >
+            <span className="flex items-center justify-center gap-2">
+              Continue
+              <ArrowRight className="size-5" />
+            </span>
+          </Button>
       </SurveyFooter>
     </SurveyShell>
   )
@@ -512,6 +453,7 @@ function DestinationStep({
 -------------------------------------------------- */
 
 function SwipeStep({
+  progressFrom,
   onBack,
   liked,
   onLikedChange,
@@ -765,6 +707,7 @@ function SwipeStep({
 
   return (
     <SurveyShell
+      progressFrom={progressFrom}
       step={3}
       total={5}
       onBack={onBack}
@@ -794,24 +737,16 @@ function SwipeStep({
       >
         <div className="shrink-0">
           <h1
-            className="
-              text-2xl
-              font-bold
-              leading-tight
-              tracking-tight
-            "
+            className={`${styles.motionItem} text-2xl font-bold leading-tight tracking-tight`}
+            style={{ '--survey-delay': '90ms' }}
           >
             What feels like your
             kind of trip?
           </h1>
 
           <p
-            className="
-              mt-1
-              text-sm
-              leading-relaxed
-              text-muted-foreground
-            "
+            className={`${styles.motionItem} mt-1 text-sm leading-relaxed text-muted-foreground`}
+            style={{ '--survey-delay': '145ms' }}
           >
             Swipe right on what you
             like. Swipe left to skip.
@@ -819,15 +754,8 @@ function SwipeStep({
         </div>
 
         <div
-          className="
-            relative
-            mt-5
-            flex
-            min-h-[420px]
-            flex-1
-            items-center
-            justify-center
-          "
+          className={`${styles.motionItem} relative mt-5 flex min-h-[420px] flex-1 items-center justify-center`}
+          style={{ '--survey-delay': '205ms' }}
         >
           {nextCard && (
             <div
@@ -1225,13 +1153,8 @@ function SwipeStep({
         </div>
 
         <div
-          className="
-            mt-5
-            flex
-            items-center
-            justify-center
-            gap-5
-          "
+          className={`${styles.motionItem} mt-5 flex items-center justify-center gap-5`}
+          style={{ '--survey-delay': '285ms' }}
         >
           <button
             type="button"
@@ -1315,14 +1238,183 @@ function SwipeStep({
    BUDGET
 -------------------------------------------------- */
 
+/* -------------------------------------------------
+   BUDGET COUNTER
+
+   The visible number eases toward the slider value so
+   dragging feels more like a rolling counter than a
+   hard text replacement.
+-------------------------------------------------- */
+function BudgetCounter({
+  value,
+}) {
+  const [
+    displayValue,
+    setDisplayValue,
+  ] = useState(value)
+
+  const displayValueRef =
+    useRef(value)
+
+  const frameRef =
+    useRef(null)
+
+  useEffect(() => {
+    const target =
+      Number(value) || 0
+
+    if (frameRef.current) {
+      window.cancelAnimationFrame(
+        frameRef.current
+      )
+    }
+
+    const animate = () => {
+      const current =
+        displayValueRef.current
+
+      const distance =
+        target - current
+
+      if (
+        Math.abs(distance) <
+        0.5
+      ) {
+        displayValueRef.current =
+          target
+
+        setDisplayValue(
+          target
+        )
+
+        frameRef.current =
+          null
+
+        return
+      }
+
+      const next =
+        current +
+        distance * 0.24
+
+      displayValueRef.current =
+        next
+
+      setDisplayValue(
+        next
+      )
+
+      frameRef.current =
+        window.requestAnimationFrame(
+          animate
+        )
+    }
+
+    frameRef.current =
+      window.requestAnimationFrame(
+        animate
+      )
+
+    return () => {
+      if (frameRef.current) {
+        window.cancelAnimationFrame(
+          frameRef.current
+        )
+      }
+    }
+  }, [value])
+
+  const roundedValue =
+    Math.round(
+      displayValue
+    )
+
+  return (
+    <div
+      className="
+        flex
+        items-baseline
+        justify-center
+        font-bold
+        tracking-[-0.04em]
+        tabular-nums
+      "
+      aria-live="polite"
+    >
+      <span
+        className="
+          text-5xl
+          leading-none
+        "
+      >
+        ${roundedValue}
+      </span>
+
+      {roundedValue >=
+        BUDGET_MAX && (
+        <span
+          className="
+            ml-1
+            text-3xl
+            leading-none
+            text-primary
+          "
+        >
+          +
+        </span>
+      )}
+    </div>
+  )
+}
+
+
 function BudgetStep({
+  progressFrom,
+  name,
   selected,
   onChange,
   onBack,
   onNext,
 }) {
+  const displayName =
+    name.trim() || 'traveler'
+
+  const numericBudget =
+    Number.isFinite(
+      Number(selected)
+    )
+      ? Math.max(
+          BUDGET_MIN,
+          Math.min(
+            BUDGET_MAX,
+            Number(selected)
+          )
+        )
+      : BUDGET_MIN
+
+  const budgetProgress =
+    (
+      numericBudget -
+      BUDGET_MIN
+    ) /
+    (
+      BUDGET_MAX -
+      BUDGET_MIN
+    )
+
+  const handleBudgetChange = (
+    event
+  ) => {
+    onChange(
+      Number(
+        event.target.value
+      )
+    )
+  }
+
   return (
     <SurveyShell
+      progressFrom={progressFrom}
       step={4}
       total={5}
       onBack={onBack}
@@ -1341,110 +1433,197 @@ function BudgetStep({
         "
       >
         <h1
-          className="
-            text-2xl
-            font-bold
-            tracking-tight
-          "
+          className={`${styles.motionItem} text-2xl font-bold tracking-tight`}
+          style={{
+            '--survey-delay':
+              '90ms',
+          }}
         >
-          What&apos;s your budget?
+          What&apos;s your budget, {displayName}?
         </h1>
 
-        <p
-          className="
-            mt-1
-            text-sm
-            leading-relaxed
-            text-muted-foreground
-          "
-        >
-          Pick your usual budget for one night.
-          We&apos;ll use it to find stays that fit.
-        </p>
-
         <div
-          className="
-            mt-7
-            flex
-            flex-col
-            gap-3
-          "
+          className={`${styles.motionItem} mt-8 flex flex-1 flex-col justify-center`}
+          style={{
+            '--survey-delay':
+              '205ms',
+          }}
         >
-          {budgetOptions.map(
-            (option) => {
-              const active =
-                selected === option.id
+          {/* HOTEL ART PLACEHOLDER */}
+          <div
+            className="
+              mx-auto
+              flex
+              h-44
+              w-full
+              max-w-[280px]
+              items-center
+              justify-center
+              rounded-[2rem]
+              border
+              border-dashed
+              border-border
+              bg-surface/50
+              px-6
+              text-center
+            "
+            aria-hidden="true"
+          >
 
-              return (
-                <Button
-                  key={option.id}
-                  type="button"
-                  variant={
-                    active
-                      ? 'secondary'
-                      : 'outline'
-                  }
-                  onClick={() =>
-                    onChange(option.id)
-                  }
-                  className="
-                    min-h-16
-                    w-full
-                    justify-between
-                    rounded-2xl
-                    px-4
-                    text-left
-                    text-base
-                    font-medium
-                    whitespace-normal
-                    active:scale-[0.99]
-                  "
-                >
-                  <div>
-                    <span
-                      className="
-                        block
-                        font-semibold
-                      "
-                    >
-                      {option.label}
-                    </span>
+          </div>
 
-                    <span
-                      className="
-                        mt-0.5
-                        block
-                        text-xs
-                        font-normal
-                        text-muted-foreground
-                      "
-                    >
-                      per night
-                    </span>
-                  </div>
+          {/* LIVE COUNTER */}
+          <div
+            className="
+              mt-8
+              text-center
+            "
+          >
+            <BudgetCounter
+              value={
+                numericBudget
+              }
+            />
 
-                  {active ? (
-                    <Check
-                      className="
-                        size-5
-                        shrink-0
-                      "
-                    />
-                  ) : (
-                    <span
-                      className="
-                        size-5
-                        shrink-0
-                        rounded-full
-                        border
-                        border-border
-                      "
-                    />
-                  )}
-                </Button>
-              )
-            }
-          )}
+            <p
+              className="
+                mt-2
+                text-sm
+                text-muted-foreground
+              "
+            >
+              per night
+            </p>
+          </div>
+
+          {/* CONTINUOUS SLIDER */}
+          <div
+            className="
+              mt-9
+              px-1
+            "
+          >
+            <div className="relative">
+              <div
+                aria-hidden="true"
+                className="
+                  pointer-events-none
+                  absolute
+                  left-0
+                  right-0
+                  top-1/2
+                  h-1.5
+                  -translate-y-1/2
+                  rounded-full
+                  bg-surface
+                "
+              />
+
+              <div
+                aria-hidden="true"
+                className="
+                  pointer-events-none
+                  absolute
+                  left-0
+                  top-1/2
+                  h-1.5
+                  -translate-y-1/2
+                  rounded-full
+                  bg-primary
+                "
+                style={{
+                  width:
+                    `${budgetProgress * 100}%`,
+                }}
+              />
+
+              <input
+                type="range"
+                min={
+                  BUDGET_MIN
+                }
+                max={
+                  BUDGET_MAX
+                }
+                step={
+                  BUDGET_STEP
+                }
+                value={
+                  numericBudget
+                }
+                onChange={
+                  handleBudgetChange
+                }
+                aria-label="Nightly hotel budget"
+                aria-valuemin={
+                  BUDGET_MIN
+                }
+                aria-valuemax={
+                  BUDGET_MAX
+                }
+                aria-valuenow={
+                  numericBudget
+                }
+                aria-valuetext={
+                  numericBudget >=
+                  BUDGET_MAX
+                    ? '$500 or more per night'
+                    : `$${numericBudget} per night`
+                }
+                className="
+                  relative
+                  z-10
+                  h-12
+                  w-full
+                  cursor-pointer
+                  appearance-none
+                  bg-transparent
+
+                  [&::-webkit-slider-runnable-track]:h-1.5
+                  [&::-webkit-slider-runnable-track]:bg-transparent
+
+                  [&::-webkit-slider-thumb]:mt-[-7px]
+                  [&::-webkit-slider-thumb]:size-5
+                  [&::-webkit-slider-thumb]:appearance-none
+                  [&::-webkit-slider-thumb]:rounded-full
+                  [&::-webkit-slider-thumb]:border-[3px]
+                  [&::-webkit-slider-thumb]:border-background
+                  [&::-webkit-slider-thumb]:bg-primary
+                  [&::-webkit-slider-thumb]:shadow-md
+
+                  [&::-moz-range-track]:h-1.5
+                  [&::-moz-range-track]:bg-transparent
+
+                  [&::-moz-range-thumb]:size-5
+                  [&::-moz-range-thumb]:rounded-full
+                  [&::-moz-range-thumb]:border-[3px]
+                  [&::-moz-range-thumb]:border-background
+                  [&::-moz-range-thumb]:bg-primary
+                  [&::-moz-range-thumb]:shadow-md
+                "
+              />
+            </div>
+
+            <div
+              className="
+                mt-1
+                flex
+                items-center
+                justify-between
+                text-xs
+                font-medium
+                text-muted-foreground
+              "
+            >
+              <span>
+                $0
+              </span>
+
+              <span>
+                $500+
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1452,18 +1631,13 @@ function BudgetStep({
         <Button
           type="button"
           size="lg"
-          disabled={!selected}
           onClick={onNext}
-          className="
-            w-full
-            font-bold
-          "
+          className="w-full font-bold"
         >
-          Continue
-
-          <ArrowRight
-            className="size-5"
-          />
+          <span className="flex items-center justify-center gap-2">
+            Continue
+            <ArrowRight className="size-5" />
+          </span>
         </Button>
       </SurveyFooter>
     </SurveyShell>
@@ -1475,6 +1649,7 @@ function BudgetStep({
 -------------------------------------------------- */
 
 function PriorityStep({
+  progressFrom,
   selected,
   onToggle,
   onBack,
@@ -1482,6 +1657,7 @@ function PriorityStep({
 }) {
   return (
     <SurveyShell
+      progressFrom={progressFrom}
       step={5}
       total={5}
       onBack={onBack}
@@ -1499,35 +1675,14 @@ function PriorityStep({
         "
       >
         <h1
-          className="
-            text-2xl
-            font-bold
-            tracking-tight
-          "
+          className={`${styles.motionItem} text-2xl font-bold tracking-tight`}
+          style={{ '--survey-delay': '90ms' }}
         >
-          What matters most in a
-          stay?
+          What matters most in a stay?
         </h1>
 
-        <p
-          className="
-            mt-1
-            text-sm
-            leading-relaxed
-            text-muted-foreground
-          "
-        >
-          Choose what matters most
-          when you pick a hotel.
-        </p>
-
         <div
-          className="
-            mt-7
-            flex
-            flex-col
-            gap-3
-          "
+          className="mt-7 flex flex-col gap-3"
         >
           {stayPriorities.map(
             (
@@ -1554,18 +1709,8 @@ function PriorityStep({
                       option
                     )
                   }
-                  className="
-                    min-h-16
-                    w-full
-                    justify-between
-                    rounded-2xl
-                    px-4
-                    text-left
-                    text-base
-                    font-medium
-                    whitespace-normal
-                    active:scale-[0.99]
-                  "
+                  className={`${styles.motionItem} min-h-16 w-full justify-between rounded-2xl px-4 text-left text-base font-medium whitespace-normal active:scale-[0.99]`}
+                  style={{ '--survey-delay': `${165 + stayPriorities.indexOf(option) * 55}ms` }}
                 >
                   <span
                     className="
@@ -1602,25 +1747,18 @@ function PriorityStep({
       </section>
 
       <SurveyFooter>
-        <Button
-          type="button"
-          size="lg"
-          disabled={
-            selected.length ===
-            0
-          }
-          onClick={onFinish}
-          className="
-            w-full
-            font-bold
-          "
-        >
-          <Sparkles
-            className="size-5"
-          />
-
-          Build my trip
-        </Button>
+          <Button
+            type="button"
+            size="lg"
+            disabled={selected.length === 0}
+            onClick={onFinish}
+            className="w-full font-bold"
+          >
+            <span className="flex items-center justify-center gap-2">
+              <Sparkles className="size-5" />
+              Build my trip
+            </span>
+          </Button>
       </SurveyFooter>
     </SurveyShell>
   )
@@ -1637,12 +1775,57 @@ function SurveyShell({
   step,
   total,
   onBack,
+  progressFrom,
+  entryHandoff = false,
   progressOverride,
   children,
 }) {
   const progress =
     progressOverride ??
     step / total
+
+  const [displayedProgress, setDisplayedProgress] =
+    useState(
+      entryHandoff
+        ? 0
+        : progressFrom ?? progress
+    )
+
+  useEffect(() => {
+    if (entryHandoff) {
+      /*
+       * Paint the handoff seed at 0 first, then let CSS grow
+       * it slowly to the Identity target (20%). Two frames make
+       * sure the browser commits the starting state.
+       */
+      let secondFrame
+
+      const firstFrame =
+        window.requestAnimationFrame(() => {
+          secondFrame =
+            window.requestAnimationFrame(() => {
+              setDisplayedProgress(progress)
+            })
+        })
+
+      return () => {
+        window.cancelAnimationFrame(firstFrame)
+
+        if (secondFrame) {
+          window.cancelAnimationFrame(secondFrame)
+        }
+      }
+    }
+
+    const frame =
+      window.requestAnimationFrame(() => {
+        setDisplayedProgress(progress)
+      })
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+    }
+  }, [progress, entryHandoff])
 
   return (
     <main
@@ -1662,19 +1845,21 @@ function SurveyShell({
         md:border-border
       "
     >
-      <AppHeader
-        showBack
-        onBack={onBack}
-        sticky={false}
-      />
+      <div
+        className={`${styles.shellHeader} ${entryHandoff ? styles.shellHeaderHandoff : ''}`}
+        style={{ '--survey-delay': entryHandoff ? '0ms' : '40ms' }}
+      >
+        <AppHeader
+          showBack
+          onBack={onBack}
+          sticky={false}
+        />
+      </div>
 
       {/* PROGRESS */}
       <div
-        className="
-          shrink-0
-          px-5
-          pt-4
-        "
+        className={`${styles.progressStage} ${entryHandoff ? styles.progressStageHandoff : ''} shrink-0 px-5 pt-4`}
+        style={{ '--survey-delay': entryHandoff ? '500ms' : '85ms' }}
       >
         <div
           className="
@@ -1685,20 +1870,14 @@ function SurveyShell({
           "
         >
           <div
-            className="
-              h-full
-              rounded-full
-              bg-primary
-              transition-all
-              duration-500
-            "
+            className={`${styles.progressFill} ${entryHandoff ? styles.progressFillHandoff : ''} h-full rounded-full bg-primary`}
             style={{
               width: `${
                 Math.max(
                   0,
                   Math.min(
                     1,
-                    progress
+                    displayedProgress
                   )
                 ) * 100
               }%`,
@@ -1714,21 +1893,12 @@ function SurveyShell({
 
 function SurveyFooter({
   children,
+  delay = '340ms',
 }) {
   return (
     <footer
-      className="
-        sticky
-        bottom-0
-        z-40
-        shrink-0
-        border-t
-        border-border
-        bg-background
-        px-5
-        pb-[calc(1rem+env(safe-area-inset-bottom))]
-        pt-4
-      "
+      className={`${styles.motionItem} sticky bottom-0 z-40 shrink-0 border-t border-border bg-background px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4`}
+      style={{ '--survey-delay': delay }}
     >
       {children}
     </footer>
@@ -1766,6 +1936,16 @@ function OnboardingSurveyContent() {
       ? 'destination'
       : 'intro'
   )
+
+  const [
+    transitionFromProgress,
+    setTransitionFromProgress,
+  ] = useState(0)
+
+  const [
+    entryHandoff,
+    setEntryHandoff,
+  ] = useState(false)
 
   const [
     name,
@@ -1817,11 +1997,50 @@ const [
   const [
     budget,
     setBudget,
-  ] = useState(
-    editPreferences
-      ? existingProfile?.budget?.id ?? ''
-      : ''
-  )
+  ] = useState(() => {
+    if (
+      editPreferences &&
+      existingProfile?.budget
+    ) {
+      if (
+        typeof
+          existingProfile.budget.amount ===
+        'number'
+      ) {
+        return Math.max(
+          BUDGET_MIN,
+          Math.min(
+            BUDGET_MAX,
+            existingProfile
+              .budget
+              .amount
+          )
+        )
+      }
+
+      /*
+       * Compatibility with the previous
+       * four-tier budget prototype.
+       */
+      const legacyBudgetMap = {
+        budget: 300,
+        value: 650,
+        comfort: 450,
+        premium: 500,
+      }
+
+      return (
+        legacyBudgetMap[
+          existingProfile
+            .budget
+            .id
+        ] ??
+        BUDGET_MIN
+      )
+    }
+
+    return BUDGET_MIN
+  })
 
   const [
     priorities,
@@ -1831,6 +2050,43 @@ const [
       ? existingProfile?.stayPriorities ?? []
       : []
   )
+
+  const getCurrentProgress = () => {
+    if (screen === 'name') {
+      return 1 / 5
+    }
+
+    if (screen === 'destination') {
+      return 2 / 5
+    }
+
+    if (screen === 'swipe') {
+      return (
+        2 +
+        (swipeIndex + 1) /
+          preferenceCards.length
+      ) / 5
+    }
+
+    if (screen === 'budget') {
+      return 4 / 5
+    }
+
+    if (screen === 'priority') {
+      return 1
+    }
+
+    return 0
+  }
+
+  const goToScreen = (nextScreen) => {
+    setTransitionFromProgress(
+      getCurrentProgress()
+    )
+
+    setScreen(nextScreen)
+  }
+
 
   const togglePriority = (
     option
@@ -1863,9 +2119,12 @@ const [
         )
 
       const selectedBudget =
-        budgetOptions.find(
-          (option) =>
-            option.id === budget
+        Math.max(
+          BUDGET_MIN,
+          Math.min(
+            BUDGET_MAX,
+            Number(budget) || 0
+          )
         )
 
       const now =
@@ -1894,31 +2153,22 @@ destination: {
               item.label
           ),
 
-        budget:
-          selectedBudget
-            ? {
-                id:
-                  selectedBudget.id,
+        budget: {
+          amount:
+            selectedBudget,
 
-                label:
-                  selectedBudget.label,
+          label:
+            selectedBudget >=
+            BUDGET_MAX
+              ? '$500+'
+              : `$${selectedBudget}`,
 
-                shortLabel:
-                  selectedBudget.shortLabel,
+          currency:
+            'USD',
 
-                min:
-                  selectedBudget.min,
-
-                max:
-                  selectedBudget.max,
-
-                currency:
-                  'IDR',
-
-                unit:
-                  'night',
-              }
-            : null,
+          unit:
+            'night',
+        },
 
         stayPriorities:
           priorities,
@@ -1950,11 +2200,17 @@ setScreen(
   ) {
     return (
       <Intro
-        onStart={() =>
-          setScreen(
-            'name'
-          )
-        }
+        onStart={() => {
+          /*
+           * Intro already visually morphs into the first
+           * survey progress state. Identity mounts directly
+           * at 20% and keeps the handoff state stable for the
+           * whole first screen to avoid a mid-screen restart.
+           */
+          setEntryHandoff(true)
+          setTransitionFromProgress(0)
+          setScreen('name')
+        }}
       />
     )
   }
@@ -1964,20 +2220,20 @@ setScreen(
   ) {
     return (
       <NameStep
+        progressFrom={transitionFromProgress}
+        entryHandoff={entryHandoff}
         name={name}
         onChange={
           setName
         }
-        onBack={() =>
-          setScreen(
-            'intro'
-          )
-        }
-        onNext={() =>
-          setScreen(
-            'destination'
-          )
-        }
+        onBack={() => {
+          setEntryHandoff(false)
+          goToScreen('intro')
+        }}
+        onNext={() => {
+          setEntryHandoff(false)
+          goToScreen('destination')
+        }}
       />
     )
   }
@@ -1988,6 +2244,8 @@ setScreen(
   ) {
     return (
 <DestinationStep
+        progressFrom={transitionFromProgress}
+  name={name}
   destination={
     destination
   }
@@ -2000,13 +2258,13 @@ setScreen(
       return
     }
 
-    setScreen('name')
+    goToScreen('name')
   }}
   onNext={() => {
     setSwipeIndex(0)
     setLikedPreferences([])
 
-    setScreen('swipe')
+    goToScreen('swipe')
   }}
 />
     )
@@ -2017,6 +2275,7 @@ setScreen(
   ) {
     return (
       <SwipeStep
+        progressFrom={transitionFromProgress}
         liked={
           likedPreferences
         }
@@ -2030,7 +2289,7 @@ setScreen(
           setSwipeIndex
         }
         onBack={() =>
-          setScreen(
+          goToScreen(
             'destination'
           )
         }
@@ -2041,7 +2300,7 @@ setScreen(
             liked
           )
 
-          setScreen(
+          goToScreen(
             'budget'
           )
         }}
@@ -2054,6 +2313,8 @@ setScreen(
   ) {
     return (
       <BudgetStep
+        progressFrom={transitionFromProgress}
+        name={name}
         selected={
           budget
         }
@@ -2068,14 +2329,12 @@ setScreen(
           setSwipeIndex(0)
           setLikedPreferences([])
 
-          setScreen(
+          goToScreen(
             'swipe'
           )
         }}
         onNext={() =>
-          setScreen(
-            'priority'
-          )
+          goToScreen('priority')
         }
       />
     )
@@ -2087,6 +2346,7 @@ setScreen(
   ) {
     return (
       <PriorityStep
+        progressFrom={transitionFromProgress}
         selected={
           priorities
         }
@@ -2094,13 +2354,11 @@ setScreen(
           togglePriority
         }
         onBack={() =>
-          setScreen(
+          goToScreen(
             'budget'
           )
         }
-        onFinish={
-          finishOnboarding
-        }
+        onFinish={finishOnboarding}
       />
     )
   }
@@ -2123,6 +2381,49 @@ setScreen(
   }
 
   return null
+}
+
+
+/* -------------------------------------------------
+   INTRO ROUTE HANDOFF FALLBACK
+
+   Keep the last Home Opening frame visually alive while
+   Suspense hydrates this route. This avoids inserting a
+   generic LoadingScreen between the centered opening dot
+   and Intro's first handoff frame.
+-------------------------------------------------- */
+function IntroRouteFallback() {
+  return (
+    <main
+      className="
+        relative
+        grid
+        h-dvh
+        min-h-svh
+        w-full
+        place-items-center
+        overflow-hidden
+        bg-background
+
+        md:mx-auto
+        md:max-w-md
+        md:border-x
+        md:border-border
+      "
+      aria-label="Opening TravelXXX"
+    >
+      <span
+        aria-hidden="true"
+        className="
+          block
+          size-[18px]
+          rounded-full
+          bg-primary
+          shadow-[0_10px_26px_color-mix(in_srgb,var(--primary)_24%,transparent)]
+        "
+      />
+    </main>
+  )
 }
 
 
@@ -2178,12 +2479,7 @@ export default function Page() {
   return (
     <Suspense
       fallback={
-        <LoadingScreen
-          title="Opening TravelXXX"
-          messages={[
-            'Preparing your traveler profile...',
-          ]}
-        />
+        <IntroRouteFallback />
       }
     >
       <OnboardingSurveyContent />

@@ -83,8 +83,6 @@ export default function BottomNav({
         flex
         w-full
         max-w-md
-        border-t
-        border-border
         bg-background/95
         px-2
         pb-[calc(0.75rem+env(safe-area-inset-bottom))]

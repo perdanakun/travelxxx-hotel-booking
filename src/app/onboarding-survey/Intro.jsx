@@ -56,6 +56,8 @@ export default function Intro({
   const screenRef = useRef(null)
   const visualRef = useRef(null)
   const nextButtonRef = useRef(null)
+  const finishDotRef = useRef(null)
+  const finishAnimationRef = useRef(null)
   const pointerStartXRef = useRef(null)
   const timersRef = useRef([])
 
@@ -145,6 +147,7 @@ export default function Intro({
   useEffect(() => {
     return () => {
       clearTimers()
+      finishAnimationRef.current?.cancel?.()
     }
   }, [])
 
@@ -281,7 +284,8 @@ export default function Intro({
 
     /*
      * Dot has reached mascot center.
-     * Start dot burst and mascot growth together.
+     * Let the dot finish its glide, then absorb it behind the mascot
+     * while mascot growth begins on top.
      */
 
     const popTimer =
@@ -290,7 +294,7 @@ export default function Intro({
           setEntryPhase('pop')
           setCopyMotion('intro')
         },
-        430
+        450
       )
 
 
@@ -299,7 +303,7 @@ export default function Intro({
         () => {
           setEntryPhase('settle')
         },
-        730
+        780
       )
 
 
@@ -316,7 +320,7 @@ export default function Intro({
               ENTRY_OPENING_TRANSFER_KEY
             )
         },
-        900
+        940
       )
 
 
@@ -449,7 +453,7 @@ export default function Intro({
           'liquid'
         )
       },
-      260
+      250
     )
 
 
@@ -467,11 +471,15 @@ export default function Intro({
             : 'enterBackward'
         )
       },
-      430
+      410
     )
 
 
-    /* 3. Local dot pops into new mascot. */
+    /*
+     * 3. Let the liquid dot finish first, then hand the same
+     * visual mass to the incoming mascot. This removes the
+     * one-frame flash caused by interrupting liquidDot early.
+     */
 
     queue(
       () => {
@@ -479,7 +487,7 @@ export default function Intro({
           'pop'
         )
       },
-      500
+      535
     )
 
 
@@ -489,7 +497,7 @@ export default function Intro({
           'settle'
         )
       },
-      820
+      865
     )
 
 
@@ -511,7 +519,7 @@ export default function Intro({
           false
         )
       },
-      980
+      1010
     )
   }
 
@@ -528,19 +536,233 @@ export default function Intro({
       return
     }
 
-    updateFinishPoint()
+    const screen = screenRef.current
+    const button = nextButtonRef.current
 
-    setButtonPulse(true)
+    if (!screen || !button) {
+      onStart?.()
+      return
+    }
+
+    const reducedMotion =
+      window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches
+
+    const screenRect =
+      screen.getBoundingClientRect()
+
+    const buttonRect =
+      button.getBoundingClientRect()
+
+    /*
+     * CSS collapses the CTA all the way to an 18px dot at its
+     * left edge. Start the overlay from that exact same center so
+     * the handoff reads as one continuous physical object.
+     */
+    const startX =
+      buttonRect.left -
+      screenRect.left +
+      9
+
+    const startY =
+      buttonRect.top -
+      screenRect.top +
+      buttonRect.height / 2
+
+    /* Survey progress track begins at px-5 = 20px. */
+    const targetX = 20
+    const targetY = 78
+
+    setFinishPoint({
+      x: `${startX}px`,
+      y: `${startY}px`,
+    })
+
+    setButtonPulse(false)
     setIsFinishing(true)
 
-    queue(
-      () => {
-        onStart?.()
-      },
-      900
-    )
-  }
+    if (reducedMotion) {
+      queue(() => onStart?.(), 600)
+      return
+    }
 
+    /*
+     * Progressive character bounce:
+     * - keep the HomeOpening button -> dot handoff
+     * - then let the dot travel in three damped hops
+     * - every landing advances closer to the survey progress
+     * - hop height and squash/stretch reduce each time
+     *
+     * The result should feel playful and intentional rather than
+     * like a generic easing curve moving one point to another.
+     */
+    queue(() => {
+      const dot = finishDotRef.current
+
+      if (!dot) {
+        onStart?.()
+        return
+      }
+
+      const dx = targetX - startX
+      const totalRise = startY - targetY
+
+      const xAt = (ratio) =>
+        startX + dx * ratio
+
+      const yAt = (ratio) =>
+        startY - totalRise * ratio
+
+      const frame = ({
+        x,
+        y,
+        w = 18,
+        h = 18,
+        offset,
+        easing = 'cubic-bezier(0.22, 1, 0.36, 1)',
+      }) => ({
+        left: `${x}px`,
+        top: `${y}px`,
+        width: `${w}px`,
+        height: `${h}px`,
+        opacity: 1,
+        borderRadius: '9999px',
+        transform: 'translate(-50%, -50%)',
+        offset,
+        easing,
+      })
+
+      const keyframes = [
+        /* Hold the inherited dot for one readable beat. */
+        frame({
+          x: startX,
+          y: startY,
+          offset: 0,
+        }),
+
+        /* Squash before the first, strongest takeoff. */
+        frame({
+          x: xAt(0.03),
+          y: startY + 2,
+          w: 21,
+          h: 14,
+          offset: 0.08,
+          easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        }),
+
+        /* HOP 1 — tall and energetic. */
+        frame({
+          x: xAt(0.18),
+          y: yAt(0.31),
+          w: 15,
+          h: 22,
+          offset: 0.22,
+          easing: 'cubic-bezier(0.2, 0.72, 0.28, 1)',
+        }),
+        frame({
+          x: xAt(0.36),
+          y: yAt(0.38),
+          w: 18,
+          h: 18,
+          offset: 0.34,
+          easing: 'cubic-bezier(0.55, 0, 0.85, 0.55)',
+        }),
+        frame({
+          x: xAt(0.43),
+          y: yAt(0.33) + 2,
+          w: 21,
+          h: 14,
+          offset: 0.42,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        }),
+
+        /* HOP 2 — shorter, still clearly advancing. */
+        frame({
+          x: xAt(0.57),
+          y: yAt(0.62),
+          w: 16,
+          h: 20,
+          offset: 0.55,
+          easing: 'cubic-bezier(0.2, 0.72, 0.28, 1)',
+        }),
+        frame({
+          x: xAt(0.71),
+          y: yAt(0.69),
+          w: 18,
+          h: 18,
+          offset: 0.66,
+          easing: 'cubic-bezier(0.55, 0, 0.85, 0.55)',
+        }),
+        frame({
+          x: xAt(0.76),
+          y: yAt(0.66) + 1,
+          w: 20,
+          h: 15,
+          offset: 0.73,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        }),
+
+        /* HOP 3 — a small finishing bounce. */
+        frame({
+          x: xAt(0.86),
+          y: yAt(0.86),
+          w: 16.5,
+          h: 19.5,
+          offset: 0.82,
+          easing: 'cubic-bezier(0.2, 0.72, 0.28, 1)',
+        }),
+        frame({
+          x: xAt(0.94),
+          y: targetY + 5,
+          w: 19,
+          h: 16,
+          offset: 0.9,
+          easing: 'cubic-bezier(0.55, 0, 0.85, 0.55)',
+        }),
+
+        /* Tiny rebound before becoming the progress origin. */
+        frame({
+          x: xAt(0.98),
+          y: targetY - 3,
+          w: 17,
+          h: 19,
+          offset: 0.955,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        }),
+        {
+          left: `${targetX}px`,
+          top: `${targetY}px`,
+          width: '10px',
+          height: '6px',
+          opacity: 1,
+          borderRadius: '9999px',
+          transform: 'translate(0, -50%)',
+          offset: 1,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        },
+      ]
+
+      const animation = dot.animate(
+        keyframes,
+        {
+          duration: 1420,
+          easing: 'linear',
+          fill: 'forwards',
+        }
+      )
+
+      finishAnimationRef.current = animation
+
+      animation.onfinish = () => {
+        onStart?.()
+      }
+
+      animation.oncancel = () => {
+        finishAnimationRef.current = null
+      }
+    }, 610)
+  }
 
   const handleNext = () => {
     if (
@@ -860,6 +1082,7 @@ export default function Intro({
           aria-hidden="true"
         >
           <div
+            ref={finishDotRef}
             className={styles.finishDot}
           />
         </div>
