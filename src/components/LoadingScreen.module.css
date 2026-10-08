@@ -1,0 +1,56 @@
+.screen {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100svh;
+  overflow: hidden;
+  background: #fff;
+}
+
+@media (min-width: 768px) {
+  .screen {
+    max-width: 28rem;
+    margin-inline: auto;
+    border-inline: 1px solid var(--border, #dededb);
+  }
+}
+
+.dotMotion {
+  width: 18px;
+  height: 18px;
+  animation: dotHop 1080ms cubic-bezier(.22, 1, .36, 1) infinite;
+  will-change: transform;
+}
+
+.dot {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #2F98EA;
+  box-shadow: 0 8px 22px rgba(47, 152, 234, .18);
+  animation: dotSquash 1080ms cubic-bezier(.22, 1, .36, 1) infinite;
+  will-change: transform;
+}
+
+/* 1. Bounce in place, then brief pause before next loop. */
+@keyframes dotHop {
+  0%, 8%, 49%, 60%, 100% { transform: translateY(0); }
+  24% { transform: translateY(-20px); }
+  38% { transform: translateY(-9px); }
+  54% { transform: translateY(1px); }
+}
+
+/* 2. Squash on takeoff/landing; stretch in the air. */
+@keyframes dotSquash {
+  0%, 8%, 60%, 100% { transform: scale(1); }
+  12% { transform: scaleX(1.14) scaleY(.84); }
+  24% { transform: scaleX(.9) scaleY(1.12); }
+  49% { transform: scaleX(1.12) scaleY(.88); }
+  57% { transform: scaleX(.97) scaleY(1.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dotMotion, .dot { animation: none; transform: none; }
+}
